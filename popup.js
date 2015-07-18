@@ -4,6 +4,11 @@
 
 
 function click(e) {
+  if (e.target.id == 'reporting') {
+    chrome.tabs.update({ url: "https://console.developers.google.com/project" }, function(tab) { 
+      // ...
+    });
+  }
   if (e.target.id == 'login') {
     var newURL = "https://www.appodeal.com/signin";
     chrome.tabs.create({ url: newURL });
@@ -40,7 +45,7 @@ function click(e) {
   if (e.target.id == 'admob') {
     chrome.tabs.executeScript(null, {file: "admob.js"});
   }
-  //window.close();
+  // window.close();
 }
 
 document.addEventListener('DOMContentLoaded', function () {
