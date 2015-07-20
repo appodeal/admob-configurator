@@ -95,10 +95,51 @@ function create_banner_adunit(types, app_id, admob_app_id, token, bid_floor, com
 
 function create_bid_adunits(app, xsrf, complete) {
   // TODO
+
+  // bid_floors = bid_floors_in_settings(app, AdUnit.ad_types[:interstitial])
+
+  // bid_floors.each do |bid_floor|
+  //   next if account.ad_units.find_by(app_id: app.id, ad_type: AdUnit.ad_types[:interstitial], format: AdUnit.formats[:image_and_text], bid_floor: bid_floor).present?
+
+  //   xsrf, adunit_id = create_adunit([:image, :text], app, xsrf, bid_floor)
+  //   app.ad_units.create({
+  //     account: account,
+  //     ad_type: AdUnit.ad_types[:interstitial],
+  //     format: AdUnit.formats[:image_and_text],
+  //     code: adunit_id,
+  //     bid_floor: bid_floor,
+  //     width: 320,
+  //     height: 480,
+  //   })
+  // end
 }
 
 function create_banner_bid_adunits(app, xsrf, complete) {
   // TODO
+
+  // bid_floors = bid_floors_in_settings(app, AdUnit.ad_types[:banner])
+
+  // bid_floors.each do |bid_floor|
+  //   next if account.ad_units.find_by(app_id: app.id, ad_type: AdUnit.ad_types[:banner], format: AdUnit.formats[:image_and_text], bid_floor: bid_floor).present?
+
+  //   xsrf, banner_adunit_id = create_banner_adunit([:image, :text], app, xsrf, bid_floor)
+  //   app.ad_units.create({
+  //     account: account,
+  //     ad_type: AdUnit.ad_types[:banner],
+  //     format: AdUnit.formats[:image_and_text],
+  //     code: banner_adunit_id,
+  //     bid_floor: bid_floor,
+  //     width: 320,
+  //     height: 480,
+  //   })
+  // end
+}
+
+function bid_floors_in_settings(app, ad_type) {
+  // TODO
+
+  // current_bid_floors = app.ad_units.where(account: account, ad_type: ad_type, format: AdUnit.formats[:image_and_text]).pluck(:bid_floor)
+  // BidFloorSettings.using_slave.find_by(account_type: 'AdmobAccount', ad_type: ad_type, format: AdUnit.formats[:image_and_text]).bid_floors - current_bid_floors
 }
 
 function insert_mediation(admob_app_id, bid_floor, internalAdUnitId, token, complete) {
