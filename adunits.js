@@ -1,4 +1,5 @@
 const TYPES = {text: 0, image: 1, video: 2};
+const AD_TYPES = {interstitial: 0, banner: 1, video: 2};
 const INVENTORY_URL = "https://apps.admob.com/tlcgwt/inventory";
 const ACCOUNT_ID = "pub-8707429396915445";
 
@@ -93,7 +94,7 @@ function create_banner_adunit(types, app_id, admob_app_id, token, bid_floor, com
   }
 }
 
-function create_bid_adunits(app, xsrf, complete) {
+function create_bid_adunits(app, xsrf) {
   // TODO
 
   // bid_floors = bid_floors_in_settings(app, AdUnit.ad_types[:interstitial])
@@ -114,7 +115,7 @@ function create_bid_adunits(app, xsrf, complete) {
   // end
 }
 
-function create_banner_bid_adunits(app, xsrf, complete) {
+function create_banner_bid_adunits(app, xsrf) {
   // TODO
 
   // bid_floors = bid_floors_in_settings(app, AdUnit.ad_types[:banner])
@@ -135,11 +136,14 @@ function create_banner_bid_adunits(app, xsrf, complete) {
   // end
 }
 
-function bid_floors_in_settings(app, ad_type) {
-  // TODO
+function bid_floors_in_settings(ad_type) {
+  if (ad_type == AD_TYPES['interstitial']) {
+    return [0.15, 0.25, 0.65, 0.8, 1.25, 2.15, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0];
+  }
 
-  // current_bid_floors = app.ad_units.where(account: account, ad_type: ad_type, format: AdUnit.formats[:image_and_text]).pluck(:bid_floor)
-  // BidFloorSettings.using_slave.find_by(account_type: 'AdmobAccount', ad_type: ad_type, format: AdUnit.formats[:image_and_text]).bid_floors - current_bid_floors
+  if (ad_type == AD_TYPES['banner']) {
+    return [0.1, 0.2, 0.35, 0.5, 0.7];
+  }
 }
 
 function insert_mediation(admob_app_id, bid_floor, internalAdUnitId, token, complete) {
