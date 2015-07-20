@@ -11,6 +11,11 @@ ALwxsBG9i5GGoFaheqOQXFpB1TSRR0MHbw:1437351456034 and ca-app-pub-8707429396915445
 create_adunit(["image", "text"], "200", "1028509211", "ALwxsBEH85JrkooorZ1bzszyoRbcFS9SUA:1437351484546", null, function(xsrf, adunit_id){console.log(xsrf + " and " + adunit_id )})
 
 
+create_banner_adunit(["image", "text"], "206", "1028509211", "ALwxsBF83s2NTCCKO58__uG8M-JptgUYyw:1437353846718", 2.85, function(xsrf, adunit_id){console.log(xsrf + " and " + adunit_id )})
+
+// ALwxsBE2bXRqNTACGFMXzrYgjCBBLSqE-Q:1437353830109 and ca-app-pub-8707429396915445/8661024016
+// ALwxsBEIZyJfFuHIxZZfQmCbDj3ssXqBWw:1437353920285 and ca-app-pub-8707429396915445/1137757210
+
 result = {"result":{"2":[{"1":"8595475216","2":"1028509211","3":"Appodeal/123/image/0.25","5":7,"9":0,"11":0,"14":1,"15":1,"16":[0,1,2]}]},"xsrf":"ALwxsBE07ZHcErL8XywPoK9EJwBp958DVw:1437309319696"}
 
 xsrf = /[\w\d-]+:[\w\d]+/.exec(document.documentElement.innerHTML)[0];
