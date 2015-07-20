@@ -6,7 +6,7 @@
 function click(e) {
   if (e.target.id == 'reporting') {
     chrome.tabs.update({ url: "https://console.developers.google.com/project" }, function(tab) { 
-      // ...
+      chrome.storage.local.set({ "reporting_tab_id" : tab.id });
     });
   }
   if (e.target.id == 'login') {

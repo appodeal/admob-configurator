@@ -6,14 +6,26 @@ function wait_for_project_name() {
     clearInterval(project_name_interval);
 
     window.setTimeout(function() {
-      $('button[name="ok"]').click();  
+      if ($('input[name="tos"]')) {
+        $('input[name="tos"]').click();
+      }
+
+      window.setTimeout(function(){
+        $('button[name="ok"]').click();  
+      }, 500);
     }, 500);
     
   }
 }
 
-$('[ng-click="psCtrl.showCreateProjectDialog()"]').click()
+var project_link = jQuery('a:contains("Appodeal")');
+if (project_link) {
+  var project_id = project_link.attr('href').match(/project\/(.+)$/)[1];
+  document.location.href = 'https://console.developers.google.com/project/' + project_id + '/apiui/apiview/adsense/overview';
+}
 
-var project_name_interval = setInterval( wait_for_project_name, 1500 );
+// $('[ng-click="psCtrl.showCreateProjectDialog()"]').click()
 
-$('[ng-model="project.name"]').val('hello');
+// var project_name_interval = setInterval( wait_for_project_name, 1500 );
+
+// $('[ng-model="project.name"]').val('hello');
