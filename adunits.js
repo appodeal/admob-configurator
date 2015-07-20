@@ -113,25 +113,23 @@ function create_adunit_loop(bid_floors, app_id, admob_app_id, token) {
   }
 }
 
-function create_banner_bid_adunits(app, xsrf) {
-  // TODO
+function create_banner_bid_adunits(app_id, admob_app_id, token) {
+  var bid_floors = bid_floors_in_settings(AD_TYPES['banner']);
+  create_banner_adunit_loop(bid_floors, app_id.toString(), admob_app_id.toString(), token);
+}
 
-  // bid_floors = bid_floors_in_settings(app, AdUnit.ad_types[:banner])
+// run async functions in consecutive order
+function create_banner_adunit_loop(bid_floors, app_id, admob_app_id, token) {
+  bid_floor = bid_floors.pop()
 
-  // bid_floors.each do |bid_floor|
-  //   next if account.ad_units.find_by(app_id: app.id, ad_type: AdUnit.ad_types[:banner], format: AdUnit.formats[:image_and_text], bid_floor: bid_floor).present?
-
-  //   xsrf, banner_adunit_id = create_banner_adunit([:image, :text], app, xsrf, bid_floor)
-  //   app.ad_units.create({
-  //     account: account,
-  //     ad_type: AdUnit.ad_types[:banner],
-  //     format: AdUnit.formats[:image_and_text],
-  //     code: banner_adunit_id,
-  //     bid_floor: bid_floor,
-  //     width: 320,
-  //     height: 480,
-  //   })
-  // end
+  if (bid_floor != undefined) {
+    create_banner_adunit(["image", "text"], app_id.toString(), admob_app_id.toString(), token, bid_floor, function(xsrf, adunit_id) {
+      // puts information about created ad unit
+      console.log("Banner bid added for App " + app_id + " (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
+      // run new loop without the last element in array
+      create_banner_adunit_loop(bid_floors, app_id, admob_app_id, token)
+    })
+  }
 }
 
 function bid_floors_in_settings(ad_type) {
