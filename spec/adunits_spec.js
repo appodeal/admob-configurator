@@ -45,4 +45,4 @@ insert mediation result: {"result":{"2":[{"1":"5906034018","2":"1028509211","3":
 
 
 // bid floors
-create_bid_adunits("220", "1028509211", "ALwxsBF4tI4GanEHLfdDE0B_bjG1amYwjg:1437358875101")
+create_bid_adunits("220", "1028509211", "ALwxsBHJ43vLYmDy406kL31jmkwHdT8nUA:1437388270317")
