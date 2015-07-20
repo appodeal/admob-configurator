@@ -94,25 +94,14 @@ function create_banner_adunit(types, app_id, admob_app_id, token, bid_floor, com
   }
 }
 
-function create_bid_adunits(app, xsrf) {
-  // TODO
+function create_bid_adunits(app_id, admob_app_id, token) {
+  var bid_floors = bid_floors_in_settings(AD_TYPES['interstitial']);
 
-  // bid_floors = bid_floors_in_settings(app, AdUnit.ad_types[:interstitial])
-
-  // bid_floors.each do |bid_floor|
-  //   next if account.ad_units.find_by(app_id: app.id, ad_type: AdUnit.ad_types[:interstitial], format: AdUnit.formats[:image_and_text], bid_floor: bid_floor).present?
-
-  //   xsrf, adunit_id = create_adunit([:image, :text], app, xsrf, bid_floor)
-  //   app.ad_units.create({
-  //     account: account,
-  //     ad_type: AdUnit.ad_types[:interstitial],
-  //     format: AdUnit.formats[:image_and_text],
-  //     code: adunit_id,
-  //     bid_floor: bid_floor,
-  //     width: 320,
-  //     height: 480,
-  //   })
-  // end
+  bid_floors.forEach(function(bid_floor) {
+    create_adunit(["image", "text"], app_id.toString(), admob_app_id.toString(), token, bid_floor, function(xsrf, adunit_id) {
+      console.log("Interstitial bid added for App " + app_id + " (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id)
+    })
+  });
 }
 
 function create_banner_bid_adunits(app, xsrf) {

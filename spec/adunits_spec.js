@@ -6,6 +6,9 @@ xsrf = /[\w\d-]+:[\w\d]+/.exec(document.documentElement.innerHTML)[0];
 // create_adunit
 create_adunit(["image", "text"], "130", "1028509211", "ALwxsBECiy6paWvmYqBuxUvgt_Oaxd_kwQ:1437351373303", 0.45, function(xsrf, adunit_id){console.log(xsrf + " and " + adunit_id )})
 
+create_adunit(["image", "text"], 220, 1028509211, ALwxsBEkQ_BFbXE8CvWLuTYqPmSOZFUWrw:1437357761166, 0.8)
+
+
 ALwxsBG9i5GGoFaheqOQXFpB1TSRR0MHbw:1437351456034 and ca-app-pub-8707429396915445/1416958818
 
 create_adunit(["image", "text"], "200", "1028509211", "ALwxsBEH85JrkooorZ1bzszyoRbcFS9SUA:1437351484546", null, function(xsrf, adunit_id){console.log(xsrf + " and " + adunit_id )})
@@ -39,3 +42,7 @@ insert_mediation("1028509211", 0.25, "ca-app-pub-8707429396915445/8999101210", "
 
 insert mediation result: {"result":{"2":[{"1":"5906034018","2":"1028509211","3":"Appodeal/125/image/0.25","5":7,"9":0,"10":[{"1":"9162637678158990","2":1,"3":"1","5":{"1":{"1":"250000","2":"USD"}},"7":0,"8":{"4":0},"9":1}],"11":0,"14":1,"15":0,"16":[0,1]}]},"xsrf":"ALwxsBFUv8VcqbUqpofSuu4hb0w_66lCGg:1437341335129"}
 
+
+
+// bid floors
+create_bid_adunits("220", "1028509211", "ALwxsBF4tI4GanEHLfdDE0B_bjG1amYwjg:1437358875101")
