@@ -2,7 +2,7 @@ const TYPES = {text: 0, image: 1, video: 2};
 const INVENTORY_URL = "https://apps.admob.com/tlcgwt/inventory";
 const ACCOUNT_ID = "pub-8707429396915445";
 
-function create_adunit(types, app_id, admob_app_id, token, bid_floor) {
+function create_adunit(types, app_id, admob_app_id, token, bid_floor, complete) {
   if (typeof(bid_floor) === 'undefined') bid_floor = null;
   var adunit_name = "Appodeal/" + app_id + "/" + types[0];
   if (bid_floor != null) adunit_name = adunit_name + "/" + bid_floor.toString();
@@ -37,24 +37,53 @@ function create_adunit(types, app_id, admob_app_id, token, bid_floor) {
       var internalAdUnitId = result["result"]["2"][0]["1"];
       var adunit_id = "ca-app-" + ACCOUNT_ID + "/" + internalAdUnitId;
 
-      // unless bid_floor.nil?
-      //   xsrf = insert_mediation(app, bid_floor, json['result']['2'].first['1'], xsrf)
-      // end
-
-      console.log([xsrf, adunit_id]);
+      if (bid_floor != null) {
+        insert_mediation(admob_app_id, bid_floor, internalAdUnitId, token, function(mediation_xsrf){
+          complete(mediation_xsrf, adunit_id);
+        })
+      } else {
+        complete(xsrf, adunit_id);
+      }
     }
   }
-
-  return;
 }
 
-// result = {"result":{"2":[{"1":"8595475216","2":"1028509211","3":"Appodeal/123/image/0.25","5":7,"9":0,"11":0,"14":1,"15":1,"16":[0,1,2]}]},"xsrf":"ALwxsBE07ZHcErL8XywPoK9EJwBp958DVw:1437309319696"}
+function insert_mediation(admob_app_id, bid_floor, internalAdUnitId, token, complete) {
+  var admob_bid = Math.floor(bid_floor * 1000000);
+  var data = {
+    "method": "updateMediation",
+    "params": {
+      "2": admob_app_id,
+      "3": internalAdUnitId,
+      "4": [
+        {
+          "2": 1,
+          "3": "1",
+          "5": {
+            "1": {
+              "1": admob_bid.toString(),
+              "2": "USD"
+            }
+          },
+          "7": 0,
+          "9": 1
+        }
+      ],
+      "5": 0
+    },
+    "xsrf": token
+  }
 
-// xsrf = /[\w\d-]+:[\w\d]+/.exec(document.documentElement.innerHTML)[0];
-// "ALwxsBF_FcWXqpyV8qUq69QdJuBbLASiFA:1437262531042"
+  var http = new XMLHttpRequest();
+  http.open("POST", INVENTORY_URL, true);
+  http.setRequestHeader("Content-Type", "application/javascript; charset=UTF-8");
+  http.send(JSON.stringify(data));
 
-// create_adunit(["image", "text", "video"], "123", "1028509211", "ALwxsBF_FcWXqpyV8qUq69QdJuBbLASiFA:1437262531042", 0.25)
-
-// {"result":{"2":[{"1":"6060811210","2":"1028509211","3":"ad-unit-name","5":7,"9":0,"11":0,"14":1,"15":1,"16":[0,1,2]}]},"xsrf":"ALwxsBHemwsZ2hSq4RxBkAZ0mfMvrL9RTw:1437306648382"}
-
-// ["ALwxsBEefbyVOnF7rnN3Ad1dxBH1EgvjSQ:1437312540607", "ca-app-pub-8707429396915445/3327670814"]
+  http.onreadystatechange = function() {
+    if (http.readyState == 4 && http.status == 200) {
+      var result = JSON.parse(http.responseText);
+      var xsrf = result['xsrf'];
+      complete(xsrf);
+    }
+  }
+}
