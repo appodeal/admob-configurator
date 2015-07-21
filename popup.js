@@ -50,6 +50,12 @@ function click(e) {
     chrome.tabs.executeScript(null, {file: "adunits.js"});
   }
 
+  if (e.target.id == 'admob_account') {
+    chrome.tabs.update({ url: "https://console.developers.google.com/project/melodic-nature-101323/apiui/credential" }, function(tab) {
+      chrome.storage.local.set({ "reporting_tab_id" : tab.id });
+    });
+  }
+
   // window.close();
 }
 
