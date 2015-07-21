@@ -5,7 +5,7 @@
 
 function click(e) {
   if (e.target.id == 'reporting') {
-    chrome.tabs.update({ url: "https://console.developers.google.com/project" }, function(tab) { 
+    chrome.tabs.update({ url: "https://console.developers.google.com/project" }, function(tab) {
       chrome.storage.local.set({ "reporting_tab_id" : tab.id });
     });
   }
@@ -45,6 +45,11 @@ function click(e) {
   if (e.target.id == 'admob') {
     chrome.tabs.executeScript(null, {file: "admob.js"});
   }
+
+  if (e.target.id == 'adunits') {
+    chrome.tabs.executeScript(null, {file: "adunits.js"});
+  }
+
   // window.close();
 }
 
