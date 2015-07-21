@@ -45,6 +45,23 @@ insert mediation result: {"result":{"2":[{"1":"5906034018","2":"1028509211","3":
 
 
 // bid floors
-create_bid_adunits("220", "1028509211", "ALwxsBHJ43vLYmDy406kL31jmkwHdT8nUA:1437388270317")
+create_bid_adunits("220", "1028509211", "ALwxsBFkzJ2_Lz1dG9IVDoQhbCQu9h4Sxg:1437436790759")
 
-create_banner_bid_adunits("220", "1028509211", "ALwxsBGDpz8tD8JNbRbdSl-7c7Nyee3mAQ:1437389323115")
+create_banner_bid_adunits("220", "1028509211", "ALwxsBFkzJ2_Lz1dG9IVDoQhbCQu9h4Sxg:1437436790759")
+
+current_bid_floors("ALwxsBGsHeOAx59PY8sSmbvoCx1P3rDqvQ:1437414903188")
+
+var json = undefined;
+var token = undefined;
+get_initialize_data("ALwxsBGDpz8tD8JNbRbdSl-7c7Nyee3mAQ:1437389323115", function(xsrf, result) {
+  json = result;
+  token = xsrf;
+})
+
+// "ALwxsBFpwz0phCX2LqsoeSI4KFCj8XeUQw:1437422478663"
+
+// adunits list
+
+{"image":{"1401782419":"Appodeal/220/image/0.8","1541383218":"Appodeal/220/image/10","2878515619":"Appodeal/220/image/0.65","3018116419":"Appodeal/220/image/7.5","4355248819":"Appodeal/220/image/0.25","4494849617":"Appodeal/220/image/5","5831982011":"Appodeal/220/image/0.15","5971582815":"Appodeal/220/image/2.5","7448316018":"Appodeal/220/image/2.15","7587916811":"Appodeal/220/image/15","8925049212":"Appodeal/220/image/1.25","9064650016":"Appodeal/220/image/12.5"},"banner":{"2320112411":"Appodeal/220/banner/image/0.1","5413179615":"Appodeal/220/banner/image/0.7","6889912817":"Appodeal/220/banner/image/0.5","8366646016":"Appodeal/220/banner/image/0.35","9843379212":"Appodeal/220/banner/image/0.2"}}
+
+bid_floors_in_settings(AD_TYPES['interstitial'], "1028509211", "ALwxsBFpwz0phCX2LqsoeSI4KFCj8XeUQw:1437422478663", function(bids) {console.log(bids)})

@@ -95,8 +95,9 @@ function create_banner_adunit(types, app_id, admob_app_id, token, bid_floor, com
 }
 
 function create_bid_adunits(app_id, admob_app_id, token) {
-  var bid_floors = bid_floors_in_settings(AD_TYPES['interstitial']);
-  create_adunit_loop(bid_floors, app_id.toString(), admob_app_id.toString(), token);
+  bid_floors_in_settings(AD_TYPES['interstitial'], admob_app_id, token, function(bid_floors) {
+    create_adunit_loop(bid_floors, app_id.toString(), admob_app_id.toString(), token);
+  });
 }
 
 // run async functions in consecutive order
@@ -114,8 +115,9 @@ function create_adunit_loop(bid_floors, app_id, admob_app_id, token) {
 }
 
 function create_banner_bid_adunits(app_id, admob_app_id, token) {
-  var bid_floors = bid_floors_in_settings(AD_TYPES['banner']);
-  create_banner_adunit_loop(bid_floors, app_id.toString(), admob_app_id.toString(), token);
+  bid_floors_in_settings(AD_TYPES['banner'], admob_app_id, token, function(bid_floors) {
+    create_banner_adunit_loop(bid_floors, app_id.toString(), admob_app_id.toString(), token);
+  });
 }
 
 // run async functions in consecutive order
@@ -132,14 +134,47 @@ function create_banner_adunit_loop(bid_floors, app_id, admob_app_id, token) {
   }
 }
 
-function bid_floors_in_settings(ad_type) {
-  if (ad_type == AD_TYPES['interstitial']) {
-    return [0.15, 0.25, 0.65, 0.8, 1.25, 2.15, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0];
-  }
+function bid_floors_in_settings(ad_type, admob_app_id, token, complete) {
+  get_initialize_data(token, function(xsrf, result) {
+    adunits = adunits_list(result, admob_app_id);
 
-  if (ad_type == AD_TYPES['banner']) {
-    return [0.1, 0.2, 0.35, 0.5, 0.7];
-  }
+    var default_bids = [];
+    var current_adunits = [];
+    var current_bids = [];
+
+    if (ad_type == AD_TYPES['interstitial']) {
+      default_bids = [0.15, 0.25, 0.65, 0.8, 1.25, 2.15, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0];
+
+      for (var adunit_id in adunits["image"]) {
+        current_adunits.push(adunits["image"][adunit_id]);
+      }
+    }
+
+    if (ad_type == AD_TYPES['banner']) {
+      default_bids = [0.1, 0.2, 0.35, 0.5, 0.7];
+
+      for (var adunit_id in adunits["banner"]) {
+        current_adunits.push(adunits["banner"][adunit_id]);
+      }
+    }
+
+    // parse adunit name to get bid_floor
+    for (var i in current_adunits) {
+      var splitted = current_adunits[i].split("/");
+      var last_element = splitted[splitted.length - 1];
+      var bid = parseFloat(last_element);
+      current_bids.push(bid);
+    }
+
+    // substract current bids from default bids to find missing
+    function isMissing(value) {
+      return current_bids.indexOf(value) == -1;
+    }
+
+    var missing_bids = default_bids.filter(isMissing);
+
+    complete(missing_bids);
+  })
 }
 
 function insert_mediation(admob_app_id, bid_floor, internalAdUnitId, token, complete) {
@@ -180,4 +215,56 @@ function insert_mediation(admob_app_id, bid_floor, internalAdUnitId, token, comp
       complete(xsrf);
     }
   }
+}
+
+// retrieving already added ad units
+function get_initialize_data(token, complete) {
+  var data = {
+    "method": "initialize",
+    "params": {},
+    "xsrf": token
+  }
+
+  var http = new XMLHttpRequest();
+  http.open("POST", INVENTORY_URL, true);
+  http.setRequestHeader("Content-Type", "application/javascript; charset=UTF-8");
+  http.send(JSON.stringify(data));
+
+  http.onreadystatechange = function() {
+    if (http.readyState == 4 && http.status == 200) {
+      var result = JSON.parse(http.responseText);
+      var xsrf = result['xsrf'];
+      complete(xsrf, result);
+    }
+  }
+}
+
+// get hash of admob_app_id and app name
+function app_list(json) {
+  h = {};
+  var apps = json["result"]["1"]["1"];
+
+  for (i = 0; i < apps.length; i++) {
+    h[apps[i]["1"]] = apps[i]["2"];
+  }
+
+  return h;
+}
+
+// get adunits divided into images and banners
+function adunits_list(json, admob_app_id) {
+  h = {"image": {}, "banner": {}};
+  var adunits = json["result"]["1"]["2"];
+
+  for (i = 0; i < adunits.length; i++) {
+    if (adunits[i]["9"] == 0 && adunits[i]["2"] == admob_app_id) {
+      if (adunits[i]["5"] == 7) {
+        h["image"][adunits[i]["1"]] = adunits[i]["3"]
+      } else {
+        h["banner"][adunits[i]["1"]] = adunits[i]["3"]
+      }
+    }
+  }
+
+  return h;
 }
