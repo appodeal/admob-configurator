@@ -1,12 +1,20 @@
-const TYPES = {text: 0, image: 1, video: 2};
-const AD_TYPES = {interstitial: 0, banner: 1, video: 2};
-const INVENTORY_URL = "https://apps.admob.com/tlcgwt/inventory";
+var TYPES = {text: 0, image: 1, video: 2};
+var AD_TYPES = {interstitial: 0, banner: 1, video: 2};
+var INVENTORY_URL = "https://apps.admob.com/tlcgwt/inventory";
 
 // Admob Publisher ID
 var current_account_id = undefined;
 
-// run ad unit created function to test appodeal adunit api
-adunit_created();
+// xsrf
+var current_token = undefined;
+
+// appodeal app id
+var current_app_id = undefined;
+
+// admob internal app id
+var current_admob_app_id = undefined;
+
+extension_call();
 
 // --------- HEADERS ---------
 
@@ -14,11 +22,9 @@ adunit_created();
 // adunit_created()
 
 // create_adunit(types, app_id, admob_app_id, token, bid_floor, complete)
-
 // create_banner_adunit(types, app_id, admob_app_id, token, bid_floor, complete)
 
 // create_bid_adunits(app_id, admob_app_id, token)
-
 // create_banner_bid_adunits(app_id, admob_app_id, token)
 
 // bid_floors_in_settings(ad_type, admob_app_id, token, complete)
@@ -49,21 +55,86 @@ adunit_created();
 // run async functions in consecutive order
 // create_banner_adunit_loop(bid_floors, app_id, admob_app_id, token)
 
+// get appodeal app id from admob app name "Appodeal #{app.package_name}/#{app.id}"
+// appodeal_app_id(app_name)
+
 // --------- CODE ---------
 
-// make request on server about ad unit creation
-function adunit_created() {
-  console.log("Adunit API call");
+function extension_call() {
+  if (params["action"] == "init") {
+    init_variables();
+  }
 
-  var token = get_account_token();
-  console.log("Token: " + token);
+  if (params["action"] == "bid-adunits") {
+    load_variables(function() {
+      extension_create_bid_adunits();
+    });
+  }
+
+  if (params["action"] == "banner-bid-adunits") {
+    load_variables(function() {
+      extension_create_banner_bid_adunits();
+    });
+  }
+}
+
+function init_variables() {
+  console.log("Initialize variables");
+
+  current_token = get_account_token();
+  console.log("Token: " + current_token);
 
   current_account_id = get_account_id();
-  console.log("Publisher ID: " + current_account_id);
+  console.log("Account Publisher ID: " + current_account_id);
 
-  get_initialize_data(token, function(xsrf, result) {
-    console.log(result);
+  get_initialize_data(current_token, function(xsrf, result) {
+    apps = app_list(result);
+
+    // get the first app id
+    for (var admob_app_id in apps) {
+      current_admob_app_id = admob_app_id;
+      console.log("Admob App ID: " + current_admob_app_id);
+      console.log("Admob App Name: " + apps[admob_app_id]);
+      break
+    }
+
+    current_app_id = appodeal_app_id(apps[admob_app_id]);
+    console.log("Appodeal app id: " + current_app_id);
+
+    console.log("Saving setting to storage.")
+    chrome.storage.local.set({'current_token': current_token, 'current_account_id': current_account_id, 'current_admob_app_id': current_admob_app_id, 'current_app_id': current_app_id}, function() {
+      console.log('Saved settings to storage.');
+    });
   })
+}
+
+function load_variables(complete) {
+  console.log("Loading settings from storage");
+  chrome.storage.local.get(['current_token', 'current_account_id', 'current_admob_app_id', 'current_app_id'], function(items) {
+    current_token = items['current_token'];
+    current_account_id = items['current_account_id'];
+    current_admob_app_id = items['current_admob_app_id'];
+    current_app_id = items['current_app_id'];
+    console.log(items);
+
+    complete();
+  });
+}
+
+function extension_create_bid_adunits() {
+  if (current_app_id > 0) {
+    create_bid_adunits(current_app_id, current_admob_app_id, current_token);
+  } else {
+    console.log("Error: valid app not found.");
+  }
+}
+
+function extension_create_banner_bid_adunits() {
+  if (current_app_id > 0) {
+    create_banner_bid_adunits(current_app_id, current_admob_app_id, current_token);
+  } else {
+    console.log("Error: valid app not found.");
+  }
 }
 
 function create_adunit(types, app_id, admob_app_id, token, bid_floor, complete) {
@@ -142,12 +213,14 @@ function create_banner_adunit(types, app_id, admob_app_id, token, bid_floor, com
 }
 
 function create_bid_adunits(app_id, admob_app_id, token) {
+  console.log("Started to create bid adunits");
   bid_floors_in_settings(AD_TYPES['interstitial'], admob_app_id, token, function(bid_floors) {
     create_adunit_loop(bid_floors, app_id.toString(), admob_app_id.toString(), token);
   });
 }
 
 function create_banner_bid_adunits(app_id, admob_app_id, token) {
+  console.log("Started to create banner bid adunits");
   bid_floors_in_settings(AD_TYPES['banner'], admob_app_id, token, function(bid_floors) {
     create_banner_adunit_loop(bid_floors, app_id.toString(), admob_app_id.toString(), token);
   });
@@ -326,5 +399,17 @@ function create_adunit_loop(bid_floors, app_id, admob_app_id, token) {
       // run new loop without the last element in array
       create_adunit_loop(bid_floors, app_id, admob_app_id, token)
     })
+  }
+}
+
+// get appodeal app id from admob app name "Appodeal #{app.package_name}/#{app.id}"
+function appodeal_app_id(app_name) {
+  var splitted = app_name.split("/");
+  var last_element = splitted[splitted.length - 1];
+  var num = parseInt(last_element);
+  if (isNaN(num)) {
+    return -1
+  } else {
+    return num
   }
 }

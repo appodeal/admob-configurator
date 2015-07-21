@@ -46,8 +46,22 @@ function click(e) {
     chrome.tabs.executeScript(null, {file: "admob.js"});
   }
 
-  if (e.target.id == 'adunits') {
-    chrome.tabs.executeScript(null, {file: "adunits.js"});
+  if (e.target.id == 'init') {
+    chrome.tabs.executeScript(null, {code: "var params = {action: 'init'};"}, function() {
+      chrome.tabs.executeScript(null, {file: 'adunits.js'});
+    });
+  }
+
+  if (e.target.id == 'bid-adunits') {
+    chrome.tabs.executeScript(null, {code: "var params = {action: 'bid-adunits'};"}, function() {
+      chrome.tabs.executeScript(null, {file: 'adunits.js'});
+    });
+  }
+
+  if (e.target.id == 'banner-bid-adunits') {
+    chrome.tabs.executeScript(null, {code: "var params = {action: 'banner-bid-adunits'};"}, function() {
+      chrome.tabs.executeScript(null, {file: 'adunits.js'});
+    });
   }
 
   // window.close();
