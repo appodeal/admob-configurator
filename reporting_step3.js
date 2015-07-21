@@ -21,5 +21,5 @@ jQuery(function(){
       alert("Error creating consent screen");
       chrome.storage.local.remove("reporting_tab_id");
     }
-  }            
+  }
 });

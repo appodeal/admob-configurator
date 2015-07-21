@@ -21,5 +21,5 @@ jQuery(function(){
       alert("Error enabling Adsense API");
       chrome.storage.local.remove("reporting_tab_id");
     }
-  }            
+  }
 });

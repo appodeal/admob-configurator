@@ -5,7 +5,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       console.log("Working Tab ID: ", result['reporting_tab_id']);
       if (result['reporting_tab_id'] && tabId.toString() == result['reporting_tab_id'].toString()) {
         console.log('matched');
-        if (tab.url == "https://console.developers.google.com/project") {
+        if (tab.url == "https://console.developers.google.com/project" || tab.url == "https://console.developers.google.com/start") {
           console.log('calling reporting.js');
           chrome.tabs.executeScript(tabId, { file: "jquery.min.js" }, function() {
             chrome.tabs.executeScript(tabId, { file: "reporting.js" });
@@ -14,7 +14,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
           console.log("calling reporting_step2.js");
           chrome.tabs.executeScript(tabId, { file: "jquery.min.js" }, function() {
             chrome.tabs.executeScript(tabId, { file: "reporting_step2.js" });
-          });      
+          });
         } else if (tab.url.toString().match(/\/apiui\/consent/)) {
           console.log("calling reporting_step3.js");
           chrome.tabs.executeScript(tabId, { file: "jquery.min.js" }, function() {
