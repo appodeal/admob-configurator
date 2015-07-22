@@ -28,7 +28,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         } else if (tab.url.toString().match(/project\/([^\/]+)\/?$/)) {
           console.log('opened new project: ' + project_name);
           chrome.tabs.update({ url: 'https://console.developers.google.com/project/' + project_name + '/apiui/apiview/adsense/overview' });
-        } 
+        }
       }
     })
   }
