@@ -1,8 +1,3 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-
 function click(e) {
   if (e.target.id == 'reporting') {
     chrome.tabs.update({ url: "https://console.developers.google.com/project" }, function(tab) {
@@ -11,39 +6,24 @@ function click(e) {
   }
   if (e.target.id == 'login') {
     var newURL = "https://www.appodeal.com/signin";
-    chrome.tabs.create({ url: newURL });
+    chrome.tabs.update({ url: newURL });
   }
   if (e.target.id == 'logout') {
-    chrome.tabs.getSelected(null, function(tab) {
-      var tablink = tab.url;
-      var newURL = "http://www.appodeal.com/profile/edit";
-      if (tablink != newURL) {
-        chrome.tabs.create({ url: newURL }, function(tab) {
-          chrome.tabs.executeScript(null, { file: "jquery.min.js" }, function() {
-            chrome.tabs.executeScript(null, { file: "logout.js" });
-          });
-        });
-      } else {
-        chrome.tabs.executeScript(null, { file: "jquery.min.js" }, function() {
-          chrome.tabs.executeScript(null, { file: "logout.js" });
-        });
-      }
-    });
+    var newURL = "http://www.appodeal.com/profile/edit";
+    chrome.storage.local.set({'appodeal_logout': true});
+    chrome.tabs.update({ url: newURL });
   }
   if (e.target.id == 'api') {
-    chrome.tabs.getSelected(null,function(tab) {
-      var tablink = tab.url;
-      var newURL = "http://www.appodeal.com/profile/api_integration";
-      if (tablink != newURL) {
-        chrome.tabs.create({ url: newURL });
-      }
-      chrome.tabs.executeScript(null, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(null, { file: "api.js" });
-      });
-    });
+    var newURL = "http://www.appodeal.com/profile/api_integration";
+    chrome.tabs.update({ url: newURL });
   }
   if (e.target.id == 'admob') {
-    chrome.tabs.executeScript(null, {file: "admob.js"});
+    var newURL = "https://apps.admob.com/#monetize";
+    chrome.tabs.update({ url: newURL }, function(tab) {
+      chrome.tabs.executeScript(null, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(null, { file: "admob.js" });
+      });
+    });
   }
 
   if (e.target.id == 'init') {
@@ -91,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
       loginElement.innerHTML = items['appodeal_email'] + "(Logout)"
       if (items['appodeal_api_key'] != null && items['appodeal_user_id'] != null) {
         var apiElement = document.getElementById("api");
-        apiElement.style.visibility = "hidden";
+        apiElement.parentNode.removeChild(apiElement);
       }
     }
   })
