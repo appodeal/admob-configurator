@@ -1,5 +1,4 @@
-﻿debugger
-if ($('.welcome a')[0] == undefined) {
+﻿if ($('.welcome a')[0] == undefined) {
   chrome.storage.local.remove(['appodeal_email', 'appodeal_api_key', 'appodeal_user_id'])
 } else {
   appodeal_email = $('.welcome a')[0].text

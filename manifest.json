@@ -11,6 +11,10 @@
     {
       "matches": ["http://*/*", "https://*/*"],
       "js": ["jquery.min.js"]
+    },
+    {
+      "matches": ["http://www.appodeal.com/*", "https://www.appodeal.com/*"],
+      "js": ["login.js"]
     }
   ],
   "background": {
