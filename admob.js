@@ -20,18 +20,14 @@ function get_appodeal_app_list() {
         get_admob_app_list();
       }
     }
-    console.log(items) 
+    console.log(items)
   });
 }
 
 function process_app(i) {
   if (admob_app_id = find_in_admob_app_list(app_list[i])) {
     app_list[i]['admob_app_id'] = admob_app_id;
-    if (i + 1 < app_list.length) {
-      process_app(i + 1)
-    } else {
-      send_ids()
-    }
+    send_id(i);
   } else {
     find_app_in_store(i);
   }
@@ -50,7 +46,7 @@ function get_admob_app_list() {
   var http = new XMLHttpRequest();
   http.open("POST", "https://apps.admob.com/tlcgwt/inventory", true);
   http.setRequestHeader("Content-Type", "application/javascript; charset=UTF-8");
-  xsrf = /[\w\d-]+:[\w\d]+/.exec(document.documentElement.innerHTML)[0];
+  xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
   json = {method:"initialize",params:{},xsrf:xsrf};
   http.send(JSON.stringify(json));
   http.onreadystatechange = function() {
@@ -67,7 +63,7 @@ function find_app_in_store(i) {
   var http = new XMLHttpRequest();
   http.open("POST", "https://apps.admob.com/tlcgwt/inventory", true);
   http.setRequestHeader("Content-Type", "application/javascript; charset=UTF-8");
-  xsrf = /[\w\d-]+:[\w\d]+/.exec(document.documentElement.innerHTML)[0];
+  xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
   json = {method:"searchMobileApplication",params:{2:app_list[i].package_name,3:0,4:15},xsrf:xsrf};
   http.send(JSON.stringify(json));
   http.onreadystatechange = function() {
@@ -89,7 +85,7 @@ function create_app(i, market_hash) {
   http.open("POST", "https://apps.admob.com/tlcgwt/inventory", true);
   http.setRequestHeader("Content-Type", "application/javascript; charset=UTF-8");
   name = 'Appodeal/' + app_list[i].id;
-  xsrf = /[\w\d-]+:[\w\d]+/.exec(document.documentElement.innerHTML)[0];
+  xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
   params = {2:name,3:app_list[i].os}
   params = jQuery.extend(params, market_hash);
   console.log(params);
@@ -101,17 +97,28 @@ function create_app(i, market_hash) {
       console.log(response);
       admob_app_id = response["result"][1][0][1]
       app_list[i]['admob_app_id'] = admob_app_id;
-      if (i + 1 < app_list.length) {
-        process_app(i + 1)
-      } else {
-        send_ids()
-      }
+      send_id(i);
     }
   }
 }
 
-function send_ids() {
-  console.log(app_list);
+function send_id(i) {
+  chrome.storage.local.get({'appodeal_api_key': null, 'appodeal_user_id': null}, function(items) {
+    var http = new XMLHttpRequest();
+    http.open("POST", "https://www.appodeal.com/api/v1/sync_admob_app", true);
+    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    json = {user_id: items['appodeal_user_id'], api_key: items['appodeal_api_key'], app_id: app_list[i]['id'], admob_app_id: app_list[i]['admob_app_id']}
+    http.send(JSON.stringify(json));
+    http.onreadystatechange = function() {
+      if(http.readyState == 4 && http.status == 200) {
+        response = JSON.parse(http.responseText);
+        console.log(response);
+        if (i + 1 < app_list.length) {
+          process_app(i + 1)
+        }
+      }
+    }
+  })
 }
 
 

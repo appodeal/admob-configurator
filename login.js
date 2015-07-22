@@ -38,7 +38,7 @@
             chrome.storage.local.set(data);
           })
         } else {
-          if (window.location.href == "http://www.appodeal.com/profile/api_integration" || window.location.href != "https://www.appodeal.com/profile/api_integration") {
+          if (window.location.href == "http://www.appodeal.com/profile/api_integration" || window.location.href == "https://www.appodeal.com/profile/api_integration") {
             data = {
               'appodeal_email': $('.welcome a')[0].text, 
               'appodeal_api_key': $('input', '.content2l_block')[0].value, 
