@@ -3,11 +3,15 @@ function click(e) {
     //chrome.tabs.update({ url: "https://console.developers.google.com/project" }, function(tab) {
     //  chrome.storage.local.set({ "reporting_tab_id" : tab.id });
     //});
+    var newURL = 'https://apps.admob.com/#monetize';
     chrome.tabs.update({ url: newURL }, function(tab) {
-      chrome.storage.local.set({ "reporting_tab_id" : tab.id });
-      chrome.tabs.executeScript(null, { file: "jquery.min.js" }, function() {
-        chrome.tabs.executeScript(null, { file: "get_admob_account.js" });
-      });
+      setTimeout(function() {
+        chrome.storage.local.set({ "reporting_tab_id" : tab.id });
+        console.log('hm...');
+        chrome.tabs.executeScript(null, {}, function() {
+          chrome.tabs.executeScript(null, { file: "get_admob_account.js" });
+        });
+      }, 2000);
     });
   }
   if (e.target.id == 'login') {
