@@ -20,7 +20,7 @@ function get_appodeal_app_list() {
         get_admob_app_list();
       }
     }
-    console.log(items) 
+    console.log(items)
   });
 }
 

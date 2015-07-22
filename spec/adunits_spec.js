@@ -65,3 +65,11 @@ get_initialize_data("ALwxsBGDpz8tD8JNbRbdSl-7c7Nyee3mAQ:1437389323115", function
 {"image":{"1401782419":"Appodeal/220/image/0.8","1541383218":"Appodeal/220/image/10","2878515619":"Appodeal/220/image/0.65","3018116419":"Appodeal/220/image/7.5","4355248819":"Appodeal/220/image/0.25","4494849617":"Appodeal/220/image/5","5831982011":"Appodeal/220/image/0.15","5971582815":"Appodeal/220/image/2.5","7448316018":"Appodeal/220/image/2.15","7587916811":"Appodeal/220/image/15","8925049212":"Appodeal/220/image/1.25","9064650016":"Appodeal/220/image/12.5"},"banner":{"2320112411":"Appodeal/220/banner/image/0.1","5413179615":"Appodeal/220/banner/image/0.7","6889912817":"Appodeal/220/banner/image/0.5","8366646016":"Appodeal/220/banner/image/0.35","9843379212":"Appodeal/220/banner/image/0.2"}}
 
 bid_floors_in_settings(AD_TYPES['interstitial'], "1028509211", "ALwxsBFpwz0phCX2LqsoeSI4KFCj8XeUQw:1437422478663", function(bids) {console.log(bids)})
+
+
+// server calls
+
+curl --data "api_key=39d1d978999d47e6ae4a072e28796bcd&user_id=377&app_id=3376&admob_app_id=2435461316&code=pub123123132&ad_type=1&bid_floor=0.67" http://www.appodeal.com/api/v1/admob_adunits
+
+
+adunit_created("39d1d978999d47e6ae4a072e28796bcd", 377, "2435461316", "pub123js123169", 0, 1.05, function(result) {console.log(result)})
