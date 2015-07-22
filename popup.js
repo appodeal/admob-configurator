@@ -1,7 +1,13 @@
 function click(e) {
   if (e.target.id == 'reporting') {
-    chrome.tabs.update({ url: "https://console.developers.google.com/project" }, function(tab) {
+    //chrome.tabs.update({ url: "https://console.developers.google.com/project" }, function(tab) {
+    //  chrome.storage.local.set({ "reporting_tab_id" : tab.id });
+    //});
+    chrome.tabs.update({ url: newURL }, function(tab) {
       chrome.storage.local.set({ "reporting_tab_id" : tab.id });
+      chrome.tabs.executeScript(null, { file: "jquery.min.js" }, function() {
+        chrome.tabs.executeScript(null, { file: "get_admob_account.js" });
+      });
     });
   }
   if (e.target.id == 'login') {

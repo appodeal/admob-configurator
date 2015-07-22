@@ -32,7 +32,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       }
     })
   }
-
 });
 
 // chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
@@ -40,11 +39,8 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 //     case "reporting-clicked":
 //       initialize_reporting();
 //     default:
-//       console.log(request);  
+//       console.log(request);
 //     break;
 //   }
 //   return true;
 // });
-
-
-
