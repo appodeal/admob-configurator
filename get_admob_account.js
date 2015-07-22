@@ -15,4 +15,4 @@ setTimeout(function() {
     alert('An error occured on your admob account id copying. If you are not logged in, please try again after authorization');
     chrome.storage.local.remove("reporting_tab_id");
   }
-}, 2000);
+}, 3000);

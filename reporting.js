@@ -1,6 +1,7 @@
 jQuery.noConflict();
 
 var is_working = false;
+var project_name_interval = null;
 
 function wait_for_project_name() {
   console.log('Angular: ');
@@ -29,6 +30,13 @@ function wait_for_project_name() {
           clearInterval(project_name_interval);
           //alert('clicked!');
           console.log('done! project name changed!');
+
+          // TODO: Move it function:
+          var project_link = jQuery('a:contains("Appodeal")');
+          if (project_link.length > 0) {
+            var project_id = project_link.attr('href').match(/project\/(.+)$/)[1];
+            document.location.href = 'https://console.developers.google.com/project/' + project_id + '/apiui/apiview/adsense/overview';
+          }
         }, 2000);
       }, 2000);
     }, 2000);
@@ -45,5 +53,5 @@ setTimeout(function() {
   $('[ng-click="psCtrl.showCreateProjectDialog()"]').click();
 
   //setTimeout(wait_for_project_name, 2000);
-  var project_name_interval = setInterval( wait_for_project_name, 2000 );
+  project_name_interval = setInterval( wait_for_project_name, 2000 );
 }, 2000);

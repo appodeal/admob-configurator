@@ -11,7 +11,12 @@ jQuery(function(){
   http.setRequestHeader("X-Framework-Xsrf-Token", token);
   // http.setRequestHeader('Accept', 'application/json, text/plain, */*');
   // http.setRequestHeader("x-pan-versionid", x_pan_versionid);
-  json = {"displayName" : "Appodeal" }
+  var email = $('span.p6n-profileemail').text().toLowerCase();
+
+  json = {
+    "displayName"  : "Appodeal Revenue",
+    "supportEmail" : email
+  }
   http.send(JSON.stringify(json));
 
   http.onreadystatechange = function() {//Call a function when the state changes.

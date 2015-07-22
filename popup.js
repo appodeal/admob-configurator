@@ -5,13 +5,14 @@ function click(e) {
     //});
     var newURL = 'https://apps.admob.com/#monetize';
     chrome.tabs.update({ url: newURL }, function(tab) {
-      setTimeout(function() {
+      //setTimeout(function() {
         chrome.storage.local.set({ "reporting_tab_id" : tab.id });
         console.log('hm...');
+        //alert('You will be redirected to your admob account for some time and then back...');
         chrome.tabs.executeScript(null, {}, function() {
           chrome.tabs.executeScript(null, { file: "get_admob_account.js" });
         });
-      }, 2000);
+      //}, 2000);
     });
   }
   if (e.target.id == 'login') {
