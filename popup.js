@@ -9,20 +9,13 @@ function click(e) {
     chrome.tabs.update({ url: newURL });
   }
   if (e.target.id == 'logout') {
-    chrome.tabs.getSelected(null, function(tab) {
-      var newURL = "http://www.appodeal.com/profile/edit";
-      chrome.tabs.update({ url: newURL }, function(tab) {
-        chrome.tabs.executeScript(null, { file: "jquery.min.js" }, function() {
-          chrome.tabs.executeScript(null, { file: "logout.js" });
-        });
-      });
-    });
+    var newURL = "http://www.appodeal.com/profile/edit";
+    chrome.storage.local.set({'appodeal_logout': true});
+    chrome.tabs.update({ url: newURL });
   }
   if (e.target.id == 'api') {
-    chrome.tabs.getSelected(null,function(tab) {
-      var newURL = "http://www.appodeal.com/profile/api_integration";
-      chrome.tabs.update({ url: newURL });
-    });
+    var newURL = "http://www.appodeal.com/profile/api_integration";
+    chrome.tabs.update({ url: newURL });
   }
   if (e.target.id == 'admob') {
     var newURL = "https://apps.admob.com/#monetize";
