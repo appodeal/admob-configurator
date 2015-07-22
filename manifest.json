@@ -10,11 +10,11 @@
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-      "js": ["jquery.min.js"]
+      "js": ["jquery.min.js", "angular.min.js"]
     }
   ],
   "background": {
-    "scripts": ["bg.js"],
+    "scripts": ["bg.js", "angular.min.js"],
     "persistent": false
   },
   "permissions": [

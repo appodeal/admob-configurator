@@ -17,10 +17,10 @@ jQuery(function(){
         // Should be written on ad units creating!!!
         var account_id = null;
 
-        chrome.storage.local.get({ 'account_id': null, 'appodeal_api_key': null, 'appodeal_user_id': null}, function(items) {
+        chrome.storage.local.get({ 'current_account_id': null, 'appodeal_api_key': null, 'appodeal_user_id': null}, function(items) {
           appodeal_api_key = items['appodeal_api_key'];
           appodeal_user_id = items['appodeal_user_id'];
-          account_id = items['account_id'];
+          account_id = items['current_account_id'];
 
           console.log(items['appodeal_api_key']);
           console.log(items['appodeal_user_id']);

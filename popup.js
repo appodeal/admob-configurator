@@ -70,6 +70,12 @@ function click(e) {
     });
   }
 
+  if (e.target.id == 'admob_project_edit') {
+    chrome.tabs.executeScript(null, {}, function() {
+      chrome.tabs.executeScript(null, {file: 'admob_project_edit.js'});
+    });
+  }
+
   // window.close();
 }
 

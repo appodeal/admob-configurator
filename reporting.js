@@ -1,22 +1,37 @@
 jQuery.noConflict();
 
+var is_working = false;
+
 function wait_for_project_name() {
+  console.log('Angular: ');
+  console.log(angular);
   console.log('waiting...');
-  if ($('[ng-model="project.name"]').length) {
-    $('[ng-model="project.name"]').val('Appodeal');
-    //$('[ng-model="project.name"]').trigger('input');
-    angular.element($('[ng-model="project.name"]')).triggerHandler('input');
-    clearInterval(project_name_interval);
+  if ($('[ng-model="project.name"]').length && !is_working) {
+    is_working = true;
+    //jQuery('[ng-model="project.name"]').val('Appodeal');
+
+    var jq = document.createElement('script');
+    jq.src = "https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js";
+    document.getElementsByTagName('head')[0].appendChild(jq);
+    // ... give time for script to load, then type.
 
     window.setTimeout(function() {
-      if ($('input[name="tos"]')) {
-        $('input[name="tos"]').click();
-      }
+      jQuery.noConflict();
 
-      window.setTimeout(function(){
-        $('button[name="ok"]').click();
-      }, 500);
-    }, 500);
+      window.setTimeout(function() {
+        var script = document.createElement('script');
+        var code = "console.log('changing project name!'); jQuery('[ng-model=\"project.name\"]').val('Appodeal'); angular.element(jQuery('[ng-model=\"project.name\"]')).triggerHandler('input');";
+        script.appendChild(document.createTextNode(code));
+        document.getElementsByTagName('head')[0].appendChild(script);
+
+        window.setTimeout(function() {
+          jQuery('button[name="ok"]').click();
+          clearInterval(project_name_interval);
+          //alert('clicked!');
+          console.log('done! project name changed!');
+        }, 2000);
+      }, 2000);
+    }, 2000);
   }
 }
 
@@ -28,4 +43,5 @@ if (project_link.length > 0) {
 
 $('[ng-click="psCtrl.showCreateProjectDialog()"]').click();
 
-var project_name_interval = setInterval( wait_for_project_name, 1500 );
+//setTimeout(wait_for_project_name, 2000);
+var project_name_interval = setInterval( wait_for_project_name, 2000 );
