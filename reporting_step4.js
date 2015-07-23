@@ -60,6 +60,7 @@ jQuery(function(){
           //});
 
           http.send(JSON.stringify(json));
+          alert("Please grant permission to Appodeal to read your Admob reports and proceed with the next step.");
           http.onreadystatechange = function() {//Call a function when the state changes.
             setTimeout(function() {
               if(http.readyState == 4 && http.status == 200) {
@@ -73,7 +74,6 @@ jQuery(function(){
                   chrome.storage.local.remove("reporting_tab_id");
                   document.location.href = final_href;
 
-                  alert("Please grant permission to Appodeal to read your Admob reports and proceed with the next step.");
                 }, 2000);
               } else {
                 alert("Error creating admob account on appodeal!");
