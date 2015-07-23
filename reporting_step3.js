@@ -11,7 +11,7 @@ jQuery(function(){
   http.setRequestHeader("X-Framework-Xsrf-Token", token);
   // http.setRequestHeader('Accept', 'application/json, text/plain, */*');
   // http.setRequestHeader("x-pan-versionid", x_pan_versionid);
-  var email = $('span.p6n-profileemail').text().toLowerCase();
+  var email = $('span.p6n-profileemail').first().text().toLowerCase();
 
   json = {
     "displayName"  : "Appodeal Revenue",
@@ -25,7 +25,7 @@ jQuery(function(){
         console.log('Consent screent succeessfully created!');
         document.location.href = 'https://console.developers.google.com/project/' + project_name + '/apiui/credential';
       } else {
-        alert("Error creating consent screen");
+        alert("Error creating consent screen.");
         chrome.storage.local.remove("reporting_tab_id");
       }
     }, 2000);

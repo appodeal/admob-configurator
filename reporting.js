@@ -24,7 +24,16 @@ function wait_for_project_name() {
         document.getElementsByTagName('head')[0].appendChild(script);
 
         window.setTimeout(function() {
-          jQuery('button[name="ok"]').click();
+          window.setTimeout(function() {
+            if ($('input[name="tos"]')) {
+              $('input[name="tos"]').click();
+            }
+
+            window.setTimeout(function(){
+              $('button[name="ok"]').click();
+            }, 500);
+          }, 500);
+
           clearInterval(project_name_interval);
           //alert('clicked!');
           console.log('done! project name changed!');

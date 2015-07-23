@@ -27,7 +27,7 @@ jQuery(function(){
         }, 2000);
       }
     } else {
-      alert('It seems like Adsence API is enabled already!');
+      // alert('It seems like Adsence API is enabled already!');
       document.location.href = 'https://console.developers.google.com/project/' + project_name + '/apiui/consent';
     }
   }, 2000);

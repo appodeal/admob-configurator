@@ -4,7 +4,7 @@
     <title>Create adunits</title>
     <style>
     body {
-      overflow: hidden;
+      /*overflow: hidden;*/
       margin: 0px;
       padding: 0px;
       background: white;
@@ -14,14 +14,16 @@
       margin-top: 0px;
     }
 
+    div span { color: green; float: right; }
+
     div {
       cursor: pointer;
-      text-align: center;
       padding: 1px 3px;
       font-family: sans-serif;
       font-size: 1.5em;
       width: 400px;
       margin-top: 1px;
+      padding: 7px;
       background: #cccccc;
     }
     div:hover {
@@ -36,10 +38,11 @@
     <script src="popup.js"></script>
   </head>
   <body>
-    <div id="login">1. Login in Appodeal</div>
-    <div id="api">2. Get API credentials </div>
+    <div><strong>Please complete all 4 steps:</strong></div>
+    <div id="login">1. Login to Appodeal</div>
+    <div id="api">2. Get Appodeal API credentials </div>
     <div id="reporting">3. Enable Admob reporting</div>
-    <div id="admob">4. Create Admob adunits</div>
+    <div id="admob">4. Sync Appodeal and Admob ad units</div>
     <!--
     <div id="adunits">Test Adunit API</div>
     <div id="admob_account">Test Admob account creating</div>
