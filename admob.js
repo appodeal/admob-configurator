@@ -157,12 +157,12 @@ function send_id(i) {
 
           if (i + 1 < app_list.length) {
             process_app(i + 1)
+          } else {
+            chrome.storage.local.remove("admob_processing");
+            alert("Good job! Admob is synced with Appodeal now. You can run step 4 again if you add new apps.")
+            $('#syncing').hide();
           }
         })
-
-        chrome.storage.local.remove("admob_processing");
-        alert("Good job! Admob is synced with Appodeal now. You can run step 4 again if you add new apps.")
-        $('#syncing').hide();
       } else if (http.status != 200) {
         alert("Error occured: " + http.readyState + ' ' + http.status)
       }

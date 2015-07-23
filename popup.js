@@ -29,9 +29,10 @@ function click(e) {
     window.close();
   } else if (e.target.id == 'admob') {
     var newURL = "https://apps.admob.com/#monetize";
-    chrome.tabs.create({ url: newURL }, function(tab) {
-      chrome.storage.local.set({ "admob_processing" : true });
-      window.close();
+    chrome.tabs.update({ url: newURL }, function(tab) {
+      chrome.storage.local.set({ "admob_processing" : true }, function() {
+        window.close();
+      });
     });
   } else if (e.target.id == 'admob_account') {
     chrome.tabs.update({ url: "https://console.developers.google.com/project/melodic-nature-101323/apiui/credential" }, function(tab) {
