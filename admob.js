@@ -5,6 +5,12 @@ var AD_TYPES = {interstitial: 0, banner: 1, video: 2};
 var INVENTORY_URL = "https://apps.admob.com/tlcgwt/inventory";
 var APPODEAL_AD_UNIT_URL = "https://www.appodeal.com/api/v1/admob_adunits.json";
 
+var current_admob_app_id = undefined;
+var current_user_id = undefined;
+var current_api_key = undefined;
+var current_token = undefined;
+var current_account_id = undefined;
+
 app_list = [];
 admob_app_list = [];
 
@@ -124,11 +130,11 @@ function send_id(i) {
         console.log("Starting creatign ad units.")
         console.log("Checking available params")
 
-        var current_admob_app_id = app_list[i]['admob_app_id'];
-        var current_user_id = items['appodeal_user_id'];
-        var current_api_key = items['appodeal_api_key'];
-        var current_token = get_account_token();
-        var current_account_id = get_account_id();
+        current_admob_app_id = app_list[i]['admob_app_id'];
+        current_user_id = items['appodeal_user_id'];
+        current_api_key = items['appodeal_api_key'];
+        current_token = get_account_token();
+        current_account_id = get_account_id();
 
         console.log("current_admob_app_id: " + current_admob_app_id);
         console.log("current_user_id: " + current_user_id);
@@ -137,7 +143,7 @@ function send_id(i) {
         console.log("current_account_id: " + current_account_id);
 
         // run ad units creation process
-        // create_all_adunits()
+        create_all_adunits()
 
         if (i + 1 < app_list.length) {
           process_app(i + 1)
