@@ -148,8 +148,6 @@ function send_id(i) {
 
           if (i + 1 < app_list.length) {
             process_app(i + 1)
-          } else {
-            chrome.storage.local.remove("admob_tab_id");
           }
         })
       }
