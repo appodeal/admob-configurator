@@ -9,7 +9,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
+      "matches": ["http://www.appodeal.com/*", "https://www.appodeal.com/*", "https://apps.admob.com/*", "https://console.developers.google.com/*"],
       "js": ["jquery.min.js"]
     },
     {
@@ -27,7 +27,9 @@
   },
   "permissions": [
     "tabs",
-    "http://*/*", "https://*/*",
+    "http://www.appodeal.com/*", "https://www.appodeal.com/*", 
+    "https://apps.admob.com/*", 
+    "https://console.developers.google.com/*",
     "storage"
   ]
 }
