@@ -29,6 +29,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
             chrome.tabs.executeScript(tabId, { file: "reporting_step4.js" });
           });
         } else if (tab.url.toString().match(/project\/([^\/]+)\/?$/)) {
+          var project_name = tab.url.toString().match(/project\/([^\/]+)\/?$/)[1];
           console.log('opened new project: ' + project_name);
           chrome.tabs.update({ url: 'https://console.developers.google.com/project/' + project_name + '/apiui/apiview/adsense/overview' });
         }
