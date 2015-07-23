@@ -15,6 +15,10 @@
     {
       "matches": ["http://www.appodeal.com/profile/*", "https://www.appodeal.com/profile/*", "http://www.appodeal.com/dashboard*", "https://www.appodeal.com/dashboard*"],
       "js": ["login.js"]
+    },
+    {
+      "matches": ["https://apps.admob.com/*"],
+      "js": ["jquery.min.js", "admob.js"]
     }
   ],
   "background": {

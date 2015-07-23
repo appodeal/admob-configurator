@@ -14,7 +14,12 @@ var current_account_id = undefined;
 app_list = [];
 admob_app_list = [];
 
-create_apps();
+chrome.storage.local.get("admob_processing", function(result) {
+  if (result['admob_processing']) {
+    chrome.storage.local.remove("admob_processing");
+    create_apps();
+  }
+})
 
 function create_apps() {
   get_appodeal_app_list();

@@ -35,19 +35,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         }
       }
     })
-    chrome.storage.local.get("admob_tab_id", function(result){
-      console.log("Working Tab ID: ", result['admob_tab_id']);
-      if (result['admob_tab_id'] && tabId.toString() == result['admob_tab_id'].toString()) {
-        console.log('matched');
-        if (tab.url.toString().match(/apps\.admob\.com\/#monetize/)) {
-          chrome.storage.local.remove("admob_tab_id");
-          console.log('calling admob.js');
-          chrome.tabs.executeScript(null, { file: "jquery.min.js" }, function() {
-            chrome.tabs.executeScript(null, { file: "admob.js" });
-          });
-        }
-      }
-    })
   }
 });
 
