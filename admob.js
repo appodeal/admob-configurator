@@ -470,18 +470,6 @@ function get_initialize_data(token, complete) {
   })
 }
 
-// get hash of admob_app_id and app name
-function app_list(json) {
-  h = {};
-  var apps = json["result"]["1"]["1"];
-
-  for (i = 0; i < apps.length; i++) {
-    h[apps[i]["1"]] = apps[i]["2"];
-  }
-
-  return h;
-}
-
 // get adunits divided into images and banners
 function adunits_list(json, admob_app_id) {
   h = {"image": {}, "banner": {}};
