@@ -13,7 +13,7 @@
       "js": ["jquery.min.js", "angular.min.js"]
     },
     {
-      "matches": ["http://www.appodeal.com/*", "https://www.appodeal.com/*"],
+      "matches": ["http://www.appodeal.com/profile/*", "https://www.appodeal.com/profile/*", "http://www.appodeal.com/dashboard*", "https://www.appodeal.com/dashboard*"],
       "js": ["login.js"]
     }
   ],

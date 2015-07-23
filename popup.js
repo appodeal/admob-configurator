@@ -4,14 +4,13 @@ function click(e) {
     //  chrome.storage.local.set({ "reporting_tab_id" : tab.id });
     //});
     var newURL = 'https://apps.admob.com/#monetize';
-    chrome.tabs.update({ url: newURL }, function(tab) {
+
+    chrome.tabs.update(null, { url: newURL }, function(tab) {
       //setTimeout(function() {
         chrome.storage.local.set({ "reporting_tab_id" : tab.id });
         console.log('hm...');
         //alert('You will be redirected to your admob account for some time and then back...');
-        chrome.tabs.executeScript(null, {}, function() {
-          chrome.tabs.executeScript(null, { file: "get_admob_account.js" });
-        });
+        //chrome.tabs.executeScript(tab.id, { file: "get_admob_account.js" });
       //}, 2000);
     });
   }

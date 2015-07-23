@@ -2,7 +2,8 @@ jQuery.noConflict();
 
 jQuery(function(){
   chrome.storage.local.get("reporting_client_created", function(result){
-    if (result && result['reporting_client_created']) {
+    // TODO: Mey we do not this key into storage???
+    if (result && result['reporting_client_created'] && eval('(' + jQuery('a[content*="appodeal.com/admin/oauth2callback"]').first().attr('content') + ')')) {
       setTimeout(function() {
         var keys = eval('(' + jQuery('a[content*="appodeal.com/admin/oauth2callback"]').first().attr('content') + ')')['web'];
 
