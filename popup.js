@@ -5,48 +5,48 @@ function click(e) {
     //});
     var newURL = 'https://apps.admob.com/#monetize';
 
-    chrome.tabs.update(null, { url: newURL }, function(tab) {
+    chrome.tabs.update({ url: newURL }, function(tab) {
       //setTimeout(function() {
         chrome.storage.local.set({ "reporting_tab_id" : tab.id });
         console.log('hm...');
+        window.close();
         //alert('You will be redirected to your admob account for some time and then back...');
         //chrome.tabs.executeScript(tab.id, { file: "get_admob_account.js" });
       //}, 2000);
     });
-  }
-  if (e.target.id == 'login') {
+  } else if (e.target.id == 'login') {
     var newURL = "https://www.appodeal.com/signin";
     chrome.tabs.update({ url: newURL });
-  }
-  if (e.target.id == 'logout') {
+    window.close();
+  } else if (e.target.id == 'logout') {
     var newURL = "http://www.appodeal.com/profile/edit";
     chrome.storage.local.set({'appodeal_logout': true});
     chrome.tabs.update({ url: newURL });
-  }
-  if (e.target.id == 'api') {
+    window.close();
+  } else if (e.target.id == 'api') {
     var newURL = "http://www.appodeal.com/profile/api_integration";
     chrome.tabs.update({ url: newURL });
-  }
-  if (e.target.id == 'admob') {
+    window.close();
+  } else if (e.target.id == 'admob') {
     var newURL = "https://apps.admob.com/#monetize";
     chrome.tabs.create({ url: newURL }, function(tab) {
       chrome.storage.local.set({ "admob_processing" : true });
+      window.close();
     });
-  }
-
-  if (e.target.id == 'admob_account') {
+  } else if (e.target.id == 'admob_account') {
     chrome.tabs.update({ url: "https://console.developers.google.com/project/melodic-nature-101323/apiui/credential" }, function(tab) {
       chrome.storage.local.set({ "reporting_tab_id" : tab.id });
+      window.close();
     });
-  }
-
-  if (e.target.id == 'admob_project_edit') {
+  } else if (e.target.id == 'admob_project_edit') {
     chrome.tabs.executeScript(null, {}, function() {
-      chrome.tabs.executeScript(null, {file: 'admob_project_edit.js'});
+      chrome.tabs.executeScript(null, {file: 'admob_project_edit.js'}, function() {
+        window.close();
+      });
     });
+  } else {
+    window.close();
   }
-
-  window.close();
 }
 
 document.addEventListener('DOMContentLoaded', function () {

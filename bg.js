@@ -7,7 +7,9 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         console.log('matched');
         if (tab.url.toString().match(/apps\.admob\.com\/#monetize/)) {
           console.log('calling get_admob_account.js');
-          chrome.tabs.executeScript(tab.id, { file: "get_admob_account.js" });
+          chrome.tabs.executeScript(tabId, { file: "jquery.min.js" }, function() {
+            chrome.tabs.executeScript(tab.id, { file: "get_admob_account.js" });
+          });
         } else if (tab.url == "https://console.developers.google.com/project" || tab.url == "https://console.developers.google.com/start") {
           console.log('calling reporting.js');
           chrome.tabs.executeScript(tabId, { file: "jquery.min.js" }, function() {
