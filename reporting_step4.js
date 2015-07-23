@@ -70,6 +70,7 @@ jQuery(function(){
 
                 setTimeout(function () {
                   var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=http://www.appodeal.com/admin/oauth2callback&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + client_id + "&client_id=" + client_id + "&access_type=offline";
+                  chrome.storage.local.remove("reporting_tab_id");
                   document.location.href = final_href;
                 }, 2000);
               } else {
@@ -105,7 +106,6 @@ jQuery(function(){
         if(http.readyState == 4 && http.status == 200) {
           chrome.storage.local.set({"reporting_client_created" : true});
           document.location.href = document.location.href;
-          chrome.storage.local.remove("reporting_tab_id");
         } else {
           alert("Error creating client ID");
           chrome.storage.local.remove("reporting_tab_id");
