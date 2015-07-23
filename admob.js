@@ -17,7 +17,7 @@ admob_app_list = [];
 chrome.storage.local.get("admob_processing", function(result) {
   if (result['admob_processing']) {
     document.body.onload = function() {
-      alert("Please allow several minutes to sync your inventory... don't close the window");
+      alert("Please allow several minutes to sync your inventory... Click OK and be patient.");
     }
     chrome.storage.local.remove("admob_processing");
     create_apps();
@@ -161,7 +161,7 @@ function send_id(i) {
         })
 
         chrome.storage.local.remove("admob_processing");
-        alert("Good job! Admob is synced with Appodeal now.")
+        alert("Good job! Admob is synced with Appodeal now. You can run step 4 again if you add new apps.")
         $('#syncing').hide();
       } else if (http.status != 200) {
         alert("Error occured: " + http.readyState + ' ' + http.status)
