@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
   for (var i = 0; i < divs.length; i++) {
     divs[i].addEventListener('click', click);
   }
-  chrome.storage.local.get({'appodeal_email': null, 'appodeal_api_key': null, 'appodeal_user_id': null}, function(items) {
+  chrome.storage.local.get({'appodeal_email': null, 'appodeal_api_key': null, 'appodeal_user_id': null, 'appodeal_admob_account_id': null}, function(items) {
     if (items['appodeal_email'] != null) {
       var loginElement = document.getElementById("login");
       loginElement.id = 'logout'
@@ -62,6 +62,10 @@ document.addEventListener('DOMContentLoaded', function () {
       if (items['appodeal_api_key'] != null && items['appodeal_user_id'] != null) {
         var apiElement = document.getElementById("api");
         apiElement.parentNode.removeChild(apiElement);
+      }
+      if (items['appodeal_admob_account_id'] != null) {
+        var reportingElement = document.getElementById("reporting");
+        reportingElement.parentNode.removeChild(reportingElement);
       }
     }
   })
