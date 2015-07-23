@@ -17,6 +17,7 @@ admob_app_list = [];
 create_apps();
 
 function create_apps() {
+  console.log("Start to create apps");
   get_appodeal_app_list();
 }
 
