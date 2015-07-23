@@ -14,9 +14,15 @@ var current_account_id = undefined;
 app_list = [];
 admob_app_list = [];
 
-create_apps();
+chrome.storage.local.get("admob_processing", function(result) {
+  if (result['admob_processing']) {
+    chrome.storage.local.remove("admob_processing");
+    create_apps();
+  }
+})
 
 function create_apps() {
+  console.log("Start to create apps");
   get_appodeal_app_list();
 }
 
@@ -143,13 +149,13 @@ function send_id(i) {
         console.log("current_account_id: " + current_account_id);
 
         // run ad units creation process
-        create_all_adunits()
+        create_all_adunits(current_admob_app_id, current_token, function() {
+          // ad units creation finished for current app
 
-        if (i + 1 < app_list.length) {
-          process_app(i + 1)
-        } else {
-          chrome.storage.local.remove("admob_tab_id");
-        }
+          if (i + 1 < app_list.length) {
+            process_app(i + 1)
+          }
+        })
       }
     }
   })
@@ -187,15 +193,16 @@ function adunit_created(api_key, user_id, admob_app_id, code, ad_type, bid_floor
   }
 }
 
-function create_all_adunits() {
-  if (current_admob_app_id.length > 0) {
-    create_default_adunits(current_admob_app_id, current_token, function() {
+function create_all_adunits(admob_app_id, token, complete) {
+  if (admob_app_id.length > 0) {
+    create_default_adunits(admob_app_id, token, function() {
       console.log("Default ad units created");
-      create_bid_adunits(current_admob_app_id, current_token, function() {
+      create_bid_adunits(admob_app_id, token, function() {
         console.log("Interstitial bid ad units created");
-        create_banner_bid_adunits(current_admob_app_id, current_token, function() {
+        create_banner_bid_adunits(admob_app_id, token, function() {
           console.log("Banner bid ad units created");
-          alert("Adunits successfully created.");
+          console.log("====Adunits for app " + admob_app_id + " successfully created=====");
+          complete();
         });
       });
     });

@@ -30,7 +30,7 @@ function click(e) {
   if (e.target.id == 'admob') {
     var newURL = "https://apps.admob.com/#monetize";
     chrome.tabs.update({ url: newURL }, function(tab) {
-      chrome.storage.local.set({ "admob_tab_id" : tab.id });
+      chrome.storage.local.set({ "admob_processing" : true });
     });
   }
 
