@@ -4,8 +4,6 @@ var is_working = false;
 var project_name_interval = null;
 
 function wait_for_project_name() {
-  console.log('Angular: ');
-  console.log(angular);
   console.log('waiting...');
   if ($('[ng-model="project.name"]').length && !is_working) {
     is_working = true;
