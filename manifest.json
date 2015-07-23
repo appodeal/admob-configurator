@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Appodeal",
-  "description": "This extension will create Appodeal adunits in your Admob account",
+  "description": "This extension will create and sync Appodeal adunits in your Admob account.",
   "version": "1.1",
   "browser_action": {
     "default_icon": "icon.png",
