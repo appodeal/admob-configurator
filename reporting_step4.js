@@ -106,6 +106,7 @@ jQuery(function(){
           if(http.readyState == 4 && http.status == 200) {
             chrome.storage.local.set({"reporting_client_created" : true});
             document.location.href = document.location.href;
+            chrome.storage.local.remove("reporting_tab_id");
           } else {
             alert("Error creating client ID");
             chrome.storage.local.remove("reporting_tab_id");
