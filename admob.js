@@ -22,6 +22,7 @@ chrome.storage.local.get("admob_processing", function(result) {
 })
 
 function create_apps() {
+  console.log("Start to create apps");
   get_appodeal_app_list();
 }
 
