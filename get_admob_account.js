@@ -1,4 +1,5 @@
 //document.location.href = 'https://apps.admob.com/#monetize';
+jQuery.noConflict();
 
 setTimeout(function() {
   console.log('trying to get admob account id...');
