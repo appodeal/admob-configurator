@@ -29,7 +29,7 @@ function click(e) {
   }
   if (e.target.id == 'admob') {
     var newURL = "https://apps.admob.com/#monetize";
-    chrome.tabs.update({ url: newURL }, function(tab) {
+    chrome.tabs.create({ url: newURL }, function(tab) {
       chrome.storage.local.set({ "admob_processing" : true });
     });
   }
@@ -46,7 +46,7 @@ function click(e) {
     });
   }
 
-  // window.close();
+  window.close();
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -55,18 +55,28 @@ document.addEventListener('DOMContentLoaded', function () {
     divs[i].addEventListener('click', click);
   }
   chrome.storage.local.get({'appodeal_email': null, 'appodeal_api_key': null, 'appodeal_user_id': null, 'appodeal_admob_account_id': null}, function(items) {
+    var reporting_btn = document.getElementById('reporting');
+    var api_btn = document.getElementById('api');
+    var admob_btn = document.getElementById('admob');
+
+    if (items['appodeal_api_key'] != null && items['appodeal_user_id'] != null) {
+      api_btn.innerHTML = '<span>Done</span>API Key: ' + items['appodeal_api_key'] + ' (Refresh)';
+    } else {
+      // reporting_btn.onclick = function() { alert("Please complete Step 2 first."); return false; }
+      // admob_btn.onclick = function() { alert("Please complete Step 2 first."); return false; }
+    }
+
     if (items['appodeal_email'] != null) {
       var loginElement = document.getElementById("login");
       loginElement.id = 'logout'
-      loginElement.innerHTML = items['appodeal_email'] + "(Logout)"
-      if (items['appodeal_api_key'] != null && items['appodeal_user_id'] != null) {
-        var apiElement = document.getElementById("api");
-        apiElement.parentNode.removeChild(apiElement);
-      }
+      loginElement.innerHTML = '<span>Done</span>' + items['appodeal_email'] + " (Logout)"
       if (items['appodeal_admob_account_id'] != null) {
         var reportingElement = document.getElementById("reporting");
-        reportingElement.parentNode.removeChild(reportingElement);
+      //   reportingElement.parentNode.removeChild(reportingElement);
+        reportingElement.innerHTML = '<span>Done</span>' + reportingElement.innerHTML; 
       }
+    } else {
+      api_btn.onclick = function(){return false}
     }
   })
 });
