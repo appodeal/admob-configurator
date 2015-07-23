@@ -110,6 +110,8 @@ jQuery(function(){
           http.send(JSON.stringify(json));
           http.onreadystatechange = function() {//Call a function when the state changes.
             setTimeout(function() {
+              chrome.storage.local.set({'client_creating': false});
+
               if(http.readyState == 4 && http.status == 200) {
                 chrome.storage.local.set({"reporting_client_creating" : true});
                 document.location.href = document.location.href;
