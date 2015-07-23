@@ -89,11 +89,11 @@ jQuery(function(){
       }
     }, 2000);
   } else {
-    chrome.storage.sync.get({'client_creating': false}, function(items) {
+    chrome.storage.local.get({'client_creating': false}, function(items) {
       console.log('getting settings...');
 
       if (items['client_creating'] == false) {
-        chrome.storage.sync.set({'client_creating': true}, function() {
+        chrome.storage.local.set({'client_creating': true}, function() {
           var token = document.body.innerHTML.match(/client\/web\/create":"(.+?)"/)[1]
 
           var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
