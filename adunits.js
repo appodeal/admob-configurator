@@ -5,11 +5,8 @@ var APPODEAL_AD_UNIT_URL = "https://www.appodeal.com/api/v1/admob_adunits.json";
 var API_KEY = "39d1d978999d47e6ae4a072e28796bcd";
 var USER_ID = 377;
 var ADMOB_APP_ID = "2435461316";
-
 // Admob Publisher ID
 var current_account_id = undefined;
-
-// xsrf
 var current_token = undefined;
 
 // admob internal app id

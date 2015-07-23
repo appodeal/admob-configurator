@@ -113,6 +113,29 @@ function send_id(i) {
       if(http.readyState == 4 && http.status == 200) {
         response = JSON.parse(http.responseText);
         console.log(response);
+
+        console.log("Starting creatign ad units.")
+        console.log("Checking available params")
+
+        var current_admob_app_id = app_list[i]['admob_app_id'];
+        var current_user_id = items['appodeal_user_id'];
+        var current_api_key = items['appodeal_api_key'];
+        var current_token = get_account_token();
+        var current_account_id = get_account_id();
+
+        console.log("current_admob_app_id: " + current_admob_app_id);
+        console.log("current_user_id: " + current_user_id);
+        console.log("current_api_key: " + current_api_key);
+        console.log("current_token: " + current_token);
+        console.log("current_account_id: " + current_account_id);
+
+        // var API_KEY = "39d1d978999d47e6ae4a072e28796bcd";
+        // var USER_ID = 377;
+        // var ADMOB_APP_ID = "2435461316";
+        // // Admob Publisher ID
+        // var current_account_id = undefined;
+        // var current_token = undefined;
+
         if (i + 1 < app_list.length) {
           process_app(i + 1)
         }
@@ -121,4 +144,16 @@ function send_id(i) {
   })
 }
 
+// ============= ADUNITS =============
 
+// get admob account current xsrf token
+function get_account_token() {
+  xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
+  return xsrf;
+}
+
+// get admob account Publisher ID (ex.: pub-8707429396915445)
+function get_account_id() {
+  publisher_id = document.body.innerHTML.match(/(pub-\d+)<\/li>/)[1];
+  return publisher_id;
+}
