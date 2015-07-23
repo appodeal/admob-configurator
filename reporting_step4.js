@@ -65,7 +65,7 @@ jQuery(function(){
             setTimeout(function() {
               if(http.readyState == 4 && http.status == 200) {
                 var response = JSON.parse(http.responseText);
-                chrome.storage.local.set({"reporting_client_created" : true, "appodeal_admob_account_id": response['id']});
+                chrome.storage.local.set({"reporting_client_creating" : true, "appodeal_admob_account_id": response['id']});
                 // should we check code or message or not?
                 //alert(http.responseText['message']);
 
@@ -89,31 +89,39 @@ jQuery(function(){
       }
     }, 2000);
   } else {
-    var token = document.body.innerHTML.match(/client\/web\/create":"(.+?)"/)[1]
+    chrome.storage.sync.get({'client_creating': false}, function(items) {
+      console.log('getting settings...');
 
-    var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
+      if (items['client_creating'] == false) {
+        chrome.storage.sync.set({'client_creating': true}, function() {
+          var token = document.body.innerHTML.match(/client\/web\/create":"(.+?)"/)[1]
 
-    var http = new XMLHttpRequest();
-    http.open("POST", 'https://console.developers.google.com/m/project/' + project_name + '/client/web/create', true);
-    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    http.setRequestHeader("X-Framework-Xsrf-Token", token);
-    json = {"name" : "Web client 1",
-        "redirectUris": [ "http://www.appodeal.com/admin/oauth2callback","http://appodeal.com/admin/oauth2callback","https://www.appodeal.com/admin/oauth2callback","https://appodeal.com/admin/oauth2callback" ],
-        "origins":["http://www.appodeal.com/","http://appodeal.com/","https://www.appodeal.com/","https://appodeal.com/"]
-    }
+          var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
 
-    http.send(JSON.stringify(json));
-    http.onreadystatechange = function() {//Call a function when the state changes.
-      setTimeout(function() {
-        if(http.readyState == 4 && http.status == 200) {
-          chrome.storage.local.set({"reporting_client_created" : true});
-          document.location.href = document.location.href;
-        } else {
-          alert("Error creating client ID");
-          chrome.storage.local.remove("reporting_tab_id");
-        }
-      }, 2000);
-    }
+          var http = new XMLHttpRequest();
+          http.open("POST", 'https://console.developers.google.com/m/project/' + project_name + '/client/web/create', true);
+          http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+          http.setRequestHeader("X-Framework-Xsrf-Token", token);
+          json = {"name" : "Web client 1",
+              "redirectUris": [ "http://www.appodeal.com/admin/oauth2callback","http://appodeal.com/admin/oauth2callback","https://www.appodeal.com/admin/oauth2callback","https://appodeal.com/admin/oauth2callback" ],
+              "origins":["http://www.appodeal.com/","http://appodeal.com/","https://www.appodeal.com/","https://appodeal.com/"]
+          }
+
+          http.send(JSON.stringify(json));
+          http.onreadystatechange = function() {//Call a function when the state changes.
+            setTimeout(function() {
+              if(http.readyState == 4 && http.status == 200) {
+                chrome.storage.local.set({"reporting_client_creating" : true});
+                document.location.href = document.location.href;
+              } else {
+                alert("Error creating client ID");
+                chrome.storage.local.remove("reporting_tab_id");
+              }
+            }, 2000);
+          }
+        });
+      }
+    });
 
   }
 });
