@@ -17,7 +17,7 @@ admob_app_list = [];
 chrome.storage.local.get("admob_processing", function(result) {
   if (result['admob_processing']) {
     document.body.onload = function() {
-      document.body.innerHTML = '<span id="syncing"><h1>Syncing with Appodeal... please wait</h1></span>' + document.body.innerHTML;
+      alert("Please allow several minutes to sync your inventory... don't close the window");
     }
     chrome.storage.local.remove("admob_processing");
     create_apps();
