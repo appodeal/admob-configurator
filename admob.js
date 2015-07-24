@@ -74,7 +74,10 @@ function get_admob_app_list() {
   http.onreadystatechange = function() {
     if(http.readyState == 4 && http.status == 200) {
       response = JSON.parse(http.responseText);
-      admob_app_list = response['result'][1][1];
+      admob_app_list = [];
+      if (response['result'][1][1]) {
+        admob_app_list = response['result'][1][1];
+      }
       console.log(admob_app_list);
       process_app(0);
     }
