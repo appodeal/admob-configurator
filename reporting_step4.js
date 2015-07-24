@@ -29,7 +29,7 @@ jQuery(function(){
         setTimeout(function () {
           //account_id = 'pub-5506513451012374';
           var url = "https://www.appodeal.com/api/v1/add_admob_account.json";
-          var email = $('span.p6n-profileemail').text().toLowerCase();
+          var email = $('span.p6n-profileemail').first().text().toLowerCase();
           var client_id = keys['client_id'];
           var client_secret = keys['client_secret'];
           // csrf_token = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
