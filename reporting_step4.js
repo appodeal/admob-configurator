@@ -1,9 +1,29 @@
 jQuery.noConflict();
 
 jQuery(function(){
-  //document.body.onload = function() {
-    // TODO: Mey we do not this key into storage???
-    if (eval('(' + jQuery('a[content*="appodeal.com/admin/oauth2callback"]').first().attr('content') + ')')) {
+  var is_working = false;
+  var credentials_interval = null;
+
+  function wait_for_credentials() {
+    // check no clients text:
+    var no_clients = jQuery(".p6n-grid-col.p6n-col9 span").first();
+    var no_clients_text = null;
+    if (no_clients) {
+      no_clients_text = no_clients.text().match(/No client IDs found/);
+    }
+
+    // get existence clients:
+    var oauth_client = eval('(' + jQuery('a[content*="appodeal.com/admin/oauth2callback"]').first().attr('content') + ')');
+
+    console.log("getting no_clients and oauth_client...");
+    console.log({"no_clients_text": no_clients_text, "oauth_client": oauth_client});
+
+    if (oauth_client) {
+      is_working = true;
+      clearInterval(credentials_interval);
+
+      console.log("found oauth client. getting the keys");
+
       var keys = eval('(' + jQuery('a[content*="appodeal.com/admin/oauth2callback"]').first().attr('content') + ')')['web'];
 
       if (keys['client_secret'] && keys['client_id']) {
@@ -87,7 +107,12 @@ jQuery(function(){
         alert("Error: client_id and client_secret not found.");
         chrome.storage.local.remove("reporting_tab_id");
       }
-    } else {
+    } else if (no_clients_text) {
+      is_working = true;
+      clearInterval(credentials_interval);
+
+      console.log("found no clients text. creating credentials...");
+
       chrome.storage.local.get({'client_creating': false}, function(items) {
         console.log('getting settings...');
 
@@ -124,7 +149,9 @@ jQuery(function(){
         }
       });
     }
-  //}
+  };
+
+  credentials_interval = setInterval( wait_for_credentials, 2000 );
 });
 
 
