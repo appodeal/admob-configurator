@@ -493,8 +493,13 @@ function get_initialize_data(token, complete) {
 
 // get adunits divided into images and banners
 function adunits_list(json, admob_app_id) {
-  h = {"image": {}, "banner": {}};
+  var h = {"image": {}, "banner": {}};
   var adunits = json["result"]["1"]["2"];
+
+  if (adunits == undefined) {
+    console.log("Admob adunits list undefined (empty).");
+    return h;
+  }
 
   for (i = 0; i < adunits.length; i++) {
     if (adunits[i]["9"] == 0 && adunits[i]["2"] == admob_app_id) {
