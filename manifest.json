@@ -32,6 +32,7 @@
     "http://www.appodeal.com/*", "https://www.appodeal.com/*", 
     "https://apps.admob.com/*", 
     "https://console.developers.google.com/*",
-    "storage"
+    "storage",
+    "webNavigation"
   ]
 }

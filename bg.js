@@ -25,11 +25,11 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
           chrome.tabs.executeScript(tabId, { file: "jquery.min.js" }, function() {
             chrome.tabs.executeScript(tabId, { file: "reporting_step3.js" });
           });
-        } else if (tab.url.toString().match(/\/apiui\/credential/)) {
-          console.log("calling reporting_step4.js");
-          chrome.tabs.executeScript(tabId, { file: "jquery.min.js" }, function() {
-            chrome.tabs.executeScript(tabId, { file: "reporting_step4.js" });
-          });
+        //} else if (tab.url.toString().match(/\/apiui\/credential/)) {
+        //  console.log("calling reporting_step4.js");
+        //  chrome.tabs.executeScript(tabId, { file: "jquery.min.js" }, function() {
+        //    chrome.tabs.executeScript(tabId, { file: "reporting_step4.js" });
+        //  });
         } else if (tab.url.toString().match(/project\/([^\/]+)\/?$/)) {
           var project_name = tab.url.toString().match(/project\/([^\/]+)\/?$/)[1];
           console.log('opened new project: ' + project_name);
@@ -38,6 +38,23 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       }
     })
   }
+});
+
+chrome.webNavigation.onCompleted.addListener(function(details) {
+  console.log("Current tabId: " + details.tabId);
+  chrome.storage.local.get("reporting_tab_id", function(result){
+    console.log("Working Tab ID: ", result['reporting_tab_id']);
+    if (result['reporting_tab_id'] && details.tabId.toString() == result['reporting_tab_id'].toString()) {
+    //if (true) {
+      console.log('second matched');
+      if (details.url.toString().match(/\/apiui\/credential/)) {
+        console.log("calling reporting_step4.js");
+        chrome.tabs.executeScript(details.tabId, { file: "jquery.min.js" }, function() {
+          chrome.tabs.executeScript(details.tabId, { file: "reporting_step4.js" });
+        });
+      }
+    }
+  });
 });
 
 // chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
