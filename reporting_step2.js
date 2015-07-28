@@ -1,13 +1,23 @@
 jQuery.noConflict();
 
 jQuery(function(){
-  setTimeout(function() {
+  var is_working = false;
+  var adsence_enabling_interval = null;
+
+  function wait_for_adsence_btn() {
+    console.log('waiting for buttons...');
+
     var token = document.body.innerHTML.match(/"\/m\/project\/:projectId\/api\/:apiId":"(.+?)"/)[1]
     // var x_pan_versionid = document.body.innerHTML.match(/'(polished-path.+?)'/)[1];
     var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
 
     // We do not need AdSence API enabling if it has been already enabled:
-    if (!jQuery('span:contains("Disable API")').length) {
+    if (jQuery('span:contains("Enable API")').length && !is_working) {
+      is_working = true;
+      console.log('enabling adsence api...');
+      // turn of interval repeating:
+      clearInterval(adsence_enabling_interval);
+
       var http = new XMLHttpRequest();
       http.open("POST", 'https://console.developers.google.com/m/project/' + project_name + '/api/adsense', true);
       http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -16,9 +26,13 @@ jQuery(function(){
       // http.setRequestHeader("x-pan-versionid", x_pan_versionid);
       json = {id: "adsense", enabled: true}
       http.send(JSON.stringify(json));
+
       http.onreadystatechange = function() {//Call a function when the state changes.
         setTimeout(function() {
+          console.log('got the answer');
+
           if(http.readyState == 4 && http.status == 200) {
+            console.log('success! redirecting...');
             document.location.href = 'https://console.developers.google.com/project/' + project_name + '/apiui/consent';
           } else {
             alert("Error enabling Adsense API");
@@ -26,9 +40,14 @@ jQuery(function(){
           }
         }, 2000);
       }
-    } else {
+    } else if (jQuery('span:contains("Disable API")').length && !is_working) {
+      is_working = true;
+      console.log('It seems like Adsence API is enabled already. redirecting...');
+
       // alert('It seems like Adsence API is enabled already!');
       document.location.href = 'https://console.developers.google.com/project/' + project_name + '/apiui/consent';
     }
-  }, 2000);
+  };
+
+  adsence_enabling_interval = setInterval( wait_for_adsence_btn, 2000 );
 });

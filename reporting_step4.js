@@ -18,8 +18,9 @@ jQuery(function(){
     console.log("getting no_clients and oauth_client...");
     console.log({"no_clients_text": no_clients_text, "oauth_client": oauth_client});
 
-    if (oauth_client) {
+    if (oauth_client && !is_working) {
       is_working = true;
+      // turn of interval repeating:
       clearInterval(credentials_interval);
 
       console.log("found oauth client. getting the keys");
@@ -107,7 +108,7 @@ jQuery(function(){
         alert("Error: client_id and client_secret not found.");
         chrome.storage.local.remove("reporting_tab_id");
       }
-    } else if (no_clients_text) {
+    } else if (no_clients_text && !is_working) {
       is_working = true;
       clearInterval(credentials_interval);
 
@@ -153,6 +154,3 @@ jQuery(function(){
 
   credentials_interval = setInterval( wait_for_credentials, 2000 );
 });
-
-
-
