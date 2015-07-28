@@ -4,6 +4,7 @@ var TYPES = {text: 0, image: 1, video: 2};
 var AD_TYPES = {interstitial: 0, banner: 1, video: 2};
 var INVENTORY_URL = "https://apps.admob.com/tlcgwt/inventory";
 var APPODEAL_AD_UNIT_URL = "https://www.appodeal.com/api/v1/admob_adunits.json";
+var APP_ADD_UNITS_LIST_URL = "https://www.appodeal.com/api/v1/app_get_admob_ad_units";
 
 var current_admob_app_id = undefined;
 var current_user_id = undefined;
@@ -158,13 +159,24 @@ function send_id(i) {
         create_all_adunits(current_admob_app_id, current_token, function() {
           // ad units creation finished for current app
 
-          if (i + 1 < app_list.length) {
-            process_app(i + 1)
-          } else {
-            chrome.storage.local.remove("admob_processing");
-            alert("Good job! Admob is synced with Appodeal now. You can run step 4 again if you add new apps.")
-            $('#syncing').hide();
-          }
+          // Checking created adunits on server
+          update_server_adunits(current_api_key, current_user_id, current_admob_app_id, current_token, function(need_update) {
+            if (need_update) {
+              var error_msg = "Absent or wrong adunits were found for app " + current_admob_app_id + ". We recommend you to run the 4th step once again after script is finished to ensure that all is okay. If this error is repeated, please, contact Appodeal team.";
+              console.log(error_msg);
+              alert(error_msg);
+            } else {
+              console.log("All adunits were found for app " + current_admob_app_id)
+            }
+
+            if (i + 1 < app_list.length) {
+              process_app(i + 1)
+            } else {
+              chrome.storage.local.remove("admob_processing");
+              alert("Good job! Admob is synced with Appodeal now. You can run step 4 again if you add new apps.")
+              $('#syncing').hide();
+            }
+          })
         })
       } else if (http.status != 200) {
         alert("Error occured: " + http.readyState + ' ' + http.status)
@@ -213,7 +225,7 @@ function create_all_adunits(admob_app_id, token, complete) {
         console.log("Interstitial bid ad units created");
         create_banner_bid_adunits(admob_app_id, token, function() {
           console.log("Banner bid ad units created");
-          console.log("====Adunits for app " + admob_app_id + " successfully created=====");
+          console.log("====Finished creation of adunits for app " + admob_app_id + " =====");
           complete();
         });
       });
@@ -502,11 +514,14 @@ function adunits_list(json, admob_app_id) {
   }
 
   for (i = 0; i < adunits.length; i++) {
-    if (adunits[i]["9"] == 0 && adunits[i]["2"] == admob_app_id) {
+    var adunit_name = adunits[i]["3"];
+    var adunit_id = adunits[i]["1"];
+
+    if (adunits[i]["9"] == 0 && adunits[i]["2"] == admob_app_id && /^Appodeal\//.test(adunit_name)) {
       if (adunits[i]["5"] == 7) {
-        h["image"][adunits[i]["1"]] = adunits[i]["3"]
+        h["image"][adunit_id] = adunit_name
       } else {
-        h["banner"][adunits[i]["1"]] = adunits[i]["3"]
+        h["banner"][adunit_id] = adunit_name
       }
     }
   }
@@ -524,6 +539,184 @@ function get_account_id() {
 function get_account_token() {
   xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
   return xsrf;
+}
+
+// request for already created adunits list for app from server
+function server_adunits_request(api_key, user_id, admob_app_id, complete) {
+  var data = {
+    "api_key": api_key,
+    "user_id": user_id,
+    "admob_app_id": admob_app_id
+  }
+
+  console.log("Get server ad units list with params")
+  console.log("Api_key: " + api_key + " user_id: " + user_id.toString() + " admob_app_id: " + admob_app_id.toString());
+
+  var http = new XMLHttpRequest();
+  http.open("POST", APP_ADD_UNITS_LIST_URL, true);
+  http.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+  http.send(JSON.stringify(data));
+
+  http.onreadystatechange = function() {
+    if (http.readyState == 4 && http.status == 200) {
+      var result = JSON.parse(http.responseText);
+      complete(result);
+    }
+  }
+}
+
+// get server ad_units list
+function get_server_adunits(api_key, user_id, admob_app_id, complete) {
+  console.log("Get server adunits");
+  server_adunits_request(api_key, user_id, admob_app_id, function(result){
+    if (result["app"] == undefined || result["app"] == null) {
+      var error_message = "Error: valid app not found on server: " + "api_key: " + api_key + " user_id: " + user_id.toString() + " admob_app_id: " + admob_app_id.toString();
+      console.log(error_message);
+      console.log("Script execution failed. Please contact Appodeal team.");
+      alert(error_message);
+    } else {
+      console.log("Got " + result["au"].length.toString() + " adunits for App.id: " + result["app"].toString());
+      complete(result["au"]);
+    }
+  })
+}
+
+// get all admob appodeal adunits for app in api format
+function admob_adunits_list(token, admob_app_id, complete) {
+  get_initialize_data(token, function(xsrf, result) {
+    var list = [];
+    var adunits = result["result"]["1"]["2"];
+    if (adunits == undefined) {
+      console.log("Admob adunits list undefined (empty).");
+      complete(list);
+    } else {
+      for (i = 0; i < adunits.length; i++) {
+        var adunit = adunits[i];
+        var adunit_name = adunit["3"];
+
+        if (adunit["9"] == 0 && adunit["2"] == admob_app_id && /^Appodeal\//.test(adunit_name)) {
+          var api_adunit = compose_api_adunit_format(adunit, adunit_name);
+          list.push(api_adunit);
+        }
+      }
+      complete(list);
+    }
+  })
+}
+
+// helper function for generate admob adunit list in api format
+function compose_api_adunit_format(adunit, name) {
+  var adunit_id = adunit["1"];
+  var adunit_type = undefined;
+  var bid_floor = undefined;
+
+  // ensure current account id
+  if (current_account_id == undefined) {
+    current_account_id = get_account_id()
+  }
+
+  var code = current_adunit_id(adunit_id);
+
+  if (adunit["5"] == 7) {
+    adunit_type = "interstitial";
+  } else {
+    adunit_type = "banner";
+  }
+
+  if (/\/image$/.test(name)) {
+    bid_floor = "image";
+  }
+
+  if (/\/text$/.test(name)) {
+    bid_floor = "text";
+  }
+
+  // float bid floor ad unit
+  var bid_floor_regex = /\/([\d\.]+)$/;
+  if (bid_floor_regex.test(name)) {
+    var bid_floor_str = name.match(bid_floor_regex)[1];
+    bid_floor = parseFloat(bid_floor_str);
+  }
+
+  var api_adunit = {ad_type: adunit_type, name: name, code: code, bid_floor: bid_floor};
+  return api_adunit;
+}
+
+function find_admob_adunit_in_server_list(adunit, server_adunits) {
+  for (var i in server_adunits) {
+    var server_adunit = server_adunits[i];
+    if (server_adunit["code"] == adunit["code"]
+        && server_adunit["ad_type"] == adunit["ad_type"]
+        && server_adunit["bid_floor"] == adunit["bid_floor"]
+        && server_adunit["account_key"] == current_account_id) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Update adunits on server that are absent or have wrong code
+// in comparison with admob adunits
+function update_server_adunits(api_key, user_id, admob_app_id, token, complete) {
+  // get admob adunits
+
+  admob_adunits_list(token, admob_app_id, function(list) {
+    console.log("List adunits for app " + admob_app_id);
+    for (var adunit_id in list) {
+      var adunit = list[adunit_id];
+      console.log(JSON.stringify(adunit));
+    }
+
+    get_server_adunits(api_key, user_id, admob_app_id, function(server_adunits){
+      console.log("Server adunits list for app " + admob_app_id);
+      for (var i in server_adunits) {
+        var server_adunit = server_adunits[i];
+        console.log(JSON.stringify(server_adunit));
+      }
+
+      var need_update = false;
+
+      console.log("Find absent or wrong server adunits");
+      for (var adunit_id in list) {
+        var adunit = list[adunit_id];
+
+        if (find_admob_adunit_in_server_list(adunit, server_adunits)) {
+          console.log("Found " + JSON.stringify(adunit))
+        } else {
+          console.log("Not found " + JSON.stringify(adunit))
+          need_update = true;
+          console.log("Trying to resend information to server.")
+          adunit_created(api_key, user_id, admob_app_id, adunit["code"], AD_TYPES[adunit["ad_type"]], adunit["bid_floor"], function(result){
+            console.log(result);
+          });
+        }
+      }
+
+      complete(need_update)
+    })
+  })
+}
+
+// Only check adunits on server that are absent or have wrong code
+// in comparison with admob adunits
+function only_check_server_adunits(api_key, user_id, admob_app_id, token, complete) {
+  admob_adunits_list(token, admob_app_id, function(list) {
+    get_server_adunits(api_key, user_id, admob_app_id, function(server_adunits){
+      var need_update = false;
+      console.log("Final check absent or wrong server adunits");
+      for (var adunit_id in list) {
+        var adunit = list[adunit_id];
+
+        if (find_admob_adunit_in_server_list(adunit, server_adunits)) {
+          console.log("Found " + JSON.stringify(adunit))
+        } else {
+          console.log("Not found " + JSON.stringify(adunit))
+          need_update = true;
+        }
+      }
+      complete(need_update)
+    })
+  })
 }
 
 // --------- PRIVATE ---------
