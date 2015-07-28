@@ -1,6 +1,6 @@
 ﻿chrome.storage.local.get({'appodeal_logout': null}, function(items) {
   if(items['appodeal_logout']) {
-    chrome.storage.local.remove(['appodeal_email', 'appodeal_api_key', 'appodeal_user_id', 'appodeal_logout']);
+    chrome.storage.local.clear();
     var form = document.createElement("form");
     form.setAttribute("method", "post");
     form.setAttribute("action", "http://www.appodeal.com/signout");
