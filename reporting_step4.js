@@ -28,6 +28,8 @@ jQuery(function(){
       var keys = eval('(' + jQuery('a[content*="appodeal.com/admin/oauth2callback"]').first().attr('content') + ')')['web'];
 
       if (keys['client_secret'] && keys['client_id']) {
+        console.log('got the keys');
+
         chrome.storage.local.set({
           "client_secret" : keys['client_secret'],
           'client_id' : keys['client_id']
@@ -84,13 +86,19 @@ jQuery(function(){
           alert("Please grant permission to Appodeal to read your Admob reports and proceed with the next step.");
           http.onreadystatechange = function() {//Call a function when the state changes.
             setTimeout(function() {
+              console.log('state changed');
+
               if(http.readyState == 4 && http.status == 200) {
+                console.log('got the success answer');
+
                 var response = JSON.parse(http.responseText);
                 chrome.storage.local.set({"reporting_client_creating" : true, "appodeal_admob_account_id": response['id']});
                 // should we check code or message or not?
                 //alert(http.responseText['message']);
 
                 setTimeout(function () {
+                  console.log('redirecting to oauth...');
+
                   var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=http://www.appodeal.com/admin/oauth2callback&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + client_id + "&client_id=" + client_id + "&access_type=offline";
                   chrome.storage.local.remove("reporting_tab_id");
                   document.location.href = final_href;
@@ -116,9 +124,12 @@ jQuery(function(){
 
       chrome.storage.local.get({'client_creating': false}, function(items) {
         console.log('getting settings...');
+        console.log('client_creating: ', items['client_creating']);
 
         if (items['client_creating'] == false) {
           chrome.storage.local.set({'client_creating': true}, function() {
+            console.log('started client creating...');
+
             var token = document.body.innerHTML.match(/client\/web\/create":"(.+?)"/)[1]
 
             var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
@@ -134,11 +145,15 @@ jQuery(function(){
 
             http.send(JSON.stringify(json));
             http.onreadystatechange = function() {//Call a function when the state changes.
+              console.log('state changed');
+
               setTimeout(function() {
                 chrome.storage.local.set({'client_creating': false});
 
                 if(http.readyState == 4 && http.status == 200) {
+                  console.log('client created successfully');
                   chrome.storage.local.set({"reporting_client_creating" : true});
+
                   document.location.href = document.location.href;
                 } else {
                   alert("Error creating client ID");
