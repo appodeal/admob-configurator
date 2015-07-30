@@ -12,7 +12,8 @@ jQuery(function(){
     var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
 
     // We do not need AdSence API enabling if it has been already enabled:
-    if (jQuery('span:contains("Enable API")').length && !is_working) {
+    if ($("[ng-if='!apiCtrl.api.enabled']").length && !is_working) {
+      // Enable API button found
       is_working = true;
       console.log('enabling adsence api...');
       // turn of interval repeating:
@@ -40,7 +41,8 @@ jQuery(function(){
           }
         }, 2000);
       }
-    } else if (jQuery('span:contains("Disable API")').length && !is_working) {
+    } else if ($("[ng-if='apiCtrl.api.enabled']").length && !is_working) {
+      // Disable API button found
       is_working = true;
       console.log('It seems like Adsence API is enabled already. redirecting...');
 
