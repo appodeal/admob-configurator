@@ -9,7 +9,7 @@ jQuery(function(){
     var no_clients = jQuery(".p6n-grid-col.p6n-col9 span").first();
     var no_clients_text = null;
     if (no_clients) {
-      no_clients_text = no_clients.text().match(/No client IDs found/);
+      no_clients_text = $(".p6n-grid-col.p6n-col9 span[ng-if='ctrl.oauthClients.length <= 0 && ctrl.serviceAccounts.length <= 0']").text();
     }
 
     // get existence clients:
