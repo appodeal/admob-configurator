@@ -57,13 +57,20 @@ function process_app(i) {
 }
 
 function find_in_admob_app_list(app) {
-  for (var i = 0; i < admob_app_list.length; i++) {
-    if (app.search_in_store == false) {
+  if (app.search_in_store == false) {
+    for (var i = 0; i < admob_app_list.length; i++) {
       if (admob_app_list[i][2] == 'Appodeal/' + app.id) {
         return admob_app_list[i][1];
       }
-    } else {
-      if (admob_app_list[i][4] == app.package_name || admob_app_list[i][2] == 'Appodeal/' + app.id) {
+    }
+  } else {
+    for (var i = 0; i < admob_app_list.length; i++) {
+      if (admob_app_list[i][4] == app.package_name) {
+        return admob_app_list[i][1];
+      }
+    }
+    for (var i = 0; i < admob_app_list.length; i++) {
+      if (admob_app_list[i][2] == 'Appodeal/' + app.id) {
         return admob_app_list[i][1];
       }
     }
