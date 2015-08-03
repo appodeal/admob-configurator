@@ -58,7 +58,7 @@ function process_app(i) {
 
 function find_in_admob_app_list(app) {
   for (var i = 0; i < admob_app_list.length; i++) {
-    if (app_list[i].search_in_store == false) {
+    if (app.search_in_store == false) {
       if (admob_app_list[i][2] == 'Appodeal/' + app.id) {
         return admob_app_list[i][1];
       }
