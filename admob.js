@@ -40,7 +40,13 @@ function get_appodeal_app_list() {
         response = JSON.parse(http.responseText);
         app_list = response['applications'];
         console.log(app_list);
-        get_admob_app_list();
+
+        // Empty array of apps in Appodeal
+        if (app_list.length == 0) {
+          alert("Please, create your apps in Appodeal account first.");
+        } else {
+          get_admob_app_list();
+        }
       }
     }
     console.log(items)
