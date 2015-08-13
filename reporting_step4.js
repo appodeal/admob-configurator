@@ -12,27 +12,28 @@ jQuery(function(){
       no_clients_text = $(".p6n-grid-col.p6n-col9 span[ng-if='ctrl.oauthClients.length <= 0 && ctrl.serviceAccounts.length <= 0']").text();
     }
 
-    // get existence clients:
-    var oauth_client = eval('(' + jQuery('a[content*="appodeal.com/admin/oauth2callback"]').first().attr('content') + ')');
+    console.log("no clients");
 
-    console.log("getting no_clients and oauth_client...");
-    console.log({"no_clients_text": no_clients_text, "oauth_client": oauth_client});
-
-    if (oauth_client && !is_working) {
+    if (jQuery("div[entry='client']").length && !is_working) {
       is_working = true;
       // turn of interval repeating:
       clearInterval(credentials_interval);
 
       console.log("found oauth client. getting the keys");
 
-      var keys = eval('(' + jQuery('a[content*="appodeal.com/admin/oauth2callback"]').first().attr('content') + ')')['web'];
+      // get existence clients:
+      var client_spans = jQuery("div.p6n-kv-list-value span")
+      var client_id = client_spans[0].textContent;
+      var client_secret = client_spans[1].textContent;
 
-      if (keys['client_secret'] && keys['client_id']) {
-        console.log('got the keys');
+      if (client_secret && client_id) {
+        console.log('got the keys:');
+        console.log(client_secret);
+        console.log(client_id);
 
         chrome.storage.local.set({
-          "client_secret" : keys['client_secret'],
-          'client_id' : keys['client_id']
+          "client_secret" : client_secret,
+          'client_id' : client_id
         });
 
         var appodeal_api_key = null;
@@ -50,20 +51,12 @@ jQuery(function(){
         });
 
         setTimeout(function () {
-          //account_id = 'pub-5506513451012374';
           var url = "https://www.appodeal.com/api/v1/add_admob_account.json";
           var email = $('span.p6n-profileemail').first().text().toLowerCase();
-          var client_id = keys['client_id'];
-          var client_secret = keys['client_secret'];
-          // csrf_token = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-          //var appodeal_token = "WWJcensLsO94F4Ip0E6qHitQCKyrehTYlAYNLsVOvIA=";
-          //var appodeal_token = chrome.storage.local.get('account_id');
-          //required params: email: @email, client_id: @client_id, client_secret: @client_secret, account_id: @account_id, owner_id: @current_user.id
 
           var http = new XMLHttpRequest();
           http.open("POST", url, true);
           http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-          //http.setRequestHeader("X-CSRF-Token", appodeal_token);
 
           json = {
             "email" : email,
@@ -75,12 +68,6 @@ jQuery(function(){
           };
 
           console.log(json);
-
-          // REMOVE LATER:
-          //chrome.storage.local.get({ 'appodeal_email': null, 'appodeal_api_key': null, 'appodeal_user_id': null}, function(items) {
-          //  console.log(items['appodeal_api_key']);
-          //  console.log(items['appodeal_user_id']);
-          //});
 
           http.send(JSON.stringify(json));
           alert("Please grant permission to Appodeal to read your Admob reports and proceed with the next step.");
@@ -130,37 +117,69 @@ jQuery(function(){
           chrome.storage.local.set({'client_creating': true}, function() {
             console.log('started client creating...');
 
-            var token = document.body.innerHTML.match(/client\/web\/create":"(.+?)"/)[1]
-
             var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
 
-            var http = new XMLHttpRequest();
-            http.open("POST", 'https://console.developers.google.com/m/project/' + project_name + '/client/web/create', true);
-            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            http.setRequestHeader("X-Framework-Xsrf-Token", token);
-            json = {"name" : "Web client 1",
-                "redirectUris": [ "http://www.appodeal.com/admin/oauth2callback","http://appodeal.com/admin/oauth2callback","https://www.appodeal.com/admin/oauth2callback","https://appodeal.com/admin/oauth2callback" ],
-                "origins":["http://www.appodeal.com/","http://appodeal.com/","https://www.appodeal.com/","https://appodeal.com/"]
-            }
+            var jq = document.createElement('script');
+            jq.src = "https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js";
+            document.getElementsByTagName('head')[0].appendChild(jq);
 
-            http.send(JSON.stringify(json));
-            http.onreadystatechange = function() {//Call a function when the state changes.
-              console.log('state changed');
+            setTimeout(function() {
+              console.log('added jquery to document body...');
 
-              setTimeout(function() {
-                chrome.storage.local.set({'client_creating': false});
+              var origins = ["http://www.appodeal.com/", "http://appodeal.com/", "https://www.appodeal.com/", "https://appodeal.com/"].join("\\n");
+              var redirectUris = [ "http://www.appodeal.com/admin/oauth2callback", "http://appodeal.com/admin/oauth2callback", "https://www.appodeal.com/admin/oauth2callback", "https://appodeal.com/admin/oauth2callback" ].join("\\n");
 
-                if(http.readyState == 4 && http.status == 200) {
-                  console.log('client created successfully');
-                  chrome.storage.local.set({"reporting_client_creating" : true});
+              console.log("try to push Create new client id button");
+              var script = document.createElement('script');
 
-                  document.location.href = document.location.href;
+              var select_new_client_code = "jQuery(\"jfk-button[jfk-on-action='ctrl.openCreateClientIdDlg()']\")";
+              var code = "angular.element(" + select_new_client_code + ").controller().openCreateClientIdDlg();";
+
+              script.appendChild(document.createTextNode(code));
+              document.getElementsByTagName('head')[0].appendChild(script);
+
+              // wait until dialog appears
+
+              var checkDialog = setInterval(function() {
+                if (jQuery("pan-dialog[name='editClientCtrl.editClientDialog']").length) {
+                  console.log("Dialog appears");
+                  clearInterval(checkDialog);
+
+                  console.log("Set dialog fields");
+                  var script = document.createElement('script');
+                  var origins_code = "jQuery(\"textarea[ng-model='editClientCtrl.client.origins']\")";
+                  var origins_set_code = origins_code + ".val(\"" + origins + "\"); " + "angular.element(" + origins_code + ").triggerHandler('input');" ;
+
+                  var redirect_uris_code = "jQuery(\"textarea[ng-model='editClientCtrl.client.redirectUris']\")";
+                  var redirect_set_code = redirect_uris_code + ".val(\"" + redirectUris + "\"); " + "setTimeout(function() {angular.element(" + redirect_uris_code + ").triggerHandler('input');}, 2000);" ;
+
+                  var click_code = "setTimeout(function() {jQuery(\"button[jfk-on-action='editClientCtrl.save()']\").click();}, 5000);"
+
+                  var code = origins_set_code + redirect_set_code + click_code;
+
+                  script.appendChild(document.createTextNode(code));
+                  document.getElementsByTagName('head')[0].appendChild(script);
+
+                  console.log('wait until client added');
+
+                  var checkClient = setInterval(function() {
+                    if (jQuery("div[entry='client']").length) {
+                      clearInterval(checkClient);
+
+                      console.log("Client appears");
+                      chrome.storage.local.set({"reporting_client_creating" : true});
+                      document.location.href = document.location.href;
+                    } else {
+                      console.log("Client still not found")
+                    }
+                  }, 1000);
+
                 } else {
-                  alert("Error creating client ID");
-                  chrome.storage.local.remove("reporting_tab_id");
+                  console.log("Dialog still not found")
                 }
-              }, 2000);
-            }
+              }, 1000);
+            }, 3000)
+
           });
         }
       });
