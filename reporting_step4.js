@@ -176,7 +176,7 @@ jQuery(function(){
 
                         console.log("Client appears");
                         chrome.storage.local.set({"reporting_client_creating" : true});
-                        document.location.href = document.location.href;
+                        location.reload();
                       } else {
                         console.log("Client still not found")
                       }
