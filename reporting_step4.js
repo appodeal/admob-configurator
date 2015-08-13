@@ -153,26 +153,35 @@ jQuery(function(){
                   var redirect_uris_code = "jQuery(\"textarea[ng-model='editClientCtrl.client.redirectUris']\")";
                   var redirect_set_code = redirect_uris_code + ".val(\"" + redirectUris + "\"); " + "setTimeout(function() {angular.element(" + redirect_uris_code + ").triggerHandler('input');}, 2000);" ;
 
-                  var click_code = "setTimeout(function() {jQuery(\"button[jfk-on-action='editClientCtrl.save()']\").click();}, 5000);"
-
-                  var code = origins_set_code + redirect_set_code + click_code;
+                  var code = origins_set_code + redirect_set_code;
 
                   script.appendChild(document.createTextNode(code));
                   document.getElementsByTagName('head')[0].appendChild(script);
 
-                  console.log('wait until client added');
+                  setTimeout(function() {
+                    // double time set fields (google bug) and click
+                    console.log("double time set fields to keep admin path");
+                    script = document.createElement('script');
+                    var click_code = "setTimeout(function() {jQuery(\"button[jfk-on-action='editClientCtrl.save()']\").click();}, 5000);"
+                    code = origins_set_code + redirect_set_code + click_code;
+                    script.appendChild(document.createTextNode(code));
+                    document.getElementsByTagName('head')[0].appendChild(script);
+                    // ---
 
-                  var checkClient = setInterval(function() {
-                    if (jQuery("div[entry='client']").length) {
-                      clearInterval(checkClient);
+                    console.log('wait until client is added');
 
-                      console.log("Client appears");
-                      chrome.storage.local.set({"reporting_client_creating" : true});
-                      document.location.href = document.location.href;
-                    } else {
-                      console.log("Client still not found")
-                    }
-                  }, 1000);
+                    var checkClient = setInterval(function() {
+                      if (jQuery("div[entry='client']").length) {
+                        clearInterval(checkClient);
+
+                        console.log("Client appears");
+                        chrome.storage.local.set({"reporting_client_creating" : true});
+                        document.location.href = document.location.href;
+                      } else {
+                        console.log("Client still not found")
+                      }
+                    }, 1000);
+                  }, 3000);
 
                 } else {
                   console.log("Dialog still not found")
