@@ -5,46 +5,40 @@ jQuery(function(){
   var consents_interval = null;
 
   function wait_for_consents() {
-    console.log('waiting for token...');
+    console.log('waiting for save button..');
 
-    var token = document.body.innerHTML.match(/"\/m\/project\/:projectId\/apiui\/consentscreen":"(.+?)"/)[1]
-    // var x_pan_versionid = document.body.innerHTML.match(/'(polished-path.+?)'/)[1];
     var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
+    var save_button = jQuery("jfk-button[jfk-on-action='ctrl.submit()']");
 
-    if (!is_working && token && project_name) {
+    if (!is_working && project_name && save_button.length) {
       is_working = true;
+      console.log(project_name);
+
       // turn of interval repeating:
       clearInterval(consents_interval);
-      console.log('token found. adding consents');
+      console.log('button found. adding consents');
 
-      var http = new XMLHttpRequest();
-      http.open("POST", 'https://console.developers.google.com/m/project/' + project_name + '/apiui/consentscreen', true);
-      http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      http.setRequestHeader("X-Framework-Xsrf-Token", token);
-      // http.setRequestHeader('Accept', 'application/json, text/plain, */*');
-      // http.setRequestHeader("x-pan-versionid", x_pan_versionid);
-      var email = $('span.p6n-profileemail').first().text().toLowerCase();
+      var jq = document.createElement('script');
+      jq.src = "https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js";
+      document.getElementsByTagName('head')[0].appendChild(jq);
+      console.log('added jquery to document body...');
 
-      json = {
-        "displayName"  : "Appodeal Revenue",
-        "supportEmail" : email
-      }
-      http.send(JSON.stringify(json));
-      console.log('request sended');
+      console.log("waiting 2s");
+      window.setTimeout(function() {
+        var script = document.createElement('script');
+        var console_log_code = "console.log('set project name and save'); ";
+        var select_save_code = "jQuery(\"jfk-button[jfk-on-action='ctrl.submit()']\")";
+        var name_code = "jQuery(\"[ng-model='ctrl.xhrData.displayName']\")";
+        var set_val_code = name_code + ".val('Appodeal Revenue');" + "angular.element(" + name_code + ").triggerHandler('input');";
+        var code = console_log_code + set_val_code + "setTimeout(function() {angular.element(" + select_save_code + ").controller().submit();}, 1000);";
+        script.appendChild(document.createTextNode(code));
+        document.getElementsByTagName('head')[0].appendChild(script);
+      }, 2000);
 
-      http.onreadystatechange = function() {//Call a function when the state changes.
-        console.log('state changed');
-
-        setTimeout(function() {
-          if (http.readyState == 4 && http.status == 200) {
-            console.log('Consent screent succeessfully created!');
-            document.location.href = 'https://console.developers.google.com/project/' + project_name + '/apiui/credential';
-          } else {
-            alert("Error creating consent screen.");
-            chrome.storage.local.remove("reporting_tab_id");
-          }
-        }, 2000);
-      }
+      window.setTimeout(function() {
+        console.log("finished clicking save button");
+        document.location.href = 'https://console.developers.google.com/project/' + project_name + '/apiui/credential';
+      }, 5000);
     }
   }
 
