@@ -4,31 +4,42 @@ jQuery(function(){
   var is_working = false;
   var credentials_interval = null;
 
+  function run_script(code) {
+    var script = document.createElement('script');
+    script.appendChild(document.createTextNode(code));
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
   function wait_for_credentials() {
-    // check no clients text:
-    var no_clients = jQuery(".p6n-grid-col.p6n-col9 span").first();
-    var no_clients_text = null;
-    if (no_clients) {
-      no_clients_text = $(".p6n-grid-col.p6n-col9 span[ng-if='ctrl.oauthClients.length <= 0 && ctrl.serviceAccounts.length <= 0']").text();
-    }
+    // Check zero clients
+    var no_clients = jQuery("div[ng-if='!ctrl.hasCredentials()'");
 
-    console.log("no clients");
+    if (no_clients.length) {
+      console.log("You need credentials to access APIs");
+    } else {
+      console.log("Zero credentials warning not found");
+    };
 
-    if (jQuery("div[entry='client']").length && !is_working) {
+    // Download JSON (with credential info) links in credentials table
+    var download_links = jQuery("a.jfk-button.jfk-button-flat[download]");
+
+    if (download_links.length && !is_working) {
       is_working = true;
       // turn of interval repeating:
       clearInterval(credentials_interval);
 
-      console.log("found oauth client. getting the keys");
+      console.log("found oauth client; getting the keys");
 
-      // get existence clients:
-      var client_spans = jQuery("div.p6n-kv-list-value span")
-      var client_id = client_spans[0].textContent;
-      var client_secret = client_spans[1].textContent;
+      // get the first client info:
+      var client_content = download_links[0].getAttribute("content");
+      var client_json = JSON.parse(client_content);
+      var client_id = client_json["web"]["client_id"];
+      var client_secret = client_json["web"]["client_secret"];
 
       if (client_secret && client_id) {
-        console.log('got the keys:');
+        console.log('Client secret:');
         console.log(client_secret);
+        console.log('Client id:');
         console.log(client_id);
 
         chrome.storage.local.set({
@@ -103,7 +114,7 @@ jQuery(function(){
         alert("Error: client_id and client_secret not found.");
         chrome.storage.local.remove("reporting_tab_id");
       }
-    } else if (no_clients_text && !is_working) {
+    } else if (no_clients.length && !is_working) {
       is_working = true;
       clearInterval(credentials_interval);
 
@@ -126,67 +137,40 @@ jQuery(function(){
             setTimeout(function() {
               console.log('added jquery to document body...');
 
-              var origins = ["http://www.appodeal.com/", "http://appodeal.com/", "https://www.appodeal.com/", "https://appodeal.com/"].join("\\n");
-              var redirectUris = [ "http://www.appodeal.com/admin/oauth2callback", "http://appodeal.com/admin/oauth2callback", "https://www.appodeal.com/admin/oauth2callback", "https://appodeal.com/admin/oauth2callback" ].join("\\n");
+              var origins = "['http://www.appodeal.com/', 'http://appodeal.com/', 'https://www.appodeal.com/', 'https://appodeal.com/']";
+              var redirectUris = "['http://www.appodeal.com/admin/oauth2callback', 'http://appodeal.com/admin/oauth2callback', 'https://www.appodeal.com/admin/oauth2callback', 'https://appodeal.com/admin/oauth2callback']";
 
-              console.log("try to push Create new client id button");
-              var script = document.createElement('script');
+              console.log("Creating OAuth client");
 
-              var select_new_client_code = "jQuery(\"jfk-button[jfk-on-action='ctrl.openCreateClientIdDlg()']\")";
-              var code = "angular.element(" + select_new_client_code + ").controller().openCreateClientIdDlg();";
+              // call create auth client page
+              run_script("angular.element(jQuery(\"div[ng-click='ctrl.createOAuthClient()']\")).controller().createOAuthClient();");
 
-              script.appendChild(document.createTextNode(code));
-              document.getElementsByTagName('head')[0].appendChild(script);
+              setTimeout(function() {
 
-              // wait until dialog appears
+                // enable default (web) radio button
+                run_script("jQuery(\"input[value='WEB']\").click();");
 
-              var checkDialog = setInterval(function() {
-                if (jQuery("pan-dialog[name='editClientCtrl.editClientDialog']").length) {
-                  console.log("Dialog appears");
-                  clearInterval(checkDialog);
+                // set options
+                setTimeout(function() {
+                  origins_code = "angular.element(jQuery(\"ng-form[ng-model='ctrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
 
-                  console.log("Set dialog fields");
-                  var script = document.createElement('script');
-                  var origins_code = "jQuery(\"textarea[ng-model='editClientCtrl.client.origins']\")";
-                  var origins_set_code = origins_code + ".val(\"" + origins + "\"); " + "angular.element(" + origins_code + ").triggerHandler('input');" ;
+                  redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='ctrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
 
-                  var redirect_uris_code = "jQuery(\"textarea[ng-model='editClientCtrl.client.redirectUris']\")";
-                  var redirect_set_code = redirect_uris_code + ".val(\"" + redirectUris + "\"); " + "setTimeout(function() {angular.element(" + redirect_uris_code + ").triggerHandler('input');}, 2000);" ;
+                  submit_form_code = "angular.element(jQuery(\"form[name='clientForm']\")).controller().submitForm();";
 
-                  var code = origins_set_code + redirect_set_code;
+                  run_script(origins_code + redirect_uris_code + submit_form_code);
 
-                  script.appendChild(document.createTextNode(code));
-                  document.getElementsByTagName('head')[0].appendChild(script);
-
+                  // update page for keys extraction
                   setTimeout(function() {
-                    // double time set fields (google bug) and click
-                    console.log("double time set fields to keep admin path");
-                    script = document.createElement('script');
-                    var click_code = "setTimeout(function() {jQuery(\"button[jfk-on-action='editClientCtrl.save()']\").click();}, 5000);"
-                    code = origins_set_code + redirect_set_code + click_code;
-                    script.appendChild(document.createTextNode(code));
-                    document.getElementsByTagName('head')[0].appendChild(script);
-                    // ---
+                    console.log("We guess that client has been created");
+                    chrome.storage.local.set({"reporting_client_creating" : true});
+                    location.reload();
+                  }, 4000)
 
-                    console.log('wait until client is added');
+                }, 2000)
 
-                    var checkClient = setInterval(function() {
-                      if (jQuery("div[entry='client']").length) {
-                        clearInterval(checkClient);
+              }, 4000)
 
-                        console.log("Client appears");
-                        chrome.storage.local.set({"reporting_client_creating" : true});
-                        location.reload();
-                      } else {
-                        console.log("Client still not found")
-                      }
-                    }, 1000);
-                  }, 3000);
-
-                } else {
-                  console.log("Dialog still not found")
-                }
-              }, 1000);
             }, 3000)
 
           });
