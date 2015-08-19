@@ -19,8 +19,14 @@ function click(e) {
     chrome.tabs.update({ url: newURL });
     window.close();
   } else if (e.target.id == 'logout') {
-    var newURL = "http://www.appodeal.com/profile/edit";
-    chrome.storage.local.set({'appodeal_logout': true});
+    chrome.storage.local.clear();
+    chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "_android_ad_network_session"});
+    chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "_android_ad_network_session"});
+    chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "remember_token"});
+    chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "remember_token"});
+    chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "user_id"});
+    chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "user_id"});
+    var newURL = "https://www.appodeal.com";
     chrome.tabs.update({ url: newURL });
     window.close();
   } else if (e.target.id == 'api') {
