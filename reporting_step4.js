@@ -28,10 +28,12 @@ jQuery(function(){
       // turn of interval repeating:
       clearInterval(credentials_interval);
 
-      console.log("found oauth client; getting the keys");
+      console.log("found oauth client");
 
       // get the first client info:
       var client_content = download_links[0].getAttribute("content");
+      console.log("getting content");
+      console.log(client_content);
       var client_json = JSON.parse(client_content);
       var client_id = client_json["web"]["client_id"];
       var client_secret = client_json["web"]["client_secret"];
@@ -165,11 +167,11 @@ jQuery(function(){
                     console.log("We guess that client has been created");
                     chrome.storage.local.set({"reporting_client_creating" : true});
                     location.reload();
-                  }, 4000)
+                  }, 4500)
 
-                }, 2000)
+                }, 3000)
 
-              }, 4000)
+              }, 5000)
 
             }, 3000)
 

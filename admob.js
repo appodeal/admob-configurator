@@ -39,7 +39,11 @@ function get_appodeal_app_list() {
       if(http.readyState == 4 && http.status == 200) {
         response = JSON.parse(http.responseText);
         app_list = response['applications'];
-        console.log(app_list);
+
+        console.log("List appodeal apps:");
+        app_list.forEach(function (item, index, array) {
+          console.log(JSON.stringify(item));
+        });
 
         // Empty array of apps in Appodeal
         if (app_list.length == 0) {
@@ -49,7 +53,8 @@ function get_appodeal_app_list() {
         }
       }
     }
-    console.log(items)
+    console.log("Storage items:");
+    console.log(items);
   });
 }
 
@@ -66,17 +71,20 @@ function find_in_admob_app_list(app) {
   if (app.search_in_store == false) {
     for (var i = 0; i < admob_app_list.length; i++) {
       if (admob_app_list[i][2] == 'Appodeal/' + app.id) {
+        console.log("did not search in store, found app by Appodeal label and app id");
         return admob_app_list[i][1];
       }
     }
   } else {
     for (var i = 0; i < admob_app_list.length; i++) {
-      if (admob_app_list[i][4] == app.package_name) {
+      if (admob_app_list[i][4] == app.package_name && admob_app_list[i][3] == app.os) {
+        console.log("found app by package name and platform");
         return admob_app_list[i][1];
       }
     }
     for (var i = 0; i < admob_app_list.length; i++) {
       if (admob_app_list[i][2] == 'Appodeal/' + app.id) {
+        console.log("found app by Appodeal label and app id");
         return admob_app_list[i][1];
       }
     }
@@ -98,7 +106,12 @@ function get_admob_app_list() {
       if (response['result'][1][1]) {
         admob_app_list = response['result'][1][1];
       }
-      console.log(admob_app_list);
+
+      console.log("List admob apps:");
+      admob_app_list.forEach(function (item, index, array) {
+        console.log(JSON.stringify(item));
+      });
+
       process_app(0);
     }
   }
