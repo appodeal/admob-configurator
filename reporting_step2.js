@@ -7,7 +7,7 @@ jQuery(function(){
   function wait_for_adsence_btn() {
     console.log('waiting for buttons...');
 
-    var token = document.body.innerHTML.match(/:\"(\w+:\d+)\"/)[1]
+    var token = document.body.innerHTML.match(/:\"(\S+:\d+)\"/)[1]
     // var x_pan_versionid = document.body.innerHTML.match(/'(polished-path.+?)'/)[1];
     var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
 

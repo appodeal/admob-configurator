@@ -12,7 +12,7 @@ jQuery(function(){
 
   function wait_for_credentials() {
     // Check zero clients
-    var no_clients = jQuery("div[ng-if='!ctrl.hasCredentials()'");
+    var no_clients = jQuery(".p6n-zero-state-widget");
 
     if (no_clients.length) {
       console.log("You need credentials to access APIs");
