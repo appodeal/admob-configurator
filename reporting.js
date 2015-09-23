@@ -27,6 +27,7 @@ function find_and_go_to_created_project() {
 
 function wait_for_project_name() {
   console.log('waiting...');
+
   if ($('[ng-model="project.name"]').length && !is_working) {
     is_working = true;
     clearInterval(project_name_interval);
@@ -74,6 +75,5 @@ setTimeout(function() {
 
   $('[ng-click="psCtrl.showCreateProjectDialog()"]').click();
 
-  //setTimeout(wait_for_project_name, 2000);
   project_name_interval = setInterval( wait_for_project_name, 2000 );
 }, 2000);

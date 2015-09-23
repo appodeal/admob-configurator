@@ -13,10 +13,15 @@ jQuery(function(){
     document.getElementsByTagName('head')[0].appendChild(script);
   }
 
-  function loadJquery() {
+  function loadJquery(complete) {
     var jq = document.createElement('script');
     jq.src = "https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js";
     document.getElementsByTagName('head')[0].appendChild(jq);
+
+    setTimeout(function() {
+      console.log("Jquery loaded");
+      complete();
+    }, 3000)
   }
 
   // You need credentials to access APIs.
@@ -51,33 +56,82 @@ jQuery(function(){
     }, 3000)
   }
 
-  function fetchCredentials() {
-    console.log("found oauth client");
-
-    // get the first client info:
+  // parse the first download link content
+  function getIdAndSecret(download_links) {
     var client_content = download_links[0].getAttribute("content");
-
-    console.log("getting content");
-    console.log(client_content);
-
     var client_json = JSON.parse(client_content);
-    var client_id = client_json["web"]["client_id"];
-    var client_secret = client_json["web"]["client_secret"];
+    var result = {id: client_json["web"]["client_id"], secret: client_json["web"]["client_secret"]};
+    return result;
+  }
 
-    if (client_secret && client_id) {
-      console.log('Client secret:');
-      console.log(client_secret);
-      console.log('Client id:');
-      console.log(client_id);
+  function addAdmobAccount(credential, account_id, appodeal_api_key, appodeal_user_id) {
+    var url = "https://www.appodeal.com/api/v1/add_admob_account.json";
+    var email = $('span.p6n-profileemail').first().text().toLowerCase();
 
+    var http = new XMLHttpRequest();
+    http.open("POST", url, true);
+    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+    json = {
+      "email" : email,
+      "client_id": credential["id"],
+      "client_secret": credential["secret"],
+      "account_id": account_id,
+      "api_key": appodeal_api_key,
+      "user_id": appodeal_user_id
+    };
+
+    console.log(json);
+
+    http.send(JSON.stringify(json));
+
+    alert("Please grant permission to Appodeal to read your Admob reports and proceed with the next step.");
+
+    http.onreadystatechange = function() {
+      console.log('State changed');
+
+      // Call a function when the state changes.
+      setTimeout(function() {
+        if (http.readyState == 4 && http.status == 200) {
+          console.log('Got the successful answer');
+
+          var response = JSON.parse(http.responseText);
+          var local_settings = {reporting_client_creating: true, appodeal_admob_account_id: response['id']};
+
+          chrome.storage.local.set(local_settings, function() {
+            console.log('redirecting to oauth...');
+
+            var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=http://www.appodeal.com/admin/oauth2callback&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + credential["id"] + "&client_id=" + credential["id"] + "&access_type=offline";
+
+            chrome.storage.local.remove("reporting_tab_id");
+
+            document.location.href = final_href;
+          })
+
+        } else {
+          alert("Error creating admob account on appodeal");
+          chrome.storage.local.remove("reporting_tab_id");
+        }
+      }, 2000);
+    }
+  }
+
+  function fetchCredentials(download_links) {
+    console.log("fetchCredentials");
+
+    var credential = getIdAndSecret(download_links);
+    console.log(credential);
+
+    if (credential["secret"] && credential["id"]) {
       chrome.storage.local.set({
-        "client_secret" : client_secret,
-        'client_id' : client_id
+        "client_secret" : credential["secret"],
+        'client_id' : credential["id"]
       });
 
       var appodeal_api_key = null;
       var appodeal_user_id = null;
-      // Should be written on ad units creating!!!
+
+      // Should be written on ad units creating
       var account_id = null;
 
       chrome.storage.local.get({ 'current_account_id': null, 'appodeal_api_key': null, 'appodeal_user_id': null}, function(items) {
@@ -85,56 +139,10 @@ jQuery(function(){
         appodeal_user_id = items['appodeal_user_id'];
         account_id = items['current_account_id'];
 
-        console.log(items['appodeal_api_key']);
-        console.log(items['appodeal_user_id']);
+        console.log(items);
+
+        addAdmobAccount(credential, account_id, appodeal_api_key, appodeal_user_id);
       });
-
-      setTimeout(function () {
-        var url = "https://www.appodeal.com/api/v1/add_admob_account.json";
-        var email = $('span.p6n-profileemail').first().text().toLowerCase();
-
-        var http = new XMLHttpRequest();
-        http.open("POST", url, true);
-        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-        json = {
-          "email" : email,
-          "client_id": client_id,
-          "client_secret": client_secret,
-          "account_id": account_id,
-          "api_key": appodeal_api_key,
-          "user_id": appodeal_user_id
-        };
-
-        console.log(json);
-
-        http.send(JSON.stringify(json));
-        alert("Please grant permission to Appodeal to read your Admob reports and proceed with the next step.");
-        http.onreadystatechange = function() {//Call a function when the state changes.
-          setTimeout(function() {
-            console.log('state changed');
-
-            if(http.readyState == 4 && http.status == 200) {
-              console.log('got the success answer');
-
-              var response = JSON.parse(http.responseText);
-              chrome.storage.local.set({"reporting_client_creating" : true, "appodeal_admob_account_id": response['id']});
-
-              setTimeout(function () {
-                console.log('redirecting to oauth...');
-
-                var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=http://www.appodeal.com/admin/oauth2callback&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + client_id + "&client_id=" + client_id + "&access_type=offline";
-                chrome.storage.local.remove("reporting_tab_id");
-                document.location.href = final_href;
-
-              }, 2000);
-            } else {
-              alert("Error creating admob account on appodeal!");
-              chrome.storage.local.remove("reporting_tab_id");
-            }
-          }, 2000);
-        }
-      }, 2000);
 
     } else {
       alert("Error: client_id and client_secret not found.");
@@ -143,34 +151,26 @@ jQuery(function(){
   }
 
   function startCredentialsCreating() {
-    console.log("found no clients text. creating credentials...");
+    console.log("Start credentials creating");
+    document.location = outhclientPageLink();
+  }
 
-    chrome.storage.local.get({'client_creating': false}, function(items) {
-      console.log('getting settings...');
-      console.log('client_creating: ', items['client_creating']);
+  function outhclientPageLink() {
+    var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
+    var outhclient_page_link = "https://console.developers.google.com/project/" + project_name + "/apiui/credential/oauthclient";
+    return outhclient_page_link;
+  }
 
-      if (items['client_creating'] == false) {
-        chrome.storage.local.set({'client_creating': true}, function() {
-          console.log('started client creating...');
+  // APIs Credentials page
+  function isCredentialPage() {
+    var page_link = document.location.toString();
+    return page_link.match(/console.developers.google.com\/project\/\S+\/apiui\/credential$/);
+  }
 
-          var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
-
-          loadJquery();
-
-          setTimeout(function() {
-            console.log("Creating OAuth client. Visiting oauthclient page.");
-
-            var outhclient_page_link = "https://console.developers.google.com/project/" + project_name + "/apiui/credential/oauthclient"
-
-            document.location = outhclient_page_link;
-
-            // redirecting
-
-          }, 3000)
-
-        });
-      }
-    });
+  // page with title Create client ID
+  function isOauthClientPage() {
+    var page_link = document.location.toString();
+    return page_link.match(/console.developers.google.com\/project\/\S+\/apiui\/credential\/oauthclient$/);
   }
 
   function wait_for_credentials() {
@@ -184,8 +184,7 @@ jQuery(function(){
       // download links exist
       clearInterval(credentials_interval);
 
-      fetchCredentials();
-
+      fetchCredentials(download_links);
     } else if (no_clients.length) {
       // no clients widget exists
       clearInterval(credentials_interval);
@@ -208,13 +207,23 @@ jQuery(function(){
 
   // start checking and creating client id
   function run() {
-    console.log("Running reporting step 4")
+    console.log("Run reporting step 4")
 
-    if (new_interface()) {
-      console.log("New credentials interface detected")
-      credentials_interval = setInterval(wait_for_credentials, 2000);
-    } else {
-      alert("Credentials interface is outdated.");
-    }
+    loadJquery(function() {
+      if (isCredentialPage() && new_interface()) {
+        console.log("New credentials interface detected");
+
+        credentials_interval = setInterval(wait_for_credentials, 2000);
+      } else if (isOauthClientPage()) {
+        console.log("Oauth client page");
+
+        addCredentials();
+      } else if (isCredentialPage()) {
+        // this should be impossible
+        console.log("Credentials interface is outdated.");
+      } else {
+        console.log("Page reload during oauth client creating");
+      }
+    });
   }
 });
