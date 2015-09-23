@@ -49,38 +49,39 @@ function wait_for_project_name() {
     is_working = true;
     clearInterval(project_name_interval);
 
-    loadJquery(function() {
-      console.log('Сhange the project name.');
+    console.log('Сhange the project name.');
 
-      var code = "jQuery('[ng-model=\"project.name\"]').val('Appodeal'); angular.element(jQuery('[ng-model=\"project.name\"]')).triggerHandler('input');";
-      run_script(code);
+    var code = "jQuery('[ng-model=\"project.name\"]').val('Appodeal'); angular.element(jQuery('[ng-model=\"project.name\"]')).triggerHandler('input');";
+    run_script(code);
 
-      // give time for script tag to be processed:
+    // give time for script tag to be processed:
+    setTimeout(function() {
+      console.log('Click OK button.');
+
       setTimeout(function() {
-        console.log('Click OK button.');
+        if ($('input[name="tos"]')) {
+          $('input[name="tos"]').click();
+        }
 
-        setTimeout(function() {
-          if ($('input[name="tos"]')) {
-            $('input[name="tos"]').click();
-          }
+        if ($('button[name="ok"]')) {
+          $('button[name="ok"]').click();
+        }
+      }, 1000);
 
-          if ($('button[name="ok"]')) {
-            $('button[name="ok"]').click();
-          }
-        }, 1000);
-
-        console.log('Done. Project name changed! Waiting for created project name.');
-        project_created_interval = setInterval( find_and_go_to_created_project, 2000 );
-      }, 2000);
-    })
+      console.log('Done. Project name changed! Waiting for created project name.');
+      project_created_interval = setInterval( find_and_go_to_created_project, 2000 );
+    }, 2000);
   }
 }
 
 setTimeout(function() {
-  find_and_go_to_project();
+  loadJquery(function() {
+    find_and_go_to_project();
 
-  console.log("Appodeal project not found. Click new project button");
-  run_script('angular.element(jQuery("#projects-create")).controller().openCreateProjectDialog()')
+    console.log("Appodeal project not found. Click new project button");
 
-  project_name_interval = setInterval( wait_for_project_name, 2000 );
+    run_script('angular.element($("#projects-create")).controller().openCreateProjectDialog()')
+
+    project_name_interval = setInterval( wait_for_project_name, 2000 );
+  });
 }, 2000);

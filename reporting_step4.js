@@ -49,8 +49,9 @@ jQuery(function(){
       // update page for keys extraction
       setTimeout(function() {
         console.log("We guess that client has been created");
-        chrome.storage.local.set({"reporting_client_creating" : true});
-        location.reload();
+        chrome.storage.local.set({"reporting_client_creating" : true}, function() {
+          location.reload();
+        });
       }, 4500)
 
     }, 3000)
@@ -210,19 +211,14 @@ jQuery(function(){
     console.log("Run reporting step 4")
 
     loadJquery(function() {
-      if (isCredentialPage() && new_interface()) {
-        console.log("New credentials interface detected");
+      console.log("Is interface new? " + new_interface());
 
-        credentials_interval = setInterval(wait_for_credentials, 2000);
-      } else if (isOauthClientPage()) {
+      if (isOauthClientPage()) {
         console.log("Oauth client page");
-
         addCredentials();
-      } else if (isCredentialPage()) {
-        // this should be impossible
-        console.log("Credentials interface is outdated.");
       } else {
-        console.log("Page reload during oauth client creating");
+        console.log("Run credentials processing");
+        credentials_interval = setInterval(wait_for_credentials, 2000);
       }
     });
   }
