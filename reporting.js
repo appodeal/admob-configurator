@@ -80,14 +80,15 @@ setTimeout(function() {
 
     console.log("Appodeal project not found. Click new project button");
 
-    // outdated button, should be deleted in future
-    var outdatedButton = $('[ng-click="psCtrl.showCreateProjectDialog()"]');
+    // start page 'create new project' button (new accounts)
+    var startButton = $("#zerostatecard-blank_project");
 
-    if (outdatedButton.length) {
-      console.log("Outdated new project button found.");
-      outdatedButton.click();
+    if (startButton.length) {
+      console.log("Start page new project button found");
+      startButton.click();
     } else {
-      run_script('angular.element($("#projects-create")).controller().openCreateProjectDialog()')
+      console.log("Should stay at the project page");
+      run_script('angular.element($("#projects-create")).controller().openCreateProjectDialog()');
     }
 
     project_name_interval = setInterval( wait_for_project_name, 2000 );
