@@ -653,10 +653,14 @@ function compose_api_adunit_format(adunit, name) {
 
   var code = current_adunit_id(adunit_id);
 
-  if (adunit["5"] == 7) {
+  if (adunit["14"] == 1) {
     adunit_type = "interstitial";
-  } else {
+  } else if (adunit["14"] == 0) {
     adunit_type = "banner";
+  } else {
+    adunit_type = "wrong";
+    console.log("Wrong ad unit type");
+    console.log(adunit);
   }
 
   if (/\/image$/.test(name)) {
