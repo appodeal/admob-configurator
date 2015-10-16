@@ -5,6 +5,8 @@ var AD_TYPES = {interstitial: 0, banner: 1, video: 2};
 var INVENTORY_URL = "https://apps.admob.com/tlcgwt/inventory";
 var APPODEAL_AD_UNIT_URL = "https://www.appodeal.com/api/v1/admob_adunits.json";
 var APP_ADD_UNITS_LIST_URL = "https://www.appodeal.com/api/v1/app_get_admob_ad_units";
+var INTERSTITIAL_BIDS = [0.15, 0.25, 0.65, 0.8, 1.25, 2.15, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0];
+var BANNER_BIDS = [0.1, 0.2, 0.35, 0.5, 0.7];
 
 var current_admob_app_id = undefined;
 var current_user_id = undefined;
@@ -425,7 +427,7 @@ function bid_floors_in_settings(ad_type, admob_app_id, token, complete) {
     var current_bids = [];
 
     if (ad_type == AD_TYPES['interstitial']) {
-      default_bids = [0.15, 0.25, 0.65, 0.8, 1.25, 2.15, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0];
+      default_bids = INTERSTITIAL_BIDS;
 
       for (var adunit_id in adunits["image"]) {
         current_adunits.push(adunits["image"][adunit_id]);
@@ -433,7 +435,7 @@ function bid_floors_in_settings(ad_type, admob_app_id, token, complete) {
     }
 
     if (ad_type == AD_TYPES['banner']) {
-      default_bids = [0.1, 0.2, 0.35, 0.5, 0.7];
+      default_bids = BANNER_BIDS;
 
       for (var adunit_id in adunits["banner"]) {
         current_adunits.push(adunits["banner"][adunit_id]);
@@ -722,7 +724,10 @@ function update_server_adunits(api_key, user_id, admob_app_id, token, complete) 
       for (var adunit_id in list) {
         var adunit = list[adunit_id];
 
-        if (find_admob_adunit_in_server_list(adunit, server_adunits)) {
+        if (is_standart(adunit) == false) {
+          // check if adunit has standart appodeal params
+          console.log("Not standart ad unit " + JSON.stringify(adunit));
+        } else if (find_admob_adunit_in_server_list(adunit, server_adunits)) {
           console.log("Found " + JSON.stringify(adunit))
         } else {
           console.log("Not found " + JSON.stringify(adunit))
@@ -737,6 +742,22 @@ function update_server_adunits(api_key, user_id, admob_app_id, token, complete) 
       complete(need_update)
     })
   })
+}
+
+function is_standart(adunit) {
+  if (adunit["bid_floor"] == "text" || adunit["bid_floor"] == "image") {
+    return true
+  }
+
+  if (adunit["ad_type"] == "interstitial" && INTERSTITIAL_BIDS.indexOf(adunit["bid_floor"]) >= 0) {
+    return true;
+  }
+
+  if (adunit["ad_type"] == "banner" && BANNER_BIDS.indexOf(adunit["bid_floor"]) >= 0) {
+    return true;
+  }
+
+  return false;
 }
 
 // Only check adunits on server that are absent or have wrong code
