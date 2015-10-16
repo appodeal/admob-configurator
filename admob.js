@@ -554,10 +554,12 @@ function adunits_list(json, admob_app_id) {
     var adunit_id = adunits[i]["1"];
 
     if (adunits[i]["9"] == 0 && adunits[i]["2"] == admob_app_id && /^Appodeal\//.test(adunit_name)) {
-      if (adunits[i]["5"] == 7) {
+      if (adunits[i]["14"] == 1) {
         h["image"][adunit_id] = adunit_name
-      } else {
+      } else if (adunits[i]["14"] == 0) {
         h["banner"][adunit_id] = adunit_name
+      } else {
+        console.log("Wrong ad unit type.");
       }
     }
   }
