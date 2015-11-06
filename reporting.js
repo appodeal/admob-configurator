@@ -26,8 +26,14 @@ function find_and_go_to_project() {
   if (project_link.length > 0) {
     console.log('Project found. Redirecting.');
 
-    var project_id = project_link.attr('href').match(/project\/(.+)$/)[1];
-    document.location.href = 'https://console.developers.google.com/project/' + project_id + '/apiui/apiview/adsense/overview';
+    var project_id;
+    if (betaConsole()) {
+      project_id = project_link.attr('href').match(/\?project=(.+)$/)[1];
+    } else {
+      project_id = project_link.attr('href').match(/project\/(.+)$/)[1];
+    }
+
+    document.location.href = overviewPageUrl(project_id);
   }
 }
 
@@ -37,8 +43,8 @@ function find_and_go_to_created_project() {
     console.log('Project found. Redirecting.');
 
     clearInterval(project_created_interval);
-    var project_name = location.href.toString().match(/project\/([^\/]+)\/?$/)[1];
-    document.location.href = 'https://console.developers.google.com/project/' + project_name + '/apiui/apiview/adsense/overview';
+    var project_name = locationProjectName();
+    document.location.href = overviewPageUrl(project_name);
   }
 }
 

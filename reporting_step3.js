@@ -7,7 +7,7 @@ jQuery(function(){
   function wait_for_consents() {
     console.log('waiting for save button..');
 
-    var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
+    var project_name = locationProjectName();
     var save_button = jQuery("jfk-button[jfk-on-action='ctrl.submit()']");
 
     if (!is_working && project_name && save_button.length) {
@@ -37,7 +37,7 @@ jQuery(function(){
 
       window.setTimeout(function() {
         console.log("finished clicking save button");
-        document.location.href = 'https://console.developers.google.com/project/' + project_name + '/apiui/credential';
+        document.location.href = credentialPageUrl(project_name);
       }, 5000);
     }
   }

@@ -9,7 +9,7 @@ jQuery(function(){
 
     var token = document.body.innerHTML.match(/:\"(\S+:\d+)\"/)[1]
     // var x_pan_versionid = document.body.innerHTML.match(/'(polished-path.+?)'/)[1];
-    var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
+    var project_name = locationProjectName();
 
     // We do not need AdSence API enabling if it has been already enabled:
     if ($("[ng-if='!apiCtrl.api.enabled']").length && !is_working) {
@@ -34,7 +34,7 @@ jQuery(function(){
 
           if(http.readyState == 4 && http.status == 200) {
             console.log('success! redirecting...');
-            document.location.href = 'https://console.developers.google.com/project/' + project_name + '/apiui/consent';
+            document.location.href = projectConsentUrl(project_name);
           } else {
             alert("Error enabling Adsense API");
             chrome.storage.local.remove("reporting_tab_id");
@@ -47,7 +47,7 @@ jQuery(function(){
       console.log('It seems like Adsence API is enabled already. redirecting...');
 
       // alert('It seems like Adsence API is enabled already!');
-      document.location.href = 'https://console.developers.google.com/project/' + project_name + '/apiui/consent';
+      document.location.href = projectConsentUrl(project_name)
     }
   };
 

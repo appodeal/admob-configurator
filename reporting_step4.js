@@ -157,21 +157,8 @@ jQuery(function(){
   }
 
   function outhclientPageLink() {
-    var project_name = document.location.toString().match(/console.developers.google.com\/project\/([^\/]+)\//)[1];
-    var outhclient_page_link = "https://console.developers.google.com/project/" + project_name + "/apiui/credential/oauthclient";
-    return outhclient_page_link;
-  }
-
-  // APIs Credentials page
-  function isCredentialPage() {
-    var page_link = document.location.toString();
-    return page_link.match(/console.developers.google.com\/project\/\S+\/apiui\/credential$/);
-  }
-
-  // page with title Create client ID
-  function isOauthClientPage() {
-    var page_link = document.location.toString();
-    return page_link.match(/console.developers.google.com\/project\/\S+\/apiui\/credential\/oauthclient$/);
+    var project_name = locationProjectName();
+    return oauthPageUrl(project_name);
   }
 
   function wait_for_credentials() {
