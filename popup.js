@@ -20,6 +20,8 @@ function click(e) {
     window.close();
   } else if (e.target.id == 'logout') {
     chrome.storage.local.clear();
+    // clear badge
+    chrome.browserAction.setBadgeText({text: ""});
     chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "_android_ad_network_session"});
     chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "_android_ad_network_session"});
     chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "remember_token"});
@@ -80,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (items['appodeal_admob_account_id'] != null) {
         var reportingElement = document.getElementById("reporting");
       //   reportingElement.parentNode.removeChild(reportingElement);
-        reportingElement.innerHTML = '<span>Done</span>' + reportingElement.innerHTML; 
+        reportingElement.innerHTML = '<span>Done</span>' + reportingElement.innerHTML;
       }
     } else {
       api_btn.onclick = function(){return false}

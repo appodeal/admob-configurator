@@ -58,3 +58,42 @@ function isOauthClientPage() {
     return page_link.match(/console.developers.google.com\/project\/\S+\/apiui\/credential\/oauthclient$/);
   }
 }
+
+chrome.extension.onMessage.addListener(function(message, sender) {
+  if (message["sender"] == "badge") {
+    if (message["content"] == "setBadgeColor") {
+      // Set default appodeal badge color
+      setBadgeColor();
+    } else {
+      // Set badge number
+      num = message["num"];
+      setBadgeNum(num);
+    }
+  }
+});
+
+function setBadgeColor() {
+  chrome.browserAction.setBadgeBackgroundColor({
+    color: [255, 70, 70, 255]
+  });
+}
+
+function clearBadge() {
+  chrome.browserAction.setBadgeText({
+    text: ""
+  });
+}
+
+function setBadgeNum(num) {
+  if (num > 0) {
+    var numText = num.toString();
+    chrome.browserAction.setBadgeText({
+      text: numText
+    });
+  } else {
+    clearBadge();
+  }
+}
+
+// var extensionVersion = chrome.app.getDetails().version;
+// console.log("Extension version " + extensionVersion);

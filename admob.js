@@ -23,6 +23,7 @@ chrome.storage.local.get("admob_processing", function(result) {
       alert("Please allow several minutes to sync your inventory... Click OK and be patient.");
     }
     chrome.storage.local.remove("admob_processing");
+    chrome.extension.sendMessage({sender: "badge", content: "setBadgeColor"});
     create_apps();
   }
 })
@@ -60,7 +61,15 @@ function get_appodeal_app_list() {
   });
 }
 
+// find how many apps left for sync and set badge number
+function sendBadgeNumMessage(num) {
+  var appsLeftNum = app_list.length - num;
+  chrome.extension.sendMessage({sender: "badge", num: appsLeftNum});
+}
+
 function process_app(i) {
+  sendBadgeNumMessage(i);
+
   if (admob_app_id = find_in_admob_app_list(app_list[i])) {
     app_list[i]['admob_app_id'] = admob_app_id;
     send_id(i);
@@ -210,6 +219,9 @@ function send_id(i) {
             if (i + 1 < app_list.length) {
               process_app(i + 1)
             } else {
+              // Remove badge number
+              chrome.extension.sendMessage({sender: "badge", num: 0});
+
               chrome.storage.local.remove("admob_processing");
               alert("Good job! Admob is synced with Appodeal now. You can run step 4 again if you add new apps.")
               $('#syncing').hide();
