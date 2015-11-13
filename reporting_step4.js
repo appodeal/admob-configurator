@@ -31,7 +31,7 @@ jQuery(function(){
 
     var redirectUris = "['http://www.appodeal.com/admin/oauth2callback', 'http://appodeal.com/admin/oauth2callback', 'https://www.appodeal.com/admin/oauth2callback', 'https://appodeal.com/admin/oauth2callback']";
 
-    console.log("Redirected to oauthclient creating page.")
+    console.log("Redirected to oauthclient creating page.");
 
     // enable default (web) radio button
     run_script("jQuery(\"input[value='WEB']\").click();");

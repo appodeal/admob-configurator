@@ -26,9 +26,9 @@ jQuery(function(){
       console.log("waiting 2s");
       window.setTimeout(function() {
         var script = document.createElement('script');
-        var console_log_code = "console.log('set project name and save'); ";
+        var console_log_code = "console.log('Set project name and save'); ";
         var select_save_code = "jQuery(\"jfk-button[jfk-on-action='ctrl.submit()']\")";
-        var name_code = "jQuery(\"[ng-model='ctrl.xhrData.displayName']\")";
+        var name_code = "jQuery(\"[ng-model='consentScreenCtrl.data.displayName']\")";
         var set_val_code = name_code + ".val('Appodeal Revenue');" + "angular.element(" + name_code + ").triggerHandler('input');";
         var code = console_log_code + set_val_code + "setTimeout(function() {angular.element(" + select_save_code + ").controller().submit();}, 1000);";
         script.appendChild(document.createTextNode(code));
