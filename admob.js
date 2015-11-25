@@ -642,15 +642,20 @@ function admob_adunits_list(token, admob_app_id, complete) {
       console.log("Admob adunits list undefined (empty).");
       complete(list);
     } else {
+      console.log("Debug internal adunits format for app " + admob_app_id + ":");
       for (i = 0; i < adunits.length; i++) {
         var adunit = adunits[i];
         var adunit_name = adunit["3"];
 
         if (adunit["9"] == 0 && adunit["2"] == admob_app_id && /^Appodeal\//.test(adunit_name)) {
+          // debug inactive adunits
+          console.log(JSON.stringify(adunit));
+
           var api_adunit = compose_api_adunit_format(adunit, adunit_name);
           list.push(api_adunit);
         }
       }
+      console.log("--- end of debug " + admob_app_id + " ---");
       complete(list);
     }
   })

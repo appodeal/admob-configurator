@@ -38,9 +38,9 @@ jQuery(function(){
 
     // set options
     setTimeout(function() {
-      origins_code = "angular.element(jQuery(\"ng-form[ng-model='ctrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
+      origins_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
 
-      redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='ctrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
+      redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
 
       submit_form_code = "angular.element(jQuery(\"form[name='clientForm']\")).controller().submitForm();";
 
