@@ -11,11 +11,21 @@
   "icons": { "16": "icon.png", "32": "icon32.png", "64": "icon64.png" },
   "content_scripts": [
     {
-      "matches": ["http://www.appodeal.com/*", "https://www.appodeal.com/*", "https://apps.admob.com/*", "https://console.developers.google.com/*"],
+      "matches": ["http://www.appodeal.com/*",
+        "https://www.appodeal.com/*",
+        "https://apps.admob.com/*",
+        "https://console.developers.google.com/*"
+        ],
       "js": ["utils.js", "jquery.min.js"]
     },
     {
-      "matches": ["http://www.appodeal.com/profile/*", "https://www.appodeal.com/profile/*", "http://www.appodeal.com/dashboard*", "https://www.appodeal.com/dashboard*", "http://www.appodeal.com/apps*", "https://www.appodeal.com/apps*"],
+      "matches": ["http://www.appodeal.com/profile/*",
+        "https://www.appodeal.com/profile/*",
+        "http://www.appodeal.com/dashboard*",
+        "https://www.appodeal.com/dashboard*",
+        "http://www.appodeal.com/apps*",
+        "https://www.appodeal.com/apps*"
+        ],
       "js": ["login.js"]
     },
     {

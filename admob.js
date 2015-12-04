@@ -1,12 +1,21 @@
 jQuery.noConflict();
 
+// internal admob params
 var TYPES = {text: 0, image: 1, video: 2};
-var AD_TYPES = {interstitial: 0, banner: 1, video: 2};
+
+// appodeal ad unit params
+var AD_TYPES = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4};
+
 var INVENTORY_URL = "https://apps.admob.com/tlcgwt/inventory";
+
 var APPODEAL_AD_UNIT_URL = "https://www.appodeal.com/api/v1/admob_adunits.json";
 var APP_ADD_UNITS_LIST_URL = "https://www.appodeal.com/api/v1/app_get_admob_ad_units";
+var APPODEAL_APP_LIST = "https://www.appodeal.com/api/v1/apps_list";
+var APPODEAL_SYNC_ADMOB_APP = "https://www.appodeal.com/api/v1/sync_admob_app";
+
 var INTERSTITIAL_BIDS = [0.15, 0.25, 0.65, 0.8, 1.25, 2.15, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0];
 var BANNER_BIDS = [0.1, 0.2, 0.35, 0.5, 0.7];
+var MREC_BIDS = [0.15, 0.3, 0.6, 0.8, 1.25, 2];
 
 var current_admob_app_id = undefined;
 var current_user_id = undefined;
@@ -36,7 +45,7 @@ function create_apps() {
 function get_appodeal_app_list() {
   var http = new XMLHttpRequest();
   chrome.storage.local.get({'appodeal_api_key': null, 'appodeal_user_id': null}, function(items) {
-    http.open("GET", "https://www.appodeal.com/api/v1/apps_list?user_id=" + items['appodeal_user_id'] + "&api_key=" + items['appodeal_api_key'], true);
+    http.open("GET", APPODEAL_APP_LIST + "?user_id=" + items['appodeal_user_id'] + "&api_key=" + items['appodeal_api_key'], true);
     http.send();
     http.onreadystatechange = function() {
       if(http.readyState == 4 && http.status == 200) {
@@ -178,7 +187,7 @@ function create_app(i, market_hash) {
 function send_id(i) {
   chrome.storage.local.get({'appodeal_api_key': null, 'appodeal_user_id': null}, function(items) {
     var http = new XMLHttpRequest();
-    http.open("POST", "https://www.appodeal.com/api/v1/sync_admob_app", true);
+    http.open("POST", APPODEAL_SYNC_ADMOB_APP, true);
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     json = {user_id: items['appodeal_user_id'], api_key: items['appodeal_api_key'], app_id: app_list[i]['id'], admob_app_id: app_list[i]['admob_app_id']}
     http.send(JSON.stringify(json));
@@ -271,12 +280,19 @@ function create_all_adunits(admob_app_id, token, complete) {
   if (admob_app_id.length > 0) {
     create_default_adunits(admob_app_id, token, function() {
       console.log("Default ad units created");
+
       create_bid_adunits(admob_app_id, token, function() {
         console.log("Interstitial bid ad units created");
+
         create_banner_bid_adunits(admob_app_id, token, function() {
           console.log("Banner bid ad units created");
-          console.log("====Finished creation of adunits for app " + admob_app_id + " =====");
-          complete();
+
+          create_mrec_bid_adunits(admob_app_id, token, function() {
+            console.log("Mrec bid ad units created");
+            console.log("Finished creation of adunits for app " + admob_app_id);
+
+            complete();
+          })
         });
       });
     });
@@ -299,7 +315,16 @@ function create_default_adunits(admob_app_id, token, complete) {
 
           create_banner_adunit(["image"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
             console.log("Banner image adunit added for App (" + admob_app_id +  ") " + adunit_id);
-            complete();
+
+            create_mrec_adunit(["image"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
+              console.log("Mrec image adunit added for App (" + admob_app_id +  ") " + adunit_id);
+
+              create_mrec_adunit(["text"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
+                console.log("Mrec text adunit added for App (" + admob_app_id +  ") " + adunit_id);
+
+                complete();
+              })
+            })
           })
         })
       })
@@ -412,6 +437,59 @@ function create_banner_adunit(types, admob_app_id, token, bid_floor, existed, co
   })
 }
 
+// mrec adunits should be equivalent to banner
+function create_mrec_adunit(types, admob_app_id, token, bid_floor, existed, complete) {
+  if (typeof(bid_floor) === 'undefined') bid_floor = null;
+  var adunit_name = "Appodeal/mrec/" + types[0];
+  if (bid_floor != null) adunit_name = adunit_name + "/" + bid_floor.toString();
+
+  var type_ids = types.map(function(t) {
+    return TYPES[t];
+  }).sort();
+
+  if (bid_floor == null && existed["mrec"].indexOf(types[0]) >= 0) {
+    console.log("Mrec " + types[0] + " already existed.")
+    complete(token, "(already existed)");
+    return;
+  }
+
+  data = {
+    "method": "insertInventory",
+    "params": {
+      "3": {
+        "2": admob_app_id,
+        "3": adunit_name,
+        "14": 0,
+        "16": type_ids
+      }
+    },
+    "xsrf": token
+  }
+
+  call_inventory(data, function(result) {
+    var xsrf = result['xsrf'];
+    var internalAdUnitId = result["result"]["2"][0]["1"];
+    var adunit_id = current_adunit_id(internalAdUnitId);
+
+    if (bid_floor == null) {
+      var notification_bid_floor = types[0];
+    } else {
+      notification_bid_floor = bid_floor;
+    }
+    adunit_created(current_api_key, current_user_id, admob_app_id, adunit_id, AD_TYPES['mrec'], notification_bid_floor, function(result){
+      console.log(JSON.stringify(result));
+    });
+
+    if (bid_floor != null) {
+      insert_mediation(admob_app_id, bid_floor, internalAdUnitId, token, function(mediation_xsrf){
+        complete(mediation_xsrf, adunit_id);
+      })
+    } else {
+      complete(xsrf, adunit_id);
+    }
+  })
+}
+
 function create_bid_adunits(admob_app_id, token, complete) {
   console.log("Started to create bid adunits");
   bid_floors_in_settings(AD_TYPES['interstitial'], admob_app_id, token, function(bid_floors) {
@@ -425,6 +503,15 @@ function create_banner_bid_adunits(admob_app_id, token, complete) {
   console.log("Started to create banner bid adunits");
   bid_floors_in_settings(AD_TYPES['banner'], admob_app_id, token, function(bid_floors) {
     create_banner_adunit_loop(bid_floors, admob_app_id.toString(), token, function() {
+      complete();
+    });
+  });
+}
+
+function create_mrec_bid_adunits(admob_app_id, token, complete) {
+  console.log("Started to create mrec bid adunits");
+  bid_floors_in_settings(AD_TYPES['mrec'], admob_app_id, token, function(bid_floors) {
+    create_mrec_adunit_loop(bid_floors, admob_app_id.toString(), token, function() {
       complete();
     });
   });
@@ -454,6 +541,14 @@ function bid_floors_in_settings(ad_type, admob_app_id, token, complete) {
       }
     }
 
+    if (ad_type == AD_TYPES['mrec']) {
+      default_bids = MREC_BIDS;
+
+      for (var adunit_id in adunits["mrec"]) {
+        current_adunits.push(adunits["mrec"][adunit_id]);
+      }
+    }
+
     // parse adunit name to get bid_floor
     for (var i in current_adunits) {
       var splitted = current_adunits[i].split("/");
@@ -480,6 +575,7 @@ function existed_default_adunits(admob_app_id, token, complete) {
 
     var banners = [];
     var images = [];
+    var mrec = [];
 
     for (var i in adunits["banner"]) {
       var name = adunits["banner"][i];
@@ -501,7 +597,17 @@ function existed_default_adunits(admob_app_id, token, complete) {
       }
     }
 
-    var h = {banner: banners, image: images};
+    for (var i in adunits["mrec"]) {
+      var name = adunits["mrec"][i];
+      if (/\/mrec\/image$/.test(name)) {
+        mrec.push("image");
+      }
+      if (/\/mrec\/text$/.test(name)) {
+        mrec.push("text");
+      }
+    }
+
+    var h = {banner: banners, image: images, mrec: mrec};
 
     complete(h);
   })
@@ -553,9 +659,19 @@ function get_initialize_data(token, complete) {
   })
 }
 
-// get adunits divided into images and banners
+function adUnitTypeRegex(name) {
+  var matched_type = /^Appodeal\/(banner|interstitial|mrec)\//.exec(name);
+
+  if (matched_type && matched_type.length > 1) {
+    return matched_type[1];
+  } else {
+    return null;
+  }
+}
+
+// get adunits divided into images and banners and mrec
 function adunits_list(json, admob_app_id) {
-  var h = {"image": {}, "banner": {}};
+  var h = {"image": {}, "banner": {}, "mrec": {}};
   var adunits = json["result"]["1"]["2"];
 
   if (adunits == undefined) {
@@ -567,11 +683,17 @@ function adunits_list(json, admob_app_id) {
     var adunit_name = adunits[i]["3"];
     var adunit_id = adunits[i]["1"];
 
-    if (adunits[i]["9"] == 0 && adunits[i]["2"] == admob_app_id && /^Appodeal\//.test(adunit_name)) {
+    // check if adunit has appodeal name and type
+    var appodeal_adunit_type = adUnitTypeRegex(adunit_name);
+
+    if (adunits[i]["9"] == 0 && adunits[i]["2"] == admob_app_id && appodeal_adunit_type) {
+
       if (adunits[i]["14"] == 1) {
         h["image"][adunit_id] = adunit_name
-      } else if (adunits[i]["14"] == 0) {
+      } else if (adunits[i]["14"] == 0 && appodeal_adunit_type == "banner") {
         h["banner"][adunit_id] = adunit_name
+      } else if (adunits[i]["14"] == 0 && appodeal_adunit_type == "mrec") {
+        h["mrec"][adunit_id] = adunit_name
       } else {
         console.log("Wrong ad unit type.");
       }
@@ -634,6 +756,7 @@ function get_server_adunits(api_key, user_id, admob_app_id, complete) {
 }
 
 // get all admob appodeal adunits for app in api format
+// divide banner adunits into two groups: banner and mrec
 function admob_adunits_list(token, admob_app_id, complete) {
   get_initialize_data(token, function(xsrf, result) {
     var list = [];
@@ -643,11 +766,13 @@ function admob_adunits_list(token, admob_app_id, complete) {
       complete(list);
     } else {
       console.log("Debug internal adunits format for app " + admob_app_id + ":");
+
       for (i = 0; i < adunits.length; i++) {
         var adunit = adunits[i];
         var adunit_name = adunit["3"];
+        var adunit_type = adUnitTypeRegex(adunit_name);
 
-        if (adunit["9"] == 0 && adunit["2"] == admob_app_id && /^Appodeal\//.test(adunit_name)) {
+        if (adunit["9"] == 0 && adunit["2"] == admob_app_id && adunit_type) {
           // debug inactive adunits
           console.log(JSON.stringify(adunit));
 
@@ -655,6 +780,7 @@ function admob_adunits_list(token, admob_app_id, complete) {
           list.push(api_adunit);
         }
       }
+
       console.log("--- end of debug " + admob_app_id + " ---");
       complete(list);
     }
@@ -673,11 +799,16 @@ function compose_api_adunit_format(adunit, name) {
   }
 
   var code = current_adunit_id(adunit_id);
+  var textAdUnitType = adUnitTypeRegex(name);
 
   if (adunit["14"] == 1) {
     adunit_type = "interstitial";
-  } else if (adunit["14"] == 0) {
+  } else if (adunit["14"] == 0 && textAdUnitType == "banner") {
+    // admob ad unit banner includes appodeal banners
     adunit_type = "banner";
+  } else if (adunit["14"] == 0 && textAdUnitType == "mrec") {
+    // admob ad unit banner includes appodeal mrec
+    adunit_type = "mrec";
   } else {
     adunit_type = "wrong";
     console.log("Wrong ad unit type");
@@ -791,6 +922,10 @@ function is_standart(adunit) {
     return true;
   }
 
+  if (adunit["ad_type"] == "mrec" && MREC_BIDS.indexOf(adunit["bid_floor"]) >= 0) {
+    return true;
+  }
+
   return false;
 }
 
@@ -843,6 +978,22 @@ function create_banner_adunit_loop(bid_floors, admob_app_id, token, complete) {
       console.log("Banner bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
       // run new loop without the last element in array
       create_banner_adunit_loop(bid_floors, admob_app_id, token, complete)
+    })
+  } else {
+    complete();
+  }
+}
+
+// run mrec adding async functions in consecutive order
+function create_mrec_adunit_loop(bid_floors, admob_app_id, token, complete) {
+  bid_floor = bid_floors.pop()
+
+  if (bid_floor != undefined) {
+    create_mrec_adunit(["image", "text"], admob_app_id.toString(), token, bid_floor, null, function(xsrf, adunit_id) {
+      // puts information about created ad unit
+      console.log("Mrec bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
+      // run new loop without the last element in array
+      create_mrec_adunit_loop(bid_floors, admob_app_id, token, complete)
     })
   } else {
     complete();
