@@ -123,8 +123,14 @@ function get_admob_app_list() {
     if(http.readyState == 4 && http.status == 200) {
       response = JSON.parse(http.responseText);
       admob_app_list = [];
-      if (response['result'][1][1]) {
-        admob_app_list = response['result'][1][1];
+      var admob_apps_json = response['result'][1][1];
+
+      // filter visible admob applications
+      for (var i = 0; i < admob_apps_json.length; i++) {
+        var admob_app = admob_apps_json[i];
+        if (admob_app[19] == 0) {
+          admob_app_list.push(admob_app);
+        }
       }
 
       console.log("List admob apps:");
