@@ -33,6 +33,7 @@ chrome.storage.local.get("admob_processing", function(result) {
     }
     chrome.storage.local.remove("admob_processing");
     chrome.extension.sendMessage({sender: "badge", content: "setBadgeColor"});
+    console.log("Appodeal admob extension version -> " + extension_version());
     create_apps();
   }
 })
@@ -125,11 +126,13 @@ function get_admob_app_list() {
       admob_app_list = [];
       var admob_apps_json = response['result'][1][1];
 
-      // filter visible admob applications
-      for (var i = 0; i < admob_apps_json.length; i++) {
-        var admob_app = admob_apps_json[i];
-        if (admob_app[19] == 0) {
-          admob_app_list.push(admob_app);
+      if (admob_apps_json) {
+        // filter visible admob applications
+        for (var i = 0; i < admob_apps_json.length; i++) {
+          var admob_app = admob_apps_json[i];
+          if (admob_app[19] == 0) {
+            admob_app_list.push(admob_app);
+          }
         }
       }
 
@@ -771,23 +774,16 @@ function admob_adunits_list(token, admob_app_id, complete) {
       console.log("Admob adunits list undefined (empty).");
       complete(list);
     } else {
-      console.log("Debug internal adunits format for app " + admob_app_id + ":");
-
       for (i = 0; i < adunits.length; i++) {
         var adunit = adunits[i];
         var adunit_name = adunit["3"];
         var adunit_type = adUnitTypeRegex(adunit_name);
 
         if (adunit["9"] == 0 && adunit["2"] == admob_app_id && adunit_type) {
-          // debug inactive adunits
-          console.log(JSON.stringify(adunit));
-
           var api_adunit = compose_api_adunit_format(adunit, adunit_name);
           list.push(api_adunit);
         }
       }
-
-      console.log("--- end of debug " + admob_app_id + " ---");
       complete(list);
     }
   })
@@ -1021,3 +1017,4 @@ function create_adunit_loop(bid_floors, admob_app_id, token, complete) {
     complete();
   }
 }
+
