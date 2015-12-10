@@ -82,7 +82,7 @@ jQuery(function(){
       "user_id": appodeal_user_id
     };
 
-    console.log(json);
+    console.log(JSON.stringify(json));
 
     http.send(JSON.stringify(json));
 
@@ -121,7 +121,7 @@ jQuery(function(){
     console.log("fetchCredentials");
 
     var credential = getIdAndSecret(download_links);
-    console.log(credential);
+    console.log(JSON.stringify(credential));
 
     if (credential["secret"] && credential["id"]) {
       chrome.storage.local.set({
@@ -140,7 +140,7 @@ jQuery(function(){
         appodeal_user_id = items['appodeal_user_id'];
         account_id = items['current_account_id'];
 
-        console.log(items);
+        console.log(JSON.stringify(items));
 
         addAdmobAccount(credential, account_id, appodeal_api_key, appodeal_user_id);
       });

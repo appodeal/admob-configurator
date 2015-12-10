@@ -88,24 +88,33 @@ function process_app(i) {
   }
 }
 
+// more clear mapping from appodeal apps to admob apps
+function updateAdmobAppListAfterFound(i, app_id) {
+  console.log(admob_app_list[i]["2"] + " corresponds to App#" + app_id);
+  admob_app_list[i]['found'] = app_id;
+}
+
 function find_in_admob_app_list(app) {
   if (app.search_in_store == false) {
     for (var i = 0; i < admob_app_list.length; i++) {
-      if (admob_app_list[i][2] == 'Appodeal/' + app.id) {
+      if (!admob_app_list[i]['found'] && admob_app_list[i][2] == 'Appodeal/' + app.id) {
         console.log("did not search in store, found app by Appodeal label and app id");
+        updateAdmobAppListAfterFound(i, app.id);
         return admob_app_list[i][1];
       }
     }
   } else {
     for (var i = 0; i < admob_app_list.length; i++) {
-      if (admob_app_list[i][4] == app.package_name && admob_app_list[i][3] == app.os) {
+      if (!admob_app_list[i]['found'] && admob_app_list[i][4] == app.package_name && admob_app_list[i][3] == app.os) {
         console.log("found app by package name and platform");
+        updateAdmobAppListAfterFound(i, app.id);
         return admob_app_list[i][1];
       }
     }
     for (var i = 0; i < admob_app_list.length; i++) {
-      if (admob_app_list[i][2] == 'Appodeal/' + app.id) {
+      if (!admob_app_list[i]['found'] && admob_app_list[i][2] == 'Appodeal/' + app.id) {
         console.log("found app by Appodeal label and app id");
+        updateAdmobAppListAfterFound(i, app.id);
         return admob_app_list[i][1];
       }
     }
