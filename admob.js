@@ -155,30 +155,42 @@ function get_admob_app_list() {
   }
 }
 
+// finding app in App Store and Google Play is not implemented yet
 function find_app_in_store(i) {
-  if (app_list[i].search_in_store == false) {
-    create_app(i, {});
-  } else {
-    var http = new XMLHttpRequest();
-    http.open("POST", "https://apps.admob.com/tlcgwt/inventory", true);
-    http.setRequestHeader("Content-Type", "application/javascript; charset=UTF-8");
-    xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
-    json = {method:"searchMobileApplication",params:{2:app_list[i].package_name,3:0,4:15},xsrf:xsrf};
-    http.send(JSON.stringify(json));
-    http.onreadystatechange = function() {
-      if(http.readyState == 4 && http.status == 200) {
-        response = JSON.parse(http.responseText);
-        console.log(response);
-        count = response['result'][1];
-        market_hash = {}
-        if (count > 0 && app_list[i].package_name == response['result'][2][0]) {
-          market_hash = response['result'][2][0];
-        }
-        create_app(i, market_hash);
-      }
-    }
-  }
+  create_app(i, {});
 }
+
+// function find_app_in_store(i) {
+//   if (app_list[i].search_in_store == false) {
+//     create_app(i, {});
+//   } else {
+//     var http = new XMLHttpRequest();
+//     http.open("POST", "https://apps.admob.com/tlcgwt/inventory", true);
+//     http.setRequestHeader("Content-Type", "application/javascript; charset=UTF-8");
+//     xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
+
+//     // name length is limited to 80 characters
+//     var appName = app_list[i].package_name.substring(0, 80);
+//     json = {method: "searchMobileApplication", params: {2: appName, 3: 0, 4: 15}, xsrf: xsrf};
+//     http.send(JSON.stringify(json));
+//     http.onreadystatechange = function() {
+//       if(http.readyState == 4 && http.status == 200) {
+//         response = JSON.parse(http.responseText);
+
+//         console.log("Try to find app by name in Store. Results:");
+//         console.log(JSON.stringify(response));
+
+//         // should find by app name and select from resulting store links by package name
+//         count = response['result'][1];
+//         market_hash = {};
+//         // if (count > 0 && app_list[i].package_name == response['result'][2][0]) {
+//         //   market_hash = response['result'][2][0];
+//         // }
+//         create_app(i, market_hash);
+//       }
+//     }
+//   }
+// }
 
 function create_app(i, market_hash) {
   var http = new XMLHttpRequest();
