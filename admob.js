@@ -155,42 +155,65 @@ function get_admob_app_list() {
   }
 }
 
-// finding app in App Store and Google Play is not implemented yet
-function find_app_in_store(i) {
-  create_app(i, {});
+// search for app in Google Play, iTunes App Store
+function selectApp(name, storeId, complete) {
+  var token = get_account_token();
+  var shortName = name.substring(0, 80);
+
+  data = {
+    "method": "searchMobileApplication",
+    "params": {
+      "2": shortName,
+      "3": 0,
+      "4": 1000
+    },
+    "xsrf": token
+  }
+
+  call_inventory(data, function(result) {
+    var apps = result["result"][2];
+    var app;
+    if (apps) {
+      app = findByStoreId(apps, storeId)
+    }
+    complete(app);
+  })
 }
 
-// function find_app_in_store(i) {
-//   if (app_list[i].search_in_store == false) {
-//     create_app(i, {});
-//   } else {
-//     var http = new XMLHttpRequest();
-//     http.open("POST", "https://apps.admob.com/tlcgwt/inventory", true);
-//     http.setRequestHeader("Content-Type", "application/javascript; charset=UTF-8");
-//     xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
+// find app in market search results by package name
+function findByStoreId(apps, storeId) {
+  // check if app has the simialar bundle id
+  function isEquivalent(app) {
+    return app[4] == storeId;
+  }
+  var equivalentApps = apps.filter(isEquivalent);
+  if (equivalentApps.length > 0) {
+    return equivalentApps[0];
+  } else {
+    return
+  }
+}
 
-//     // name length is limited to 80 characters
-//     var appName = app_list[i].package_name.substring(0, 80);
-//     json = {method: "searchMobileApplication", params: {2: appName, 3: 0, 4: 15}, xsrf: xsrf};
-//     http.send(JSON.stringify(json));
-//     http.onreadystatechange = function() {
-//       if(http.readyState == 4 && http.status == 200) {
-//         response = JSON.parse(http.responseText);
+// searching for app in App Store and Google Play
+function find_app_in_store(i) {
+  var storeName = app_list[i].store_name;
+  var packageName = app_list[i].package_name;
 
-//         console.log("Try to find app by name in Store. Results:");
-//         console.log(JSON.stringify(response));
-
-//         // should find by app name and select from resulting store links by package name
-//         count = response['result'][1];
-//         market_hash = {};
-//         // if (count > 0 && app_list[i].package_name == response['result'][2][0]) {
-//         //   market_hash = response['result'][2][0];
-//         // }
-//         create_app(i, market_hash);
-//       }
-//     }
-//   }
-// }
+  if (app_list[i].search_in_store == false || !storeName) {
+    create_app(i, {});
+  } else {
+    selectApp(storeName, packageName, function(market_app){
+      if (market_app) {
+        console.log("App found in App Store or Google Play");
+        console.log(JSON.stringify(market_app));
+        create_app(i, market_app);
+      } else {
+        console.log("App not found in App Store or Google Play");
+        create_app(i, {});
+      }
+    })
+  }
+}
 
 function create_app(i, market_hash) {
   var http = new XMLHttpRequest();
@@ -200,13 +223,13 @@ function create_app(i, market_hash) {
   xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
   params = {2:name,3:app_list[i].os}
   params = jQuery.extend(params, market_hash);
-  console.log(params);
+  console.log(JSON.stringify(params));
   json = {method:"insertInventory",params:{2:params},xsrf:xsrf}
   http.send(JSON.stringify(json));
   http.onreadystatechange = function() {
     if(http.readyState == 4 && http.status == 200) {
       response = JSON.parse(http.responseText);
-      console.log(response);
+      console.log(JSON.stringify(response));
       admob_app_id = response["result"][1][0][1]
       app_list[i]['admob_app_id'] = admob_app_id;
       send_id(i);
