@@ -26,6 +26,9 @@ var current_account_id = undefined;
 app_list = [];
 admob_app_list = [];
 
+// used to prevent link process of already linked (hidden) apps
+admobStoreIds = [];
+
 chrome.storage.local.get("admob_processing", function(result) {
   if (result['admob_processing']) {
     document.body.onload = function() {
@@ -79,11 +82,14 @@ function sendBadgeNumMessage(num) {
 
 function process_app(i) {
   sendBadgeNumMessage(i);
+  var appId = app_list[i]['id'];
 
   if (admob_app_id = find_in_admob_app_list(app_list[i])) {
+    console.log("App " + appId + " found: add adunits");
     app_list[i]['admob_app_id'] = admob_app_id;
     send_id(i);
   } else {
+    console.log("App " + appId + " not found: create with linking");
     find_app_in_store(i);
   }
 }
@@ -94,32 +100,104 @@ function updateAdmobAppListAfterFound(i, app_id) {
   admob_app_list[i]['found'] = app_id;
 }
 
+// apps mapping between appodeal and admob
 function find_in_admob_app_list(app) {
-  if (app.search_in_store == false) {
-    for (var i = 0; i < admob_app_list.length; i++) {
-      if (!admob_app_list[i]['found'] && admob_app_list[i][2] == 'Appodeal/' + app.id) {
-        console.log("did not search in store, found app by Appodeal label and app id");
-        updateAdmobAppListAfterFound(i, app.id);
-        return admob_app_list[i][1];
+  // priority search by admob app id
+  for (var i = 0; i < admob_app_list.length; i++) {
+    var admobApp = admob_app_list[i];
+    var admobAppId = admobApp[1];
+
+    // admob app already mapped
+    if (admobApp['found']) { continue; }
+
+    // admob app ids matched
+    if (app.admob_id == admobAppId) {
+      console.log("App found by remote admob app id " + admobAppId);
+      updateAdmobAppListAfterFound(i, app.id);
+
+      // not amazon and not linked should be linked
+      if (app.search_in_store && !admobApp[4]) {
+        console.log("App is not linked to store.");
+        linkMobileApplication(admobAppId, app.store_name, app.package_name, app.os, function(result) {
+          console.log("Linking try finished.");
+        })
       }
+
+      return admobAppId;
     }
-  } else {
-    for (var i = 0; i < admob_app_list.length; i++) {
-      if (!admob_app_list[i]['found'] && admob_app_list[i][4] == app.package_name && admob_app_list[i][3] == app.os) {
-        console.log("found app by package name and platform");
+  }
+
+  // common search
+  for (var i = 0; i < admob_app_list.length; i++) {
+    var admobApp = admob_app_list[i];
+    var defaultAppName = 'Appodeal/' + app.id;
+    var admobAppId = admobApp[1];
+
+    // admob app already mapped
+    if (admobApp['found']) { continue; }
+
+    if (app.search_in_store) {
+      // search for ios or android
+
+      // linked app
+      if (admobApp[4] == app.package_name && admobApp[3] == app.os) {
         updateAdmobAppListAfterFound(i, app.id);
-        return admob_app_list[i][1];
+        return admobAppId;
       }
-    }
-    for (var i = 0; i < admob_app_list.length; i++) {
-      if (!admob_app_list[i]['found'] && admob_app_list[i][2] == 'Appodeal/' + app.id) {
-        console.log("found app by Appodeal label and app id");
+
+      // not linked app
+      if (admobApp[2] == defaultAppName) {
         updateAdmobAppListAfterFound(i, app.id);
-        return admob_app_list[i][1];
+        console.log("App is not linked to store.");
+
+        linkMobileApplication(admobAppId, app.store_name, app.package_name, app.os, function(result) {
+          console.log("Linking try finished.");
+        })
+
+        return admobAppId;
+      }
+    } else {
+      // search for amazon app
+      if (admobApp[2] == defaultAppName) {
+        updateAdmobAppListAfterFound(i, app.id);
+        return admobAppId;
       }
     }
   }
+
   return false;
+}
+
+// try to link existing app
+// 1. Search by name
+// 2. Update admob app with found app data hash
+function linkMobileApplication(admobAppId, storeName, packageName, os, complete) {
+  if (storeName) {
+    console.log("App connected to markets in Appodeal");
+
+    searchMobileApplication(storeName, packageName, os, function(marketApp){
+      if (marketApp) {
+        console.log("App found in App Store or Google Play");
+        console.log(JSON.stringify(marketApp));
+
+        updateMobileApplication(admobAppId, marketApp, function(result) {
+          console.log("Link app to store.");
+          console.log(JSON.stringify(result));
+
+          // add app package name to admob app package name list to prevent repeated searching in markets
+          admobStoreIds.push(packageName);
+
+          complete(result);
+        });
+      } else {
+        console.log("App not found in App Store or Google Play");
+        complete(undefined);
+      }
+    })
+  } else {
+    console.log("App is not linked in Appodeal. Continue.");
+    complete(undefined);
+  }
 }
 
 function get_admob_app_list() {
@@ -133,17 +211,29 @@ function get_admob_app_list() {
     if(http.readyState == 4 && http.status == 200) {
       response = JSON.parse(http.responseText);
       admob_app_list = [];
+      admobStoreIds = [];
       var admob_apps_json = response['result'][1][1];
 
       if (admob_apps_json) {
         // filter visible admob applications
         for (var i = 0; i < admob_apps_json.length; i++) {
           var admob_app = admob_apps_json[i];
+
+          if (admob_app[4]) {
+            admobStoreIds.push(admob_app[4]);
+          }
+
           if (admob_app[19] == 0) {
             admob_app_list.push(admob_app);
           }
         }
       }
+
+      admobStoreIds = admobStoreIds.sort();
+      console.log("List admob package names:")
+      admobStoreIds.forEach(function (item, index, array) {
+        console.log(item);
+      });
 
       console.log("List admob apps:");
       admob_app_list.forEach(function (item, index, array) {
@@ -155,28 +245,89 @@ function get_admob_app_list() {
   }
 }
 
+// limit long search string (app name) length by reducing words number
+function limitSearchString(appName) {
+  if (appName.length > 80) {
+    return appName.split(/\s+/).slice(0, 5).join(" ").substring(0, 80);
+  } else {
+    return appName;
+  }
+}
+
+// check if app has been already found in markets
+function isAlreadyFoundInMarkets(storeId) {
+  if (admobStoreIds.indexOf(storeId) >= 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // search for app in Google Play, iTunes App Store
-function selectApp(name, storeId, complete) {
+function searchMobileApplication(name, storeId, os, complete) {
+  if (isAlreadyFoundInMarkets(storeId)) {
+    console.log("App is already found in markets (maybe hidden). Skip");
+    complete(undefined);
+  } else {
+    var token = get_account_token();
+    var shortName = limitSearchString(name);
+
+    data = {
+      "method": "searchMobileApplication",
+      "params": {
+        "2": shortName,
+        "3": 0,
+        "4": 1000
+      },
+      "xsrf": token
+    }
+
+    if (os) {
+      data["params"]["5"] = os;
+    }
+
+    call_inventory(data, function(result) {
+      var apps = result["result"][2];
+      var app;
+      if (apps) {
+        app = findByStoreId(apps, storeId)
+      }
+      complete(app);
+    })
+  }
+}
+
+// link existing app to Google Play or iTunes App Store
+function updateMobileApplication(admobAppId, app, complete) {
   var token = get_account_token();
-  var shortName = name.substring(0, 80);
 
   data = {
-    "method": "searchMobileApplication",
+    "method": "updateMobileApplication",
     "params": {
-      "2": shortName,
-      "3": 0,
-      "4": 1000
+      "2": {
+        "1": admobAppId,
+        "2": app[2],
+        "3": app[3],
+        "4": app[4],
+        "6": app[6],
+        "19": 0,
+        "21": {
+          "1": 0,
+          "5": 0
+        }
+      }
     },
     "xsrf": token
   }
 
   call_inventory(data, function(result) {
-    var apps = result["result"][2];
-    var app;
-    if (apps) {
-      app = findByStoreId(apps, storeId)
+    var addedApp;
+    if (result["result"]) {
+      addedApp = result["result"]["1"][0];
+    } else {
+      console.log(JSON.stringify(result));
     }
-    complete(app);
+    complete(addedApp);
   })
 }
 
@@ -202,7 +353,7 @@ function find_app_in_store(i) {
   if (app_list[i].search_in_store == false || !storeName) {
     create_app(i, {});
   } else {
-    selectApp(storeName, packageName, function(market_app){
+    searchMobileApplication(storeName, packageName, null, function(market_app){
       if (market_app) {
         console.log("App found in App Store or Google Play");
         console.log(JSON.stringify(market_app));
@@ -216,6 +367,9 @@ function find_app_in_store(i) {
 }
 
 function create_app(i, market_hash) {
+  // add app package name to admob app package name list to prevent repeated searching in markets
+  admobStoreIds.push(app_list[i].package_name);
+
   var http = new XMLHttpRequest();
   http.open("POST", "https://apps.admob.com/tlcgwt/inventory", true);
   http.setRequestHeader("Content-Type", "application/javascript; charset=UTF-8");
@@ -230,8 +384,10 @@ function create_app(i, market_hash) {
     if(http.readyState == 4 && http.status == 200) {
       response = JSON.parse(http.responseText);
       console.log(JSON.stringify(response));
-      admob_app_id = response["result"][1][0][1]
+      admob_app_id = response["result"][1][0][1];
       app_list[i]['admob_app_id'] = admob_app_id;
+
+      console.log("App created. Create ad units.");
       send_id(i);
     }
   }
