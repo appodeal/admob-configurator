@@ -99,3 +99,13 @@ function extension_version() {
   var version = chrome.runtime.getManifest().version;
   return version;
 }
+
+// async jQuery load
+function appendJQuery(complete) {
+  var head = document.getElementsByTagName("head")[0];
+  var jq = document.createElement('script');
+  jq.type = 'text/javascript';
+  jq.src = "https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js";
+  jq.onload = complete;
+  head.appendChild(jq);
+}

@@ -17,29 +17,117 @@ var INTERSTITIAL_BIDS = [0.15, 0.25, 0.65, 0.8, 1.25, 2.15, 2.5, 5.0, 7.5, 10.0,
 var BANNER_BIDS = [0.1, 0.2, 0.35, 0.5, 0.7];
 var MREC_BIDS = [0.15, 0.3, 0.6, 0.8, 1.25, 2];
 
-var current_admob_app_id = undefined;
-var current_user_id = undefined;
-var current_api_key = undefined;
-var current_token = undefined;
-var current_account_id = undefined;
+var current_admob_app_id;
+var current_user_id;
+var current_api_key;
+var current_token;
+var current_account_id;
 
-app_list = [];
-admob_app_list = [];
+var app_list = [];
+var admob_app_list = [];
 
 // used to prevent link process of already linked (hidden) apps
-admobStoreIds = [];
+var admobStoreIds = [];
+
+// top progress bar element
+var progressBar;
+
+// progress bar init
+var ProgressBar = function() {
+  if (jQuery("#progress").length == 0) {
+    // top progress bar style
+    var progressBarDiv = '<div id="progress" style="position: fixed; top: 0px; width: 0%; height: 8px; z-index: 10000; left: 0px; background: #6d6d6d;"></div>';
+    // create element
+    jQuery("body").append(progressBarDiv);
+  }
+  this.bar = jQuery("#progress");
+  // current app number and count
+  this.currentAppNum = 0;
+  this.appCount = 0;
+
+  // default ad units num
+  this.defaultAdunitsNum = 6;
+  this.currentDefaultAdunit = 0;
+  this.adunitsNum = INTERSTITIAL_BIDS.length + BANNER_BIDS.length + MREC_BIDS.length + this.defaultAdunitsNum;
+
+  this.bidAdunitsNum = INTERSTITIAL_BIDS.length;
+  this.currentBidAdunit = 0;
+
+  this.bannerAdunitsNum = BANNER_BIDS.length;
+  this.currentBannerAdunit = 0;
+
+  this.mrecAdunitsNum = MREC_BIDS.length;
+  this.currentMrecAdunit = 0;
+
+  console.log("Progress bar added");
+};
+
+// move progress indicator
+ProgressBar.prototype.setPosition = function(position) {
+  this.position = position;
+  var percentage = this.position * 100 + "%";
+  this.bar.css({width: percentage});
+};
+
+// move progress indicator considering processed ad units num
+ProgressBar.prototype.update = function() {
+  var adunitsProcessed = this.currentDefaultAdunit + this.currentBidAdunit + this.currentBannerAdunit + this.currentMrecAdunit;
+  this.position = (this.currentAppNum + adunitsProcessed / this.adunitsNum) / this.appCount;
+  var percentage = this.position * 100 + "%";
+  this.bar.css({width: percentage});
+};
+
+// set progress bar status
+ProgressBar.prototype.setIntegerPosition = function(i) {
+  var position = i / this.appCount;
+  this.setPosition(position);
+  // reset adunits counters
+  this.currentDefaultAdunit = 0;
+  this.currentBidAdunit = 0;
+  this.currentBannerAdunit = 0;
+  this.currentMrecAdunit = 0;
+}
+
+ProgressBar.prototype.increaseDefaultCounter = function() {
+  this.currentDefaultAdunit += 1;
+  this.update();
+}
+
+ProgressBar.prototype.increaseBidCounter = function() {
+  this.currentBidAdunit += 1;
+  this.update();
+}
+
+ProgressBar.prototype.increaseBannerCounter = function() {
+  this.currentBannerAdunit += 1;
+  this.update();
+}
+
+ProgressBar.prototype.increaseMrecCounter = function() {
+  this.currentMrecAdunit += 1;
+  this.update();
+}
 
 chrome.storage.local.get("admob_processing", function(result) {
   if (result['admob_processing']) {
     document.body.onload = function() {
-      alert("Please allow several minutes to sync your inventory... Click OK and be patient.");
+      appendJQuery(function() {
+        console.log("jQuery appended.");
+        alert("Please allow several minutes to sync your inventory... Click OK and be patient.");
+        chrome.storage.local.remove("admob_processing");
+        initProgressIndicators();
+        console.log("Appodeal admob extension version -> " + extension_version());
+        create_apps();
+      })
     }
-    chrome.storage.local.remove("admob_processing");
-    chrome.extension.sendMessage({sender: "badge", content: "setBadgeColor"});
-    console.log("Appodeal admob extension version -> " + extension_version());
-    create_apps();
   }
 })
+
+// set up badge with apps number and create progress bar
+function initProgressIndicators() {
+  chrome.extension.sendMessage({sender: "badge", content: "setBadgeColor"});
+  progressBar = new ProgressBar();
+}
 
 function create_apps() {
   console.log("Start to create apps");
@@ -67,6 +155,8 @@ function get_appodeal_app_list() {
         } else {
           get_admob_app_list();
         }
+
+        progressBar.appCount = app_list.length;
       }
     }
     console.log("Storage items:");
@@ -81,7 +171,11 @@ function sendBadgeNumMessage(num) {
 }
 
 function process_app(i) {
+  progressBar.currentAppNum = i;
+  progressBar.setIntegerPosition(i);
+
   sendBadgeNumMessage(i);
+
   var appId = app_list[i]['id'];
 
   if (admob_app_id = find_in_admob_app_list(app_list[i])) {
@@ -439,6 +533,7 @@ function send_id(i) {
             } else {
               // Remove badge number
               chrome.extension.sendMessage({sender: "badge", num: 0});
+              progressBar.setPosition(1.0);
 
               chrome.storage.local.remove("admob_processing");
               alert("Good job! Admob is synced with Appodeal now. You can run step 4 again if you add new apps.")
@@ -513,23 +608,30 @@ function create_all_adunits(admob_app_id, token, complete) {
 function create_default_adunits(admob_app_id, token, complete) {
   existed_default_adunits(admob_app_id, token, function(existed_adunits){
     console.log("Existed ad units: " + JSON.stringify(existed_adunits));
+
     create_adunit(["image"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
       console.log("Interstitial image adunit added for App (" + admob_app_id +  ") " + adunit_id);
+      progressBar.increaseDefaultCounter();
 
       create_adunit(["text"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
         console.log("Interstitial text adunit added for App (" + admob_app_id +  ") " + adunit_id);
+        progressBar.increaseDefaultCounter();
 
         create_banner_adunit(["text"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
           console.log("Banner text adunit added for App (" + admob_app_id +  ") " + adunit_id);
+          progressBar.increaseDefaultCounter();
 
           create_banner_adunit(["image"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
             console.log("Banner image adunit added for App (" + admob_app_id +  ") " + adunit_id);
+            progressBar.increaseDefaultCounter();
 
             create_mrec_adunit(["image"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
               console.log("Mrec image adunit added for App (" + admob_app_id +  ") " + adunit_id);
+              progressBar.increaseDefaultCounter();
 
               create_mrec_adunit(["text"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
                 console.log("Mrec text adunit added for App (" + admob_app_id +  ") " + adunit_id);
+                progressBar.increaseDefaultCounter();
 
                 complete();
               })
@@ -702,6 +804,8 @@ function create_mrec_adunit(types, admob_app_id, token, bid_floor, existed, comp
 function create_bid_adunits(admob_app_id, token, complete) {
   console.log("Started to create bid adunits");
   bid_floors_in_settings(AD_TYPES['interstitial'], admob_app_id, token, function(bid_floors) {
+    progressBar.currentBidAdunit = progressBar.bidAdunitsNum - bid_floors.length;
+
     create_adunit_loop(bid_floors, admob_app_id.toString(), token, function() {
       complete();
     });
@@ -711,6 +815,8 @@ function create_bid_adunits(admob_app_id, token, complete) {
 function create_banner_bid_adunits(admob_app_id, token, complete) {
   console.log("Started to create banner bid adunits");
   bid_floors_in_settings(AD_TYPES['banner'], admob_app_id, token, function(bid_floors) {
+    progressBar.currentBannerAdunit = progressBar.bannerAdunitsNum - bid_floors.length;
+
     create_banner_adunit_loop(bid_floors, admob_app_id.toString(), token, function() {
       complete();
     });
@@ -720,6 +826,8 @@ function create_banner_bid_adunits(admob_app_id, token, complete) {
 function create_mrec_bid_adunits(admob_app_id, token, complete) {
   console.log("Started to create mrec bid adunits");
   bid_floors_in_settings(AD_TYPES['mrec'], admob_app_id, token, function(bid_floors) {
+    progressBar.currentMrecAdunit = progressBar.mrecAdunitsNum - bid_floors.length;
+
     create_mrec_adunit_loop(bid_floors, admob_app_id.toString(), token, function() {
       complete();
     });
@@ -1178,6 +1286,7 @@ function create_banner_adunit_loop(bid_floors, admob_app_id, token, complete) {
     create_banner_adunit(["image", "text"], admob_app_id.toString(), token, bid_floor, null, function(xsrf, adunit_id) {
       // puts information about created ad unit
       console.log("Banner bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
+      progressBar.increaseBannerCounter();
       // run new loop without the last element in array
       create_banner_adunit_loop(bid_floors, admob_app_id, token, complete)
     })
@@ -1194,6 +1303,7 @@ function create_mrec_adunit_loop(bid_floors, admob_app_id, token, complete) {
     create_mrec_adunit(["image", "text"], admob_app_id.toString(), token, bid_floor, null, function(xsrf, adunit_id) {
       // puts information about created ad unit
       console.log("Mrec bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
+      progressBar.increaseMrecCounter();
       // run new loop without the last element in array
       create_mrec_adunit_loop(bid_floors, admob_app_id, token, complete)
     })
@@ -1210,6 +1320,8 @@ function create_adunit_loop(bid_floors, admob_app_id, token, complete) {
     create_adunit(["image", "text"], admob_app_id.toString(), token, bid_floor, null, function(xsrf, adunit_id) {
       // puts information about created ad unit
       console.log("Interstitial bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
+      progressBar.increaseBidCounter();
+
       // run new loop without the last element in array
       create_adunit_loop(bid_floors, admob_app_id, token, complete);
     })
