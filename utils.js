@@ -96,7 +96,7 @@ function setBadgeNum(num) {
 }
 
 function extension_version() {
-  var version = chrome.runtime.getManifest().version;
+  var version = parseFloat(chrome.runtime.getManifest().version);
   return version;
 }
 

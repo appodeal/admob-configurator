@@ -116,8 +116,9 @@ chrome.storage.local.get("admob_processing", function(result) {
         alert("Please allow several minutes to sync your inventory... Click OK and be patient.");
         chrome.storage.local.remove("admob_processing");
         initProgressIndicators();
-        console.log("Appodeal admob extension version -> " + extension_version());
-        create_apps();
+        checkExtensionVersion(function() {
+          create_apps();
+        });
       })
     }
   }
@@ -132,6 +133,34 @@ function initProgressIndicators() {
 function create_apps() {
   console.log("Start to create apps");
   get_appodeal_app_list();
+}
+
+function getTheLatestVersion(complete) {
+  jQuery.get("https://chrome.google.com/webstore/detail/appodeal/cnlfcihkilpkgdlnhjonhkfjjmbpbpbj", function(data) {
+    var versionRegex = /meta itemprop="version" content="([\d.]+)"/i;
+    if (versionRegex.test(data)) {
+      var version = parseFloat(data.match(versionRegex)[1]);
+      complete(version);
+    } else {
+      complete(undefined);
+    }
+  });
+}
+
+function checkExtensionVersion(complete) {
+  var currentVersion = extension_version();
+  console.log("User's extension version -> " + currentVersion);
+  getTheLatestVersion(function(version) {
+    console.log("Available extension version -> " + version);
+    if (version > currentVersion) {
+      var message = "You are not using the latest version of Appodeal Chrome Extension (" + version + "). Please visit chrome extension page chrome://extensions/ and ensure that extension is updated.";
+      console.log(message);
+      alert(message);
+    } else {
+      complete();
+    }
+  })
+
 }
 
 function get_appodeal_app_list() {

@@ -3,7 +3,7 @@
   "name": "Appodeal",
   "short_name": "Appodeal Admob Sync",
   "description": "This extension will create and sync Appodeal adunits in your Admob account.",
-  "version": "5.3",
+  "version": "5.4",
   "browser_action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html"
@@ -44,6 +44,7 @@
     "https://apps.admob.com/*",
     "https://console.developers.google.com/*",
     "storage",
-    "webNavigation"
+    "webNavigation",
+    "https://chrome.google.com/webstore/detail/appodeal/*"
   ]
 }
