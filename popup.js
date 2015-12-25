@@ -70,6 +70,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (items['appodeal_api_key'] != null && items['appodeal_user_id'] != null) {
       api_btn.innerHTML = '<span>Done</span>API Key: ' + items['appodeal_api_key'] + ' (Refresh)';
+
+      // Show steps 3 and 4 if step 2 is complete
+      reporting_btn.style.display = "block";
+      admob_btn.style.display = "block";
     } else {
       // reporting_btn.onclick = function() { alert("Please complete Step 2 first."); return false; }
       // admob_btn.onclick = function() { alert("Please complete Step 2 first."); return false; }
@@ -77,11 +81,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (items['appodeal_email'] != null) {
       var loginElement = document.getElementById("login");
-      loginElement.id = 'logout'
-      loginElement.innerHTML = '<span>Done</span>' + items['appodeal_email'] + " (Logout)"
+      loginElement.id = 'logout';
+      loginElement.innerHTML = '<span>Done</span>' + items['appodeal_email'] + " (Logout)";
+      // Show step 2 if step 1 is complete
+      api_btn.style.display = "block";
+
       if (items['appodeal_admob_account_id'] != null) {
         var reportingElement = document.getElementById("reporting");
-      //   reportingElement.parentNode.removeChild(reportingElement);
+        // reportingElement.parentNode.removeChild(reportingElement);
         reportingElement.innerHTML = '<span>Done</span>' + reportingElement.innerHTML;
       }
     } else {
