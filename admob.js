@@ -17,7 +17,7 @@ var INTERSTITIAL_BIDS = [0.15, 0.25, 0.65, 0.8, 1.25, 2.15, 2.5, 5.0, 7.5, 10.0,
 var BANNER_BIDS = [0.1, 0.2, 0.35, 0.5, 0.7];
 var MREC_BIDS = [0.15, 0.3, 0.6, 0.8, 1.25, 2];
 
-var current_admob_app_id;
+var currentApp;
 var current_user_id;
 var current_api_key;
 var current_token;
@@ -531,30 +531,30 @@ function send_id(i) {
         console.log("Starting creatign ad units.")
         console.log("Checking available params")
 
-        current_admob_app_id = app_list[i]['admob_app_id'];
+        currentApp = app_list[i];
         current_user_id = items['appodeal_user_id'];
         current_api_key = items['appodeal_api_key'];
         current_token = get_account_token();
         current_account_id = get_account_id();
 
-        console.log("current_admob_app_id: " + current_admob_app_id);
+        console.log("current_admob_app_id: " + currentApp['admob_app_id']);
         console.log("current_user_id: " + current_user_id);
         console.log("current_api_key: " + current_api_key);
         console.log("current_token: " + current_token);
         console.log("current_account_id: " + current_account_id);
 
         // run ad units creation process
-        create_all_adunits(current_admob_app_id, current_token, function() {
+        create_all_adunits(currentApp, current_token, function() {
           // ad units creation finished for current app
 
           // Checking created adunits on server
-          update_server_adunits(current_api_key, current_user_id, current_admob_app_id, current_token, function(need_update) {
+          update_server_adunits(current_api_key, current_user_id, currentApp, current_token, function(need_update) {
             if (need_update) {
-              var error_msg = "Absent or wrong adunits were found for app " + current_admob_app_id + ". We recommend you to run the 4th step once again after script is finished to ensure that all is okay. If this error is repeated, please, contact Appodeal team.";
+              var error_msg = "Absent or wrong adunits were found for app " + currentApp['admob_app_id'] + ". We recommend you to run the 4th step once again after script is finished to ensure that all is okay. If this error is repeated, please, contact Appodeal team.";
               console.log(error_msg);
               alert(error_msg);
             } else {
-              console.log("All adunits were found for app " + current_admob_app_id)
+              console.log("All adunits were found for app " + currentApp['admob_app_id'])
             }
 
             if (i + 1 < app_list.length) {
@@ -609,20 +609,20 @@ function adunit_created(api_key, user_id, admob_app_id, code, ad_type, bid_floor
   }
 }
 
-function create_all_adunits(admob_app_id, token, complete) {
-  if (admob_app_id.length > 0) {
-    create_default_adunits(admob_app_id, token, function() {
+function create_all_adunits(admob_app, token, complete) {
+  if (admob_app['admob_app_id'].length > 0) {
+    create_default_adunits(admob_app, token, function() {
       console.log("Default ad units created");
 
-      create_bid_adunits(admob_app_id, token, function() {
+      create_bid_adunits(admob_app, token, function() {
         console.log("Interstitial bid ad units created");
 
-        create_banner_bid_adunits(admob_app_id, token, function() {
+        create_banner_bid_adunits(admob_app, token, function() {
           console.log("Banner bid ad units created");
 
-          create_mrec_bid_adunits(admob_app_id, token, function() {
+          create_mrec_bid_adunits(admob_app, token, function() {
             console.log("Mrec bid ad units created");
-            console.log("Finished creation of adunits for app " + admob_app_id);
+            console.log("Finished creation of adunits for app " + admob_app['admob_app_id']);
 
             complete();
           })
@@ -634,31 +634,32 @@ function create_all_adunits(admob_app_id, token, complete) {
   }
 }
 
-function create_default_adunits(admob_app_id, token, complete) {
+function create_default_adunits(admob_app, token, complete) {
+  var admob_app_id = admob_app['admob_app_id'];
   existed_default_adunits(admob_app_id, token, function(existed_adunits){
     console.log("Existed ad units: " + JSON.stringify(existed_adunits));
 
-    create_adunit(["image"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
+    create_adunit(["image"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
       console.log("Interstitial image adunit added for App (" + admob_app_id +  ") " + adunit_id);
       progressBar.increaseDefaultCounter();
 
-      create_adunit(["text"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
+      create_adunit(["text"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
         console.log("Interstitial text adunit added for App (" + admob_app_id +  ") " + adunit_id);
         progressBar.increaseDefaultCounter();
 
-        create_banner_adunit(["text"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
+        create_banner_adunit(["text"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
           console.log("Banner text adunit added for App (" + admob_app_id +  ") " + adunit_id);
           progressBar.increaseDefaultCounter();
 
-          create_banner_adunit(["image"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
+          create_banner_adunit(["image"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
             console.log("Banner image adunit added for App (" + admob_app_id +  ") " + adunit_id);
             progressBar.increaseDefaultCounter();
 
-            create_mrec_adunit(["image"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
+            create_mrec_adunit(["image"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
               console.log("Mrec image adunit added for App (" + admob_app_id +  ") " + adunit_id);
               progressBar.increaseDefaultCounter();
 
-              create_mrec_adunit(["text"], admob_app_id, token, null, existed_adunits, function(xsrf, adunit_id) {
+              create_mrec_adunit(["text"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
                 console.log("Mrec text adunit added for App (" + admob_app_id +  ") " + adunit_id);
                 progressBar.increaseDefaultCounter();
 
@@ -681,7 +682,8 @@ function adunitName(adName, typeName, bidFloor) {
   return name;
 }
 
-function create_adunit(types, admob_app_id, token, bid_floor, existed, complete) {
+function create_adunit(types, admob_app, token, bid_floor, existed, complete) {
+  var admob_app_id = admob_app['admob_app_id'];
   var adunit_name = adunitName("interstitial", types[0], bid_floor);
 
   var type_ids = types.map(function(t) {
@@ -732,7 +734,8 @@ function create_adunit(types, admob_app_id, token, bid_floor, existed, complete)
   })
 }
 
-function create_banner_adunit(types, admob_app_id, token, bid_floor, existed, complete) {
+function create_banner_adunit(types, admob_app, token, bid_floor, existed, complete) {
+  var admob_app_id = admob_app['admob_app_id'];
   var adunit_name = adunitName("banner", types[0], bid_floor);
 
   var type_ids = types.map(function(t) {
@@ -783,7 +786,8 @@ function create_banner_adunit(types, admob_app_id, token, bid_floor, existed, co
 }
 
 // mrec adunits should be equivalent to banner
-function create_mrec_adunit(types, admob_app_id, token, bid_floor, existed, complete) {
+function create_mrec_adunit(types, admob_app, token, bid_floor, existed, complete) {
+  var admob_app_id = admob_app['admob_app_id'];
   var adunit_name = adunitName("mrec", types[0], bid_floor);
 
   var type_ids = types.map(function(t) {
@@ -833,34 +837,37 @@ function create_mrec_adunit(types, admob_app_id, token, bid_floor, existed, comp
   })
 }
 
-function create_bid_adunits(admob_app_id, token, complete) {
+function create_bid_adunits(admob_app, token, complete) {
+  var admob_app_id = admob_app['admob_app_id'];
   console.log("Started to create bid adunits");
   bid_floors_in_settings(AD_TYPES['interstitial'], admob_app_id, token, function(bid_floors) {
     progressBar.currentBidAdunit = progressBar.bidAdunitsNum - bid_floors.length;
 
-    create_adunit_loop(bid_floors, admob_app_id.toString(), token, function() {
+    create_adunit_loop(bid_floors, admob_app, token, function() {
       complete();
     });
   });
 }
 
-function create_banner_bid_adunits(admob_app_id, token, complete) {
+function create_banner_bid_adunits(admob_app, token, complete) {
+  var admob_app_id = admob_app['admob_app_id'];
   console.log("Started to create banner bid adunits");
   bid_floors_in_settings(AD_TYPES['banner'], admob_app_id, token, function(bid_floors) {
     progressBar.currentBannerAdunit = progressBar.bannerAdunitsNum - bid_floors.length;
 
-    create_banner_adunit_loop(bid_floors, admob_app_id.toString(), token, function() {
+    create_banner_adunit_loop(bid_floors, admob_app, token, function() {
       complete();
     });
   });
 }
 
-function create_mrec_bid_adunits(admob_app_id, token, complete) {
+function create_mrec_bid_adunits(admob_app, token, complete) {
+  var admob_app_id = admob_app['admob_app_id'];
   console.log("Started to create mrec bid adunits");
   bid_floors_in_settings(AD_TYPES['mrec'], admob_app_id, token, function(bid_floors) {
     progressBar.currentMrecAdunit = progressBar.mrecAdunitsNum - bid_floors.length;
 
-    create_mrec_adunit_loop(bid_floors, admob_app_id.toString(), token, function() {
+    create_mrec_adunit_loop(bid_floors, admob_app, token, function() {
       complete();
     });
   });
@@ -1191,8 +1198,9 @@ function find_admob_adunit_in_server_list(adunit, server_adunits) {
 
 // Update adunits on server that are absent or have wrong code
 // in comparison with admob adunits
-function update_server_adunits(api_key, user_id, admob_app_id, token, complete) {
+function update_server_adunits(api_key, user_id, admob_app, token, complete) {
   // get admob adunits
+  var admob_app_id = admob_app['admob_app_id'];
 
   admob_adunits_list(token, admob_app_id, function(list) {
     console.log("List adunits for app " + admob_app_id);
@@ -1311,16 +1319,17 @@ function call_inventory(data, complete) {
 }
 
 // run async functions in consecutive order
-function create_banner_adunit_loop(bid_floors, admob_app_id, token, complete) {
+function create_banner_adunit_loop(bid_floors, admob_app, token, complete) {
+  var admob_app_id = admob_app['admob_app_id'];
   bid_floor = bid_floors.pop()
 
   if (bid_floor != undefined) {
-    create_banner_adunit(["image", "text"], admob_app_id.toString(), token, bid_floor, null, function(xsrf, adunit_id) {
+    create_banner_adunit(["image", "text"], admob_app, token, bid_floor, null, function(xsrf, adunit_id) {
       // puts information about created ad unit
       console.log("Banner bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
       progressBar.increaseBannerCounter();
       // run new loop without the last element in array
-      create_banner_adunit_loop(bid_floors, admob_app_id, token, complete)
+      create_banner_adunit_loop(bid_floors, admob_app, token, complete)
     })
   } else {
     complete();
@@ -1328,16 +1337,17 @@ function create_banner_adunit_loop(bid_floors, admob_app_id, token, complete) {
 }
 
 // run mrec adding async functions in consecutive order
-function create_mrec_adunit_loop(bid_floors, admob_app_id, token, complete) {
+function create_mrec_adunit_loop(bid_floors, admob_app, token, complete) {
+  var admob_app_id = admob_app['admob_app_id'];
   bid_floor = bid_floors.pop()
 
   if (bid_floor != undefined) {
-    create_mrec_adunit(["image", "text"], admob_app_id.toString(), token, bid_floor, null, function(xsrf, adunit_id) {
+    create_mrec_adunit(["image", "text"], admob_app, token, bid_floor, null, function(xsrf, adunit_id) {
       // puts information about created ad unit
       console.log("Mrec bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
       progressBar.increaseMrecCounter();
       // run new loop without the last element in array
-      create_mrec_adunit_loop(bid_floors, admob_app_id, token, complete)
+      create_mrec_adunit_loop(bid_floors, admob_app, token, complete)
     })
   } else {
     complete();
@@ -1345,17 +1355,18 @@ function create_mrec_adunit_loop(bid_floors, admob_app_id, token, complete) {
 }
 
 // run async functions in consecutive order
-function create_adunit_loop(bid_floors, admob_app_id, token, complete) {
-  bid_floor = bid_floors.pop()
+function create_adunit_loop(bid_floors, admob_app, token, complete) {
+  var admob_app_id = admob_app['admob_app_id'];
+  bid_floor = bid_floors.pop();
 
   if (bid_floor != undefined) {
-    create_adunit(["image", "text"], admob_app_id.toString(), token, bid_floor, null, function(xsrf, adunit_id) {
+    create_adunit(["image", "text"], admob_app, token, bid_floor, null, function(xsrf, adunit_id) {
       // puts information about created ad unit
       console.log("Interstitial bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
       progressBar.increaseBidCounter();
 
       // run new loop without the last element in array
-      create_adunit_loop(bid_floors, admob_app_id, token, complete);
+      create_adunit_loop(bid_floors, admob_app, token, complete);
     })
   } else {
     complete();
