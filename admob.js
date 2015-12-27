@@ -672,10 +672,17 @@ function create_default_adunits(admob_app_id, token, complete) {
   });
 }
 
+// generate ad unit name
+function adunitName(adName, typeName, bidFloor) {
+  var name = "Appodeal/" + adName + "/" + typeName;
+  if (bidFloor) {
+    name = name + "/" + bidFloor.toString();
+  }
+  return name;
+}
+
 function create_adunit(types, admob_app_id, token, bid_floor, existed, complete) {
-  if (typeof(bid_floor) === 'undefined') bid_floor = null;
-  var adunit_name = "Appodeal/interstitial/" + types[0];
-  if (bid_floor != null) adunit_name = adunit_name + "/" + bid_floor.toString();
+  var adunit_name = adunitName("interstitial", types[0], bid_floor);
 
   var type_ids = types.map(function(t) {
     return TYPES[t];
@@ -726,9 +733,7 @@ function create_adunit(types, admob_app_id, token, bid_floor, existed, complete)
 }
 
 function create_banner_adunit(types, admob_app_id, token, bid_floor, existed, complete) {
-  if (typeof(bid_floor) === 'undefined') bid_floor = null;
-  var adunit_name = "Appodeal/banner/" + types[0];
-  if (bid_floor != null) adunit_name = adunit_name + "/" + bid_floor.toString();
+  var adunit_name = adunitName("banner", types[0], bid_floor);
 
   var type_ids = types.map(function(t) {
     return TYPES[t];
@@ -779,9 +784,7 @@ function create_banner_adunit(types, admob_app_id, token, bid_floor, existed, co
 
 // mrec adunits should be equivalent to banner
 function create_mrec_adunit(types, admob_app_id, token, bid_floor, existed, complete) {
-  if (typeof(bid_floor) === 'undefined') bid_floor = null;
-  var adunit_name = "Appodeal/mrec/" + types[0];
-  if (bid_floor != null) adunit_name = adunit_name + "/" + bid_floor.toString();
+  var adunit_name = adunitName("mrec", types[0], bid_floor);
 
   var type_ids = types.map(function(t) {
     return TYPES[t];
