@@ -674,17 +674,22 @@ function create_default_adunits(admob_app, token, complete) {
 }
 
 // generate ad unit name
-function adunitName(adName, typeName, bidFloor) {
-  var name = "Appodeal/" + adName + "/" + typeName;
+function adunitName(admobApp, adName, typeName, bidFloor) {
+  var name = "Appodeal/" + admobApp.id + "/" + adName + "/" + typeName;
   if (bidFloor) {
-    name = name + "/" + bidFloor.toString();
+    name += "/" + bidFloor;
+  }
+  // max adunit name length equals 80, allocate the rest of name to bundle id
+  var bundleLength = 80 - name.length - 1;
+  if (bundleLength > 0) {
+    name += "/" + admobApp.bundle_id.substring(0, bundleLength);
   }
   return name;
 }
 
 function create_adunit(types, admob_app, token, bid_floor, existed, complete) {
   var admob_app_id = admob_app['admob_app_id'];
-  var adunit_name = adunitName("interstitial", types[0], bid_floor);
+  var adunit_name = adunitName(admob_app, "interstitial", types[0], bid_floor);
 
   var type_ids = types.map(function(t) {
     return TYPES[t];
@@ -736,7 +741,7 @@ function create_adunit(types, admob_app, token, bid_floor, existed, complete) {
 
 function create_banner_adunit(types, admob_app, token, bid_floor, existed, complete) {
   var admob_app_id = admob_app['admob_app_id'];
-  var adunit_name = adunitName("banner", types[0], bid_floor);
+  var adunit_name = adunitName(admob_app, "banner", types[0], bid_floor);
 
   var type_ids = types.map(function(t) {
     return TYPES[t];
@@ -788,7 +793,7 @@ function create_banner_adunit(types, admob_app, token, bid_floor, existed, compl
 // mrec adunits should be equivalent to banner
 function create_mrec_adunit(types, admob_app, token, bid_floor, existed, complete) {
   var admob_app_id = admob_app['admob_app_id'];
-  var adunit_name = adunitName("mrec", types[0], bid_floor);
+  var adunit_name = adunitName(admob_app, "mrec", types[0], bid_floor);
 
   var type_ids = types.map(function(t) {
     return TYPES[t];
@@ -1016,6 +1021,7 @@ function get_initialize_data(token, complete) {
 }
 
 function adUnitTypeRegex(name) {
+  // should work with both old and new adunit names
   var matched_type = /^Appodeal\/(banner|interstitial|mrec)\//.exec(name);
 
   if (matched_type && matched_type.length > 1) {
