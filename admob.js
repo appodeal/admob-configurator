@@ -910,12 +910,12 @@ function bid_floors_in_settings(ad_type, admob_app_id, token, complete) {
       }
     }
 
-    // parse adunit name to get bid_floor
+    // parse adunit names to get bid_floors
     for (var i in current_adunits) {
-      var splitted = current_adunits[i].split("/");
-      var last_element = splitted[splitted.length - 1];
-      var bid = parseFloat(last_element);
-      current_bids.push(bid);
+      var bid = getBidFloor(current_adunits[i]);
+      if (bid) {
+        current_bids.push(bid);
+      }
     }
 
     // substract current bids from default bids to find missing
@@ -929,6 +929,22 @@ function bid_floors_in_settings(ad_type, admob_app_id, token, complete) {
   })
 }
 
+// parse adunit name to get bid_floor
+function getBidFloor(name) {
+  var bidFloorRegex = /(image|text)\/(\d{1,2}(\.\d{1,2})?)(\/|$)/;
+  var result = name.match(bidFloorRegex);
+  if (result) {
+    return parseFloat(result[2]);
+  }
+}
+
+// check if adunit has a default name
+function matchDefaultAdunit(name, adName, typeName) {
+  var defaultAdunitRegex = /\/(banner|interstitial|mrec)\/(image|text)($|\/(?!\d{1,2}(\.\d{1,2})?($|\/)))/;
+  var result = name.match(defaultAdunitRegex);
+  return result && result[1] == adName && result[2] == typeName;
+}
+
 // list already created default adunits
 function existed_default_adunits(admob_app_id, token, complete) {
   get_initialize_data(token, function(xsrf, result) {
@@ -940,30 +956,30 @@ function existed_default_adunits(admob_app_id, token, complete) {
 
     for (var i in adunits["banner"]) {
       var name = adunits["banner"][i];
-      if (/\/banner\/image$/.test(name)) {
+      if (matchDefaultAdunit(name, "banner", "image")) {
         banners.push("image");
       }
-      if (/\/banner\/text$/.test(name)) {
+      if (matchDefaultAdunit(name, "banner", "text")) {
         banners.push("text");
       }
     }
 
     for (var i in adunits["image"]) {
       var name = adunits["image"][i];
-      if (/\/interstitial\/image$/.test(name)) {
+      if (matchDefaultAdunit(name, "interstitial", "image")) {
         images.push("image");
       }
-      if (/\/interstitial\/text$/.test(name)) {
+      if (matchDefaultAdunit(name, "interstitial", "text")) {
         images.push("text");
       }
     }
 
     for (var i in adunits["mrec"]) {
       var name = adunits["mrec"][i];
-      if (/\/mrec\/image$/.test(name)) {
+      if (matchDefaultAdunit(name, "mrec", "image")) {
         mrec.push("image");
       }
-      if (/\/mrec\/text$/.test(name)) {
+      if (matchDefaultAdunit(name, "mrec", "text")) {
         mrec.push("text");
       }
     }
@@ -1022,10 +1038,10 @@ function get_initialize_data(token, complete) {
 
 function adUnitTypeRegex(name) {
   // should work with both old and new adunit names
-  var matched_type = /^Appodeal\/(banner|interstitial|mrec)\//.exec(name);
+  var matched_type = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec)\//.exec(name);
 
   if (matched_type && matched_type.length > 1) {
-    return matched_type[1];
+    return matched_type[2];
   } else {
     return null;
   }
@@ -1170,18 +1186,18 @@ function compose_api_adunit_format(adunit, name) {
     console.log(adunit);
   }
 
-  if (/\/image$/.test(name)) {
+  if (/\/image(\/|$)/.test(name)) {
     bid_floor = "image";
   }
 
-  if (/\/text$/.test(name)) {
+  if (/\/text(\/|$)/.test(name)) {
     bid_floor = "text";
   }
 
   // float bid floor ad unit
-  var bid_floor_regex = /\/([\d\.]+)$/;
+  var bid_floor_regex = /(text|image)\/([\d\.]+)(\/|$)/;
   if (bid_floor_regex.test(name)) {
-    var bid_floor_str = name.match(bid_floor_regex)[1];
+    var bid_floor_str = name.match(bid_floor_regex)[2];
     bid_floor = parseFloat(bid_floor_str);
   }
 
