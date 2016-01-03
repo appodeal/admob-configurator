@@ -44,11 +44,6 @@ function click(e) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  var divs = document.querySelectorAll('div');
-  for (var i = 1; i < divs.length; i++) {
-    divs[i].addEventListener('click', click);
-  }
-
   chrome.storage.local.get({
       'appodeal_email': null,
       'appodeal_api_key': null,
@@ -60,16 +55,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // get local plugin variables and update menu items
 function getLocalStatus(items) {
-  var reporting_btn = document.getElementById('reporting');
+  var loginElement = document.getElementById("login");
+  loginElement.addEventListener('click', click);
+
   var api_btn = document.getElementById('api');
+  var reporting_btn = document.getElementById('reporting');
   var admob_btn = document.getElementById('admob');
 
   if (items['appodeal_email']) {
-    var loginElement = document.getElementById("login");
     loginElement.id = 'logout';
     loginElement.innerHTML = '<span>Done</span>' + items['appodeal_email'] + " (Logout)";
     // Show step 2 if step 1 is complete
-    api_btn.style.display = "block";
+    api_btn.className = "";
+    api_btn.addEventListener('click', click);
 
     // check local appodeal_admob_account_id var
     if (items['appodeal_admob_account_id']) {
@@ -79,13 +77,16 @@ function getLocalStatus(items) {
     if (items['appodeal_api_key'] && items['appodeal_user_id']) {
       api_btn.innerHTML = '<span>Done</span>API Key: ' + items['appodeal_api_key'] + ' (Refresh)';
       // Show steps 3 and 4
-      reporting_btn.style.display = "block";
-      admob_btn.style.display = "block";
+      reporting_btn.className = "";
+      reporting_btn.addEventListener('click', click);
+
+      admob_btn.className = "";
+      admob_btn.addEventListener('click', click);
 
       getRemoteStatus(reporting_btn, admob_btn, items);
     }
   } else {
-    api_btn.onclick = function(){return false}
+    api_btn.onclick = function(){ return false }
   }
 }
 
