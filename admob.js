@@ -693,7 +693,6 @@ function create_adunit(types, admob_app_id, token, bid_floor, existed, complete)
       "3": {
         "2": admob_app_id,
         "3": adunit_name,
-        "5": 7,
         "14": 1,
         "16": type_ids
       }
@@ -703,7 +702,7 @@ function create_adunit(types, admob_app_id, token, bid_floor, existed, complete)
 
   call_inventory(data, function(result) {
     var xsrf = result['xsrf'];
-    var internalAdUnitId = result["result"]["2"][0]["1"];
+    var internalAdUnitId = result["result"][1][2][0][1];
     var adunit_id = current_adunit_id(internalAdUnitId);
 
     if (bid_floor == null) {
@@ -755,7 +754,7 @@ function create_banner_adunit(types, admob_app_id, token, bid_floor, existed, co
 
   call_inventory(data, function(result) {
     var xsrf = result['xsrf'];
-    var internalAdUnitId = result["result"]["2"][0]["1"];
+    var internalAdUnitId = result["result"][1][2][0][1];
     var adunit_id = current_adunit_id(internalAdUnitId);
 
     if (bid_floor == null) {
@@ -808,7 +807,7 @@ function create_mrec_adunit(types, admob_app_id, token, bid_floor, existed, comp
 
   call_inventory(data, function(result) {
     var xsrf = result['xsrf'];
-    var internalAdUnitId = result["result"]["2"][0]["1"];
+    var internalAdUnitId = result["result"][1][2][0][1];
     var adunit_id = current_adunit_id(internalAdUnitId);
 
     if (bid_floor == null) {
