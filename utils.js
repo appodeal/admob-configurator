@@ -59,6 +59,12 @@ function isOauthClientPage() {
   }
 }
 
+// credential client details page
+function isCredentialClientPage() {
+  var page_link = document.location.toString();
+  return page_link.match(/apis\/credentials\/oauthclient\//);
+}
+
 chrome.extension.onMessage.addListener(function(message, sender) {
   if (message["sender"] == "badge") {
     if (message["content"] == "setBadgeColor") {

@@ -39,22 +39,30 @@ jQuery(function(){
     // set options
     setTimeout(function() {
       origins_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
-
       redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
-
       submit_form_code = "angular.element(jQuery(\"form[name='clientForm']\")).controller().submitForm();";
-
       run_script(origins_code + redirect_uris_code + submit_form_code);
 
-      // update page for keys extraction
-      setTimeout(function() {
-        console.log("We guess that client has been created");
-        chrome.storage.local.set({"reporting_client_creating" : true}, function() {
-          location.reload();
-        });
-      }, 4500)
-
+      waitUntilClientInfoPresent();
     }, 3000)
+  }
+
+  function waitUntilClientInfoPresent(complete) {
+    console.log("Wait until modal window showed");
+
+    var checkExist = setInterval(function() {
+      if ($("pan-dialog[name='ctrl.dialogs.highlightClientId']").length) {
+        console.log("Modal window exists");
+        clearInterval(checkExist);
+
+        var clientId = $("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(0)").text().trim();
+        var clientSecret = $("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(1)").text().trim();
+        console.log(clientId, clientSecret);
+
+        console.log("Check And Save Client Credentials");
+        checkAndSaveClientCredentials(clientId, clientSecret);
+      }
+    }, 500);
   }
 
   // parse the first download link content
@@ -65,7 +73,7 @@ jQuery(function(){
     return result;
   }
 
-  function addAdmobAccount(credential, account_id, appodeal_api_key, appodeal_user_id) {
+  function addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key, appodeal_user_id) {
     var url = "https://www.appodeal.com/api/v1/add_admob_account.json";
     var email = $('span.p6n-profileemail').first().text().toLowerCase();
 
@@ -75,8 +83,8 @@ jQuery(function(){
 
     json = {
       "email" : email,
-      "client_id": credential["id"],
-      "client_secret": credential["secret"],
+      "client_id": clientId,
+      "client_secret": clientSecret,
       "account_id": account_id,
       "api_key": appodeal_api_key,
       "user_id": appodeal_user_id
@@ -102,7 +110,7 @@ jQuery(function(){
           chrome.storage.local.set(local_settings, function() {
             console.log('redirecting to oauth...');
 
-            var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=http://www.appodeal.com/admin/oauth2callback&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + credential["id"] + "&client_id=" + credential["id"] + "&access_type=offline";
+            var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=http://www.appodeal.com/admin/oauth2callback&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + clientId + "&client_id=" + clientId + "&access_type=offline";
 
             chrome.storage.local.remove("reporting_tab_id");
 
@@ -121,12 +129,17 @@ jQuery(function(){
     console.log("fetchCredentials");
 
     var credential = getIdAndSecret(download_links);
+    console.log("Credentials fetched");
     console.log(JSON.stringify(credential));
 
-    if (credential["secret"] && credential["id"]) {
+    checkAndSaveClientCredentials(credential["id"], credential["secret"]);
+  }
+
+  function checkAndSaveClientCredentials(clientId, clientSecret) {
+    if (clientId && clientSecret) {
       chrome.storage.local.set({
-        "client_secret" : credential["secret"],
-        'client_id' : credential["id"]
+        "client_secret" : clientSecret,
+        'client_id' : clientId
       });
 
       var appodeal_api_key = null;
@@ -142,13 +155,53 @@ jQuery(function(){
 
         console.log(JSON.stringify(items));
 
-        addAdmobAccount(credential, account_id, appodeal_api_key, appodeal_user_id);
+        addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key, appodeal_user_id);
       });
+    } else if (clientId) {
+      console.log("Credential client_id found, but client_secret not found. Try to reset.");
+      console.log("Go to the first web client");
 
+      var webClientLink = $("tr[pan-table-row] td a[ng-href]").first();
+      document.location = webClientLink.attr("href");
+      // process credential details page
     } else {
-      alert("Error: client_id and client_secret not found.");
+      alert("Credential client id not found. Please, ask for support.");
       chrome.storage.local.remove("reporting_tab_id");
     }
+  }
+
+  function resetCredentialSecret() {
+    var secretSpan = $("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
+    if (secretSpan.length) {
+      getClientIdAndSecretIdFromDetailsAndRun();
+    } else {
+      if ($("jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'").length) {
+        // reset secret
+        console.log("reset secret");
+        var promptRegenerateCode = "angular.element($(\"jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'\")).controller().promptRegenerateSecret(); setTimeout(function() { $(\"button[jfk-on-action='confirmCallback($event)']\").click();}, 1500)";
+
+        run_script(promptRegenerateCode);
+
+        setTimeout(function() {
+          // check if secret is present
+          var secretSpan = $("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
+          if (secretSpan.length) {
+            getClientIdAndSecretIdFromDetailsAndRun();
+          } else {
+            console.log("secret is still not found");
+          }
+        }, 3000)
+      } else {
+        console.log("promptRegenerateSecret button not found.");
+      }
+    }
+  }
+
+  function getClientIdAndSecretIdFromDetailsAndRun() {
+    var clientId = $("div.p6n-kv-list-value span").first().text().trim();
+    var secretSpan = $("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
+    var clientSecret = secretSpan.text().trim();
+    checkAndSaveClientCredentials(clientId, clientSecret);
   }
 
   function startCredentialsCreating() {
@@ -203,10 +256,14 @@ jQuery(function(){
       if (isOauthClientPage()) {
         console.log("Oauth client page");
         addCredentials();
+      } else if (isCredentialClientPage()) {
+        console.log("Reset Credential Secret");
+        resetCredentialSecret();
       } else {
         console.log("Run credentials processing");
         credentials_interval = setInterval(wait_for_credentials, 2000);
       }
     });
   }
+
 });

@@ -7,7 +7,7 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
     if (result['reporting_tab_id'] && details.tabId.toString() == result['reporting_tab_id'].toString()) {
       console.log('second matched');
       var details_url = details.url.toString();
-      if (details_url.match(/\/apiui\/credential/) || details_url.match(/credentials\?project=/) || details_url.match(/credentials\/oauthclient\?project=/) || details_url.match(/credentials\?highlightClient=/)) {
+      if (details_url.match(/\/apiui\/credential/) || details_url.match(/credentials\?project=/) || details_url.match(/credentials\/oauthclient\?project=/) || details_url.match(/credentials\?highlightClient=/) || details_url.match(/apis\/credentials\/oauthclient\//)) {
         console.log("calling reporting_step4.js");
         chrome.tabs.executeScript(details.tabId, { file: "jquery.min.js" }, function() {
           chrome.tabs.executeScript(details.tabId, { file: "reporting_step4.js" });
