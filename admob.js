@@ -507,7 +507,7 @@ function create_app(i, market_hash) {
     if(http.readyState == 4 && http.status == 200) {
       response = JSON.parse(http.responseText);
       console.log(JSON.stringify(response));
-      admob_app_id = response["result"][1][0][1];
+      admob_app_id = response["result"][1][1][0][1];
       app_list[i]['admob_app_id'] = admob_app_id;
 
       console.log("App created. Create ad units.");
