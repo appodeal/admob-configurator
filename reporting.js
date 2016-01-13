@@ -95,8 +95,17 @@ setTimeout(function() {
     } else {
       console.log("Should stay at the project page");
       run_script('angular.element($("#projects-create")).controller().openCreateProjectDialog()');
-    }
-
-    project_name_interval = setInterval( wait_for_project_name, 2000 );
-  });
+      }  
+     
+    setTimeout(function(){
+      var msg = "You can't create more projects. Need to do something one of this:\n * remove old project and wait when admob will remove the project completely (1 day)\n * rename one of them to 'Appodeal'\n * increase limit of projects";
+      var ads = document.getElementsByClassName('modal-dialog-content');
+      console.log("Limit of projects")
+      if (ads.length){
+        alert(msg);
+      } else {
+        project_name_interval = setInterval( wait_for_project_name, 2000 );
+        }
+      }, 2000);
+     });
 }, 2000);
