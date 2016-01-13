@@ -115,3 +115,9 @@ function appendJQuery(complete) {
   jq.onload = complete;
   head.appendChild(jq);
 }
+
+function run_script(code) {
+  var script = document.createElement('script');
+  script.appendChild(document.createTextNode(code));
+  document.getElementsByTagName('head')[0].appendChild(script);
+}

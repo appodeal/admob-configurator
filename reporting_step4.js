@@ -7,23 +7,6 @@ jQuery(function(){
   // script starts
   run();
 
-  function run_script(code) {
-    var script = document.createElement('script');
-    script.appendChild(document.createTextNode(code));
-    document.getElementsByTagName('head')[0].appendChild(script);
-  }
-
-  function loadJquery(complete) {
-    var jq = document.createElement('script');
-    jq.src = "https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js";
-    document.getElementsByTagName('head')[0].appendChild(jq);
-
-    setTimeout(function() {
-      console.log("Jquery loaded");
-      complete();
-    }, 3000)
-  }
-
   // You need credentials to access APIs.
   // OAuth 2.0 client ID
   function addCredentials() {
@@ -33,18 +16,22 @@ jQuery(function(){
 
     console.log("Redirected to oauthclient creating page.");
 
-    // enable default (web) radio button
-    run_script("jQuery(\"input[value='WEB']\").click();");
-
-    // set options
     setTimeout(function() {
-      origins_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
-      redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
-      submit_form_code = "angular.element(jQuery(\"form[name='clientForm']\")).controller().submitForm();";
-      run_script(origins_code + redirect_uris_code + submit_form_code);
+      // enable default (web) radio button
+      console.log("Select Web application");
+      run_script("jQuery(\"input[value='WEB']\").click();");
 
-      waitUntilClientInfoPresent();
-    }, 3000)
+      // set options
+      setTimeout(function() {
+        console.log("Insert redirect and origins urls");
+        origins_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
+        redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
+        submit_form_code = "angular.element(jQuery(\"form[name='clientForm']\")).controller().submitForm();";
+        run_script(origins_code + redirect_uris_code + submit_form_code);
+
+        waitUntilClientInfoPresent();
+      }, 3000)
+    }, 1000)
   }
 
   function waitUntilClientInfoPresent(complete) {
@@ -171,30 +158,33 @@ jQuery(function(){
   }
 
   function resetCredentialSecret() {
-    var secretSpan = $("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
-    if (secretSpan.length) {
-      getClientIdAndSecretIdFromDetailsAndRun();
-    } else {
-      if ($("jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'").length) {
-        // reset secret
-        console.log("reset secret");
-        var promptRegenerateCode = "angular.element($(\"jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'\")).controller().promptRegenerateSecret(); setTimeout(function() { $(\"button[jfk-on-action='confirmCallback($event)']\").click();}, 1500)";
-
-        run_script(promptRegenerateCode);
-
-        setTimeout(function() {
-          // check if secret is present
-          var secretSpan = $("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
-          if (secretSpan.length) {
-            getClientIdAndSecretIdFromDetailsAndRun();
-          } else {
-            console.log("secret is still not found");
-          }
-        }, 3000)
+    setTimeout(function() {
+      // wait until buttons loaded
+      var secretSpan = $("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
+      if (secretSpan.length) {
+        getClientIdAndSecretIdFromDetailsAndRun();
       } else {
-        console.log("promptRegenerateSecret button not found.");
+        if ($("jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'").length) {
+          // reset secret
+          console.log("reset secret");
+          var promptRegenerateCode = "angular.element($(\"jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'\")).controller().promptRegenerateSecret(); setTimeout(function() { $(\"button[jfk-on-action='confirmCallback($event)']\").click();}, 1500)";
+
+          run_script(promptRegenerateCode);
+
+          setTimeout(function() {
+            // check if secret is present
+            var secretSpan = $("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
+            if (secretSpan.length) {
+              getClientIdAndSecretIdFromDetailsAndRun();
+            } else {
+              console.log("secret is still not found");
+            }
+          }, 3000)
+        } else {
+          console.log("promptRegenerateSecret button not found.");
+        }
       }
-    }
+    }, 1000)
   }
 
   function getClientIdAndSecretIdFromDetailsAndRun() {
@@ -250,7 +240,7 @@ jQuery(function(){
   function run() {
     console.log("Run reporting step 4")
 
-    loadJquery(function() {
+    appendJQuery(function() {
       console.log("Is interface new? " + new_interface());
 
       if (isOauthClientPage()) {
