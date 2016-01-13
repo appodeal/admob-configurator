@@ -98,9 +98,10 @@ setTimeout(function() {
       }  
      
     setTimeout(function(){
-      var msg = "You can't create more projects. Need to do something one of this: remove old project, rename one of them, increase limit of projects!";
+      var msg = "You can't create more projects. Need to do something one of this:\n * remove old project and wait when admob will remove the project completely(1 day)\n * rename one of them\n * increase limit of projects";
       var ads = document.getElementsByClassName('modal-dialog-content');
-      if (ads.length) return alert(msg);  
+      console.log("Limit of projects")
+      if (ads.length) return alert(msg) && false;  
       }, 2000);
 
     project_name_interval = setInterval( wait_for_project_name, 2000 );
