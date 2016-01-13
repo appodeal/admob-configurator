@@ -91,7 +91,13 @@ setTimeout(function() {
 
     if (startButton.length) {
       console.log("Start page new project button found");
-      startButton.click();
+      startButton.click(
+        checkProjects(function() {
+          var msg = "You can't create more projects. Need to do something one of this: remove old project, rename one of them, increase limit of projects!"
+          var ads = document.getElementsByClassName('modal-dialog-content')
+          if (ads.length) return alert(msg);  
+        }, 2000);
+      );
     } else {
       console.log("Should stay at the project page");
       run_script('angular.element($("#projects-create")).controller().openCreateProjectDialog()');
