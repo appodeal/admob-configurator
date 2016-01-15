@@ -10,7 +10,7 @@ jQuery(function(){
   // You need credentials to access APIs.
   // OAuth 2.0 client ID
   function addCredentials() {
-    var displayName = 'Appodeal clent'
+    var displayName = 'Appodeal client'
     var origins = "['http://www.appodeal.com/', 'http://appodeal.com/', 'https://www.appodeal.com/', 'https://appodeal.com/']";
     var redirectUris = "['http://www.appodeal.com/admin/oauth2callback', 'http://appodeal.com/admin/oauth2callback', 'https://www.appodeal.com/admin/oauth2callback', 'https://appodeal.com/admin/oauth2callback']";
 
