@@ -52,6 +52,12 @@ jQuery(function(){
     }, 500);
   }
 
+  // find Appodeal client tr dom
+  function findAppodealClient() {
+    var tr = $("tr[pan-table-row] td a[content*='://www.appodeal.com/']").parents('tr[pan-table-row]');
+    return tr; 
+    }
+
   // parse the first download link content
   function getIdAndSecret(download_links) {
     var client_content = download_links[0].getAttribute("content");
