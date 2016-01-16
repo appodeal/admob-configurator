@@ -10,7 +10,6 @@ jQuery(function(){
   // You need credentials to access APIs.
   // OAuth 2.0 client ID
   function addCredentials() {
-    var displayName = 'Appodeal client'
     var origins = "['http://www.appodeal.com/', 'http://appodeal.com/', 'https://www.appodeal.com/', 'https://appodeal.com/']";
     var redirectUris = "['http://www.appodeal.com/admin/oauth2callback', 'http://appodeal.com/admin/oauth2callback', 'https://www.appodeal.com/admin/oauth2callback', 'https://appodeal.com/admin/oauth2callback']";
 
@@ -24,11 +23,11 @@ jQuery(function(){
       // set options
       setTimeout(function() {
         console.log("Insert display name, redirect and origins urls");
-        name_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.displayName']\")).controller().client.displayName = " + displayName + ";";
+        name_code = "angular.element(jQuery(\":input[ng-model='oAuthEditorCtrl.client.displayName']\")).controller().client.displayName = 'Appodeal client';";
         origins_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
         redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
         submit_form_code = "angular.element(jQuery(\"form[name='clientForm']\")).controller().submitForm();";
-        run_script(origins_code + redirect_uris_code + submit_form_code + name_code);
+        run_script(name_code + origins_code + redirect_uris_code + submit_form_code);
 
         waitUntilClientInfoPresent();
       }, 3000)
