@@ -1118,9 +1118,9 @@ function server_adunits_request(api_key, user_id, admob_app_id, complete) {
 
   http.onreadystatechange = function() {
     if (http.readyState == 4 && http.status == 200) {
-      remoteLog("Parse existed adunits from server");
+      remoteLog("Parse existed adunits from server (with parseJSON)");
       remoteLog(http.responseText);
-      var result = JSON.parse(http.response);
+      var result = jQuery.parseJSON(http.responseText);
       complete(result);
     }
   }
