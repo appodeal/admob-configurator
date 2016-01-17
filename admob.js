@@ -1107,6 +1107,7 @@ function server_adunits_request(api_key, user_id, admob_app_id, complete) {
     "admob_app_id": admob_app_id
   }
 
+  remoteLog(JSON.stringify(data));
   remoteLog("Get server ad units list with params")
   remoteLog("Api_key: " + api_key + " user_id: " + user_id.toString() + " admob_app_id: " + admob_app_id.toString());
 
@@ -1117,7 +1118,9 @@ function server_adunits_request(api_key, user_id, admob_app_id, complete) {
 
   http.onreadystatechange = function() {
     if (http.readyState == 4 && http.status == 200) {
-      var result = JSON.parse(http.responseText);
+      remoteLog("Parse existed adunits from server");
+      remoteLog(http.responseText);
+      var result = JSON.parse(http.response);
       complete(result);
     }
   }
