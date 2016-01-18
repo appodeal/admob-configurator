@@ -210,12 +210,12 @@ jQuery(function(){
     return oauthPageUrl(project_name);
   }
 
-  function wait_for_credentials() {
+  function waitForCredentials() {
     // Check zero clients
     var no_clients = jQuery(".p6n-zero-state-widget");
 
     // Download JSON (with credential info) links in credentials table
-    var download_links = jQuery("a.jfk-button.jfk-button-flat[download]");
+    var download_links = findAppodealClient().find("a.jfk-button.jfk-button-flat[download]");
 
     if (download_links.length) {
       // download links exist
@@ -257,7 +257,7 @@ jQuery(function(){
         resetCredentialSecret();
       } else {
         console.log("Run credentials processing");
-        credentials_interval = setInterval(wait_for_credentials, 2000);
+        credentials_interval = setInterval(waitForCredentials, 2000);
       }
     });
   }
