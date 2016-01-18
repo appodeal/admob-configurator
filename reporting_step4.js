@@ -152,10 +152,10 @@ jQuery(function(){
       });
     } else if (clientId) {
       console.log("Credential client_id found, but client_secret not found. Try to reset.");
-      console.log("Go to the first web client");
+      console.log("Go to the Appodeal web client");
 
-      var webClientLink = $("tr[pan-table-row] td a[ng-href]").first();
-      document.location = webClientLink.attr("href");
+      var webClientLink = findAppodealClient().find('a[ng-href]').attr('href');
+      document.location = webClientLink;
       // process credential details page
     } else {
       alert("Credential client id not found. Please, ask for support.");
