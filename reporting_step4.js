@@ -54,9 +54,9 @@ jQuery(function(){
 
   // find Appodeal client tr dom
   function findAppodealClient() {
-    var tr = $("tr[pan-table-row] td a[content*='://www.appodeal.com/']").parents('tr[pan-table-row]');
+    var tr = $("tr[pan-table-row] td a[content*='appodeal.com/admin/oauth2callback']").parents('tr[pan-table-row]');
     return tr; 
-    }
+  }
 
   // parse the first download link content
   function getIdAndSecret(download_links) {
@@ -225,6 +225,10 @@ jQuery(function(){
     } else if (no_clients.length) {
       // no clients widget exists
       clearInterval(credentials_interval);
+
+      startCredentialsCreating();
+    } else {
+      console.log("Credential not found!");
 
       startCredentialsCreating();
     }
