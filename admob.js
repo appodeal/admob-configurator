@@ -1219,8 +1219,7 @@ function find_admob_adunit_in_server_list(adunit, server_adunits) {
     var server_adunit = server_adunits[i];
     if (server_adunit["code"] == adunit["code"]
         && server_adunit["ad_type"] == adunit["ad_type"]
-        && server_adunit["bid_floor"] == adunit["bid_floor"]
-        && server_adunit["account_key"] == current_account_id) {
+        && server_adunit["bid_floor"] == adunit["bid_floor"]) {
       return true;
     }
   }
