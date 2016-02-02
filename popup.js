@@ -66,26 +66,22 @@ function getLocalStatus(items) {
     loginElement.id = 'logout';
     loginElement.innerHTML = '<span>Done</span>' + items['appodeal_email'] + " (Logout)";
     // Show step 2 if step 1 is complete
-    apiBtn.className = "";
-    apiBtn.addEventListener('click', click);
-
-    // check local appodeal_admob_account_id var
-    if (items['appodeal_admob_account_id']) {
-      addDoneLabel(reportingBtn);
-    }
+    addClickListener(apiBtn);
 
     if (items['appodeal_api_key'] && items['appodeal_user_id']) {
       apiBtn.innerHTML = '<span>Done</span>API Key: ' + items['appodeal_api_key'] + ' (Refresh)';
       // Show steps 3 and 4
-      reportingBtn.className = "";
-      reportingBtn.addEventListener('click', click);
-
-      admobBtn.className = "";
-      admobBtn.addEventListener('click', click);
+      addClickListener(reportingBtn);
 
       getRemoteStatus(reportingBtn, admobBtn, items);
     }
   }
+}
+
+// add click callback to button
+function addClickListener(button) {
+  button.className = "";
+  button.addEventListener('click', click);
 }
 
 // add text to the extension menu item
@@ -107,8 +103,9 @@ function getRemoteStatus(reportingBtn, admobBtn, items) {
 
     var leftNum = result['total'] - result['synced'];
 
-    if (result['account'] && !items['appodeal_admob_account_id']) {
+    if (result['account']) {
       addDoneLabel(reportingBtn);
+      addClickListener(admobBtn);
     }
 
     if (leftNum) {
