@@ -58,35 +58,35 @@ function getLocalStatus(items) {
   var loginElement = document.getElementById("login");
   loginElement.addEventListener('click', click);
 
-  var api_btn = document.getElementById('api');
-  var reporting_btn = document.getElementById('reporting');
-  var admob_btn = document.getElementById('admob');
+  var apiBtn = document.getElementById('api');
+  var reportingBtn = document.getElementById('reporting');
+  var admobBtn = document.getElementById('admob');
 
   if (items['appodeal_email']) {
     loginElement.id = 'logout';
     loginElement.innerHTML = '<span>Done</span>' + items['appodeal_email'] + " (Logout)";
     // Show step 2 if step 1 is complete
-    api_btn.className = "";
-    api_btn.addEventListener('click', click);
+    apiBtn.className = "";
+    apiBtn.addEventListener('click', click);
 
     // check local appodeal_admob_account_id var
     if (items['appodeal_admob_account_id']) {
-      addDoneLabel(reporting_btn);
+      addDoneLabel(reportingBtn);
     }
 
     if (items['appodeal_api_key'] && items['appodeal_user_id']) {
-      api_btn.innerHTML = '<span>Done</span>API Key: ' + items['appodeal_api_key'] + ' (Refresh)';
+      apiBtn.innerHTML = '<span>Done</span>API Key: ' + items['appodeal_api_key'] + ' (Refresh)';
       // Show steps 3 and 4
-      reporting_btn.className = "";
-      reporting_btn.addEventListener('click', click);
+      reportingBtn.className = "";
+      reportingBtn.addEventListener('click', click);
 
-      admob_btn.className = "";
-      admob_btn.addEventListener('click', click);
+      admobBtn.className = "";
+      admobBtn.addEventListener('click', click);
 
-      getRemoteStatus(reporting_btn, admob_btn, items);
+      getRemoteStatus(reportingBtn, admobBtn, items);
     }
   } else {
-    api_btn.onclick = function(){ return false }
+    apiBtn.onclick = function(){ return false }
   }
 }
 
