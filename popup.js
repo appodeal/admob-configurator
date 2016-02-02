@@ -85,8 +85,6 @@ function getLocalStatus(items) {
 
       getRemoteStatus(reportingBtn, admobBtn, items);
     }
-  } else {
-    apiBtn.onclick = function(){ return false }
   }
 }
 
