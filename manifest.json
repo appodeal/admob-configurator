@@ -16,7 +16,7 @@
         "https://apps.admob.com/*",
         "https://console.developers.google.com/*"
         ],
-      "js": ["utils.js", "jquery.min.js"]
+      "js": ["jquery.min.js", "utils.js", "progressBar.js"]
     },
     {
       "matches": ["http://www.appodeal.com/profile/*",
