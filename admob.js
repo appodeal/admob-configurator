@@ -113,7 +113,7 @@ chrome.storage.local.get("admob_processing", function(result) {
   if (result['admob_processing']) {
     document.body.onload = function() {
       chrome.storage.local.remove("admob_processing");
-      var startMessage = "Please allow several minutes to sync your inventory... Click OK and be patient.";
+      var startMessage = "Please allow several minutes to sync your inventory. Click OK and be patient.";
       console.log(startMessage);
       alert(startMessage);
 
@@ -137,7 +137,7 @@ function initProgressIndicators() {
 function create_apps() {
   // sendAndFlushLogs(3, 0, "init");
   console.log("Start to create apps");
-  // get_appodeal_app_list();
+  get_appodeal_app_list();
 }
 
 function getTheLatestVersion(complete) {
@@ -1216,7 +1216,8 @@ function find_admob_adunit_in_server_list(adunit, server_adunits) {
     var server_adunit = server_adunits[i];
     if (server_adunit["code"] == adunit["code"]
         && server_adunit["ad_type"] == adunit["ad_type"]
-        && server_adunit["bid_floor"] == adunit["bid_floor"]) {
+        && server_adunit["bid_floor"] == adunit["bid_floor"]
+        && server_adunit["account_key"] == current_account_id) {
       return true;
     }
   }
