@@ -1,6 +1,6 @@
 // check if beta google developers console is enabled
 function betaConsole() {
-  if ($("[ng-if='platformBarCtrl.isVulcanBeta']").length) {
+  if (jQuery("[ng-if='platformBarCtrl.isVulcanBeta']").length) {
     // 'Try the beta console' button found
     return false;
   } else {
@@ -108,11 +108,15 @@ function extension_version() {
 
 // async jQuery load
 function appendJQuery(complete) {
+  console.log("Appending jquery from googleapis.")
   var head = document.getElementsByTagName("head")[0];
   var jq = document.createElement('script');
   jq.type = 'text/javascript';
-  jq.src = "https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js";
-  jq.onload = complete;
+  jq.src = "https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js";
+  jq.onload = function() {
+    console.log("Jquery from googleapis appended.");
+    complete();
+  };
   head.appendChild(jq);
 }
 

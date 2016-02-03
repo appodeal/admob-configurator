@@ -1,4 +1,4 @@
-jQuery.noConflict();
+// jQuery.noConflict();
 
 var is_working = false;
 var project_name_interval = null;
@@ -79,7 +79,7 @@ setTimeout(function() {
     console.log("Appodeal project not found. Click new project button");
 
     // start page 'create new project' button (new accounts)
-    var startButton = $("#zerostatecard-blank_project");
+    var startButton = jQuery("#zerostatecard-blank_project");
 
     if (startButton.length) {
       console.log("Start page new project button found");

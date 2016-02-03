@@ -1,5 +1,3 @@
-jQuery.noConflict();
-
 jQuery(function(){
   // var is_working = false;
   var credentials_interval = null;
@@ -38,12 +36,12 @@ jQuery(function(){
     console.log("Wait until modal window showed");
 
     var checkExist = setInterval(function() {
-      if ($("pan-dialog[name='ctrl.dialogs.highlightClientId']").length) {
+      if (jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId']").length) {
         console.log("Modal window exists");
         clearInterval(checkExist);
 
-        var clientId = $("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(0)").text().trim();
-        var clientSecret = $("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(1)").text().trim();
+        var clientId = jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(0)").text().trim();
+        var clientSecret = jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(1)").text().trim();
         console.log(clientId, clientSecret);
 
         console.log("Check And Save Client Credentials");
@@ -62,7 +60,7 @@ jQuery(function(){
 
   function addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key, appodeal_user_id) {
     var url = "https://www.appodeal.com/api/v1/add_admob_account.json";
-    var email = $('span.p6n-profileemail').first().text().toLowerCase();
+    var email = jQuery('span.p6n-profileemail').first().text().toLowerCase();
 
     var http = new XMLHttpRequest();
     http.open("POST", url, true);
@@ -148,7 +146,7 @@ jQuery(function(){
       console.log("Credential client_id found, but client_secret not found. Try to reset.");
       console.log("Go to the first web client");
 
-      var webClientLink = $("tr[pan-table-row] td a[ng-href]").first();
+      var webClientLink = jQuery("tr[pan-table-row] td a[ng-href]").first();
       document.location = webClientLink.attr("href");
       // process credential details page
     } else {
@@ -160,11 +158,11 @@ jQuery(function(){
   function resetCredentialSecret() {
     setTimeout(function() {
       // wait until buttons loaded
-      var secretSpan = $("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
+      var secretSpan = jQuery("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
       if (secretSpan.length) {
         getClientIdAndSecretIdFromDetailsAndRun();
       } else {
-        if ($("jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'").length) {
+        if (jQuery("jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'").length) {
           // reset secret
           console.log("reset secret");
           var promptRegenerateCode = "angular.element($(\"jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'\")).controller().promptRegenerateSecret(); setTimeout(function() { $(\"button[jfk-on-action='confirmCallback($event)']\").click();}, 1500)";
@@ -173,7 +171,7 @@ jQuery(function(){
 
           setTimeout(function() {
             // check if secret is present
-            var secretSpan = $("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
+            var secretSpan = jQuery("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
             if (secretSpan.length) {
               getClientIdAndSecretIdFromDetailsAndRun();
             } else {
@@ -188,8 +186,8 @@ jQuery(function(){
   }
 
   function getClientIdAndSecretIdFromDetailsAndRun() {
-    var clientId = $("div.p6n-kv-list-value span").first().text().trim();
-    var secretSpan = $("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
+    var clientId = jQuery("div.p6n-kv-list-value span").first().text().trim();
+    var secretSpan = jQuery("div[ng-if='ctrl.isSecretVisible() && ctrl.client.clientSecret'] .p6n-kv-list-value span");
     var clientSecret = secretSpan.text().trim();
     checkAndSaveClientCredentials(clientId, clientSecret);
   }

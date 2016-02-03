@@ -1,5 +1,3 @@
-jQuery.noConflict();
-
 // internal admob params
 var TYPES = {text: 0, image: 1, video: 2};
 
@@ -41,13 +39,11 @@ chrome.storage.local.get("admob_processing", function(result) {
       console.log(startMessage);
       alert(startMessage);
 
-      appendJQuery(function() {
-        checkExtensionVersion(function() {
-          initProgressIndicators();
+      checkExtensionVersion(function() {
+        initProgressIndicators();
 
-          create_apps();
-        });
-      })
+        create_apps();
+      });
     }
   }
 })
@@ -494,7 +490,7 @@ function send_id(i) {
               // sendAndFlushLogs(3, 0, "end of 4 step");
 
               alert(endMessage);
-              $('#syncing').hide();
+              jQuery('#syncing').hide();
             }
           })
         })

@@ -1,5 +1,3 @@
-jQuery.noConflict();
-
 jQuery(function(){
   var is_working = false;
   var adsence_enabling_interval = null;
@@ -12,7 +10,7 @@ jQuery(function(){
     var project_name = locationProjectName();
 
     // We do not need AdSence API enabling if it has been already enabled:
-    if ($("[ng-if='!apiCtrl.api.enabled']").length && !is_working) {
+    if (jQuery("[ng-if='!apiCtrl.api.enabled']").length && !is_working) {
       // Enable API button found
       is_working = true;
       console.log('enabling adsence api...');
@@ -23,8 +21,6 @@ jQuery(function(){
       http.open("POST", 'https://console.developers.google.com/m/project/' + project_name + '/api/adsense', true);
       http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       http.setRequestHeader("X-Framework-Xsrf-Token", token);
-      // http.setRequestHeader('Accept', 'application/json, text/plain, */*');
-      // http.setRequestHeader("x-pan-versionid", x_pan_versionid);
       json = {id: "adsense", enabled: true}
       http.send(JSON.stringify(json));
 
@@ -41,7 +37,7 @@ jQuery(function(){
           }
         }, 2000);
       }
-    } else if ($("[ng-if='apiCtrl.api.enabled']").length && !is_working) {
+    } else if (jQuery("[ng-if='apiCtrl.api.enabled']").length && !is_working) {
       // Disable API button found
       is_working = true;
       console.log('It seems like Adsence API is enabled already. redirecting...');

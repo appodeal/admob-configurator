@@ -11,19 +11,19 @@
           }
         } else {
           data = {
-            'appodeal_email': $('.welcome a')[0].text, 
-            'appodeal_api_key': $('input', '.content2l_block')[0].value, 
+            'appodeal_email': $('.welcome a')[0].text,
+            'appodeal_api_key': $('input', '.content2l_block')[0].value,
             'appodeal_user_id': $('input', '.content2l_block')[1].value
           }
         }
         chrome.storage.local.set(data);
-        alert("API Key Saved.")
+        alert("API key saved (Appodeal Chrome Extension).")
       })
     } else {
       if (window.location.href == "http://www.appodeal.com/profile/api_integration" || window.location.href == "https://www.appodeal.com/profile/api_integration") {
         data = {
-          'appodeal_email': $('.welcome a')[0].text, 
-          'appodeal_api_key': $('input', '.content2l_block')[0].value, 
+          'appodeal_email': $('.welcome a')[0].text,
+          'appodeal_api_key': $('input', '.content2l_block')[0].value,
           'appodeal_user_id': $('input', '.content2l_block')[1].value
         }
         alert("API Key Saved.")

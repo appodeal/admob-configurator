@@ -16,7 +16,7 @@
         "https://apps.admob.com/*",
         "https://console.developers.google.com/*"
         ],
-      "js": ["jquery.min.js", "utils.js", "progressBar.js"]
+      "js": ["libs/jquery.min.js", "libs/utils.js"]
     },
     {
       "matches": ["http://www.appodeal.com/profile/*",
@@ -30,11 +30,11 @@
     },
     {
       "matches": ["https://apps.admob.com/*"],
-      "js": ["jquery.min.js", "admob.js"]
+      "js": ["admob.js", "libs/progressBar.js"]
     }
   ],
   "background": {
-    "scripts": ["utils.js", "bg.js"],
+    "scripts": ["libs/bg.js"],
     "persistent": true
   },
   "permissions": [
