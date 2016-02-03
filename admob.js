@@ -60,7 +60,7 @@ var ProgressBar = function() {
   this.mrecAdunitsNum = MREC_BIDS.length;
   this.currentMrecAdunit = 0;
 
-  remoteLog("Progress bar added");
+  console.log("Progress bar added");
 };
 
 // move progress indicator
@@ -114,7 +114,7 @@ chrome.storage.local.get("admob_processing", function(result) {
     document.body.onload = function() {
       chrome.storage.local.remove("admob_processing");
       var startMessage = "Please allow several minutes to sync your inventory... Click OK and be patient.";
-      remoteLog(startMessage);
+      console.log(startMessage);
       alert(startMessage);
 
       appendJQuery(function() {
@@ -135,9 +135,9 @@ function initProgressIndicators() {
 }
 
 function create_apps() {
-  sendAndFlushLogs(3, 0, "init");
-  remoteLog("Start to create apps");
-  get_appodeal_app_list();
+  // sendAndFlushLogs(3, 0, "init");
+  console.log("Start to create apps");
+  // get_appodeal_app_list();
 }
 
 function getTheLatestVersion(complete) {
@@ -155,18 +155,15 @@ function getTheLatestVersion(complete) {
 function checkExtensionVersion(complete) {
   var currentVersion = extension_version();
   globalVersion = currentVersion;
-  remoteLog("User's extension version -> " + currentVersion);
-  getTheLatestVersion(function(version) {
-    remoteLog("Available extension version -> " + version);
-    if (version > currentVersion) {
-      var message = "You are not using the latest version of Appodeal Chrome Extension (" + version + "). Please visit chrome extension page chrome://extensions/ and ensure that extension is updated.";
-      remoteLog(message);
-      alert(message);
-    } else {
-      complete();
-    }
-  })
+  console.log("User's extension version -> " + currentVersion);
 
+  if (currentVersion < lastBigRelease) {
+    var message = "You are not using the latest version of Appodeal Chrome Extension (" + version + "). Please visit chrome extension page chrome://extensions/ and ensure that extension is updated.";
+    console.log(message);
+    alert(message);
+  } else {
+    complete();
+  }
 }
 
 function get_appodeal_app_list() {
@@ -179,9 +176,9 @@ function get_appodeal_app_list() {
         response = JSON.parse(http.responseText);
         app_list = response['applications'];
 
-        remoteLog("List appodeal apps:");
+        console.log("List appodeal apps:");
         app_list.forEach(function (item, index, array) {
-          remoteLog(JSON.stringify(item));
+          console.log(JSON.stringify(item));
         });
 
         // Empty array of apps in Appodeal
@@ -194,8 +191,8 @@ function get_appodeal_app_list() {
         progressBar.appCount = app_list.length;
       }
     }
-    remoteLog("Storage items:");
-    remoteLog(JSON.stringify(items));
+    console.log("Storage items:");
+    console.log(JSON.stringify(items));
   });
 }
 
@@ -214,18 +211,18 @@ function process_app(i) {
   var appId = app_list[i]['id'];
 
   if (admob_app_id = find_in_admob_app_list(app_list[i])) {
-    remoteLog("App " + appId + " found: add adunits");
+    console.log("App " + appId + " found: add adunits");
     app_list[i]['admob_app_id'] = admob_app_id;
     send_id(i);
   } else {
-    remoteLog("App " + appId + " not found: create with linking");
+    console.log("App " + appId + " not found: create with linking");
     find_app_in_store(i);
   }
 }
 
 // more clear mapping from appodeal apps to admob apps
 function updateAdmobAppListAfterFound(i, app_id) {
-  remoteLog(admob_app_list[i]["2"] + " corresponds to App#" + app_id);
+  console.log(admob_app_list[i]["2"] + " corresponds to App#" + app_id);
   admob_app_list[i]['found'] = app_id;
 }
 
@@ -241,14 +238,14 @@ function find_in_admob_app_list(app) {
 
     // admob app ids matched
     if (app.admob_id == admobAppId) {
-      remoteLog("App found by remote admob app id " + admobAppId);
+      console.log("App found by remote admob app id " + admobAppId);
       updateAdmobAppListAfterFound(i, app.id);
 
       // not amazon and not linked should be linked
       if (app.search_in_store && !admobApp[4]) {
-        remoteLog("App is not linked to store.");
+        console.log("App is not linked to store.");
         linkMobileApplication(admobAppId, app.store_name, app.package_name, app.os, function(result) {
-          remoteLog("Linking try finished.");
+          console.log("Linking try finished.");
         })
       }
 
@@ -277,10 +274,10 @@ function find_in_admob_app_list(app) {
       // not linked app
       if (admobApp[2] == defaultAppName) {
         updateAdmobAppListAfterFound(i, app.id);
-        remoteLog("App is not linked to store.");
+        console.log("App is not linked to store.");
 
         linkMobileApplication(admobAppId, app.store_name, app.package_name, app.os, function(result) {
-          remoteLog("Linking try finished.");
+          console.log("Linking try finished.");
         })
 
         return admobAppId;
@@ -302,16 +299,16 @@ function find_in_admob_app_list(app) {
 // 2. Update admob app with found app data hash
 function linkMobileApplication(admobAppId, storeName, packageName, os, complete) {
   if (storeName) {
-    remoteLog("App connected to markets in Appodeal");
+    console.log("App connected to markets in Appodeal");
 
     searchMobileApplication(storeName, packageName, os, function(marketApp){
       if (marketApp) {
-        remoteLog("App found in App Store or Google Play");
-        remoteLog(JSON.stringify(marketApp));
+        console.log("App found in App Store or Google Play");
+        console.log(JSON.stringify(marketApp));
 
         updateMobileApplication(admobAppId, marketApp, function(result) {
-          remoteLog("Link app to store.");
-          remoteLog(JSON.stringify(result));
+          console.log("Link app to store.");
+          console.log(JSON.stringify(result));
 
           // add app package name to admob app package name list to prevent repeated searching in markets
           admobStoreIds.push(packageName);
@@ -319,12 +316,12 @@ function linkMobileApplication(admobAppId, storeName, packageName, os, complete)
           complete(result);
         });
       } else {
-        remoteLog("App not found in App Store or Google Play");
+        console.log("App not found in App Store or Google Play");
         complete(undefined);
       }
     })
   } else {
-    remoteLog("App is not linked in Appodeal. Continue.");
+    console.log("App is not linked in Appodeal. Continue.");
     complete(undefined);
   }
 }
@@ -388,7 +385,7 @@ function isAlreadyFoundInMarkets(storeId) {
 // search for app in Google Play, iTunes App Store
 function searchMobileApplication(name, storeId, os, complete) {
   if (isAlreadyFoundInMarkets(storeId)) {
-    remoteLog("App is already found in markets (maybe hidden). Skip");
+    console.log("App is already found in markets (maybe hidden). Skip");
     complete(undefined);
   } else {
     var token = get_account_token();
@@ -447,7 +444,7 @@ function updateMobileApplication(admobAppId, app, complete) {
     if (result["result"]) {
       addedApp = result["result"]["1"][0];
     } else {
-      remoteLog(JSON.stringify(result));
+      console.log(JSON.stringify(result));
     }
     complete(addedApp);
   })
@@ -477,11 +474,11 @@ function find_app_in_store(i) {
   } else {
     searchMobileApplication(storeName, packageName, null, function(market_app){
       if (market_app) {
-        remoteLog("App found in App Store or Google Play");
-        remoteLog(JSON.stringify(market_app));
+        console.log("App found in App Store or Google Play");
+        console.log(JSON.stringify(market_app));
         create_app(i, market_app);
       } else {
-        remoteLog("App not found in App Store or Google Play");
+        console.log("App not found in App Store or Google Play");
         create_app(i, {});
       }
     })
@@ -499,17 +496,17 @@ function create_app(i, market_hash) {
   xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
   params = {2:name,3:app_list[i].os}
   params = jQuery.extend(params, market_hash);
-  remoteLog(JSON.stringify(params));
+  console.log(JSON.stringify(params));
   json = {method:"insertInventory",params:{2:params},xsrf:xsrf}
   http.send(JSON.stringify(json));
   http.onreadystatechange = function() {
     if(http.readyState == 4 && http.status == 200) {
       response = JSON.parse(http.responseText);
-      remoteLog(JSON.stringify(response));
+      console.log(JSON.stringify(response));
       admob_app_id = response["result"][1][1][0][1];
       app_list[i]['admob_app_id'] = admob_app_id;
 
-      remoteLog("App created. Create ad units.");
+      console.log("App created. Create ad units.");
       send_id(i);
     }
   }
@@ -525,10 +522,10 @@ function send_id(i) {
     http.onreadystatechange = function() {
       if(http.readyState == 4 && http.status == 200) {
         response = JSON.parse(http.responseText);
-        remoteLog(JSON.stringify(response));
+        console.log(JSON.stringify(response));
 
-        remoteLog("Starting creatign ad units.")
-        remoteLog("Checking available params")
+        console.log("Starting creatign ad units.")
+        console.log("Checking available params")
 
         currentApp = app_list[i];
         current_user_id = items['appodeal_user_id'];
@@ -536,11 +533,11 @@ function send_id(i) {
         current_token = get_account_token();
         current_account_id = get_account_id();
 
-        remoteLog("current_admob_app_id: " + currentApp['admob_app_id']);
-        remoteLog("current_user_id: " + current_user_id);
-        remoteLog("current_api_key: " + current_api_key);
-        remoteLog("current_token: " + current_token);
-        remoteLog("current_account_id: " + current_account_id);
+        console.log("current_admob_app_id: " + currentApp['admob_app_id']);
+        console.log("current_user_id: " + current_user_id);
+        console.log("current_api_key: " + current_api_key);
+        console.log("current_token: " + current_token);
+        console.log("current_account_id: " + current_account_id);
 
         // run ad units creation process
         create_all_adunits(currentApp, current_token, function() {
@@ -550,14 +547,14 @@ function send_id(i) {
           update_server_adunits(current_api_key, current_user_id, currentApp, current_token, function(need_update) {
             if (need_update) {
               var error_msg = "Absent or wrong adunits were found for app " + currentApp['admob_app_id'] + ". We recommend you to run the 4th step once again after script is finished to ensure that all is okay. If this error is repeated, please, contact Appodeal team.";
-              remoteLog(error_msg);
+              console.log(error_msg);
               alert(error_msg);
             } else {
-              remoteLog("All adunits were found for app " + currentApp['admob_app_id'])
+              console.log("All adunits were found for app " + currentApp['admob_app_id'])
             }
 
             // send logs after finish work with that app
-            sendAndFlushLogs(3, 0, "App#" + currentApp['id']);
+            // sendAndFlushLogs(3, 0, "App#" + currentApp['id']);
 
             if (i + 1 < app_list.length) {
               process_app(i + 1)
@@ -568,9 +565,9 @@ function send_id(i) {
 
               chrome.storage.local.remove("admob_processing");
               var endMessage = "Good job! Admob is synced with Appodeal now. You can run step 4 again if you add new apps.";
-              remoteLog(endMessage);
+              console.log(endMessage);
 
-              sendAndFlushLogs(3, 0, "end of 4 step");
+              // sendAndFlushLogs(3, 0, "end of 4 step");
 
               alert(endMessage);
               $('#syncing').hide();
@@ -591,8 +588,8 @@ function current_adunit_id(internalAdUnitId) {
 }
 
 function adunit_created(api_key, user_id, admob_app_id, code, ad_type, bid_floor, complete) {
-  remoteLog("Notify Appodeal about new adunit");
-  remoteLog([api_key, user_id, admob_app_id, code, ad_type, bid_floor].join(", "));
+  console.log("Notify Appodeal about new adunit");
+  console.log([api_key, user_id, admob_app_id, code, ad_type, bid_floor].join(", "));
 
   var data = {
     "api_key": api_key,
@@ -619,17 +616,17 @@ function adunit_created(api_key, user_id, admob_app_id, code, ad_type, bid_floor
 function create_all_adunits(admob_app, token, complete) {
   if (admob_app['admob_app_id'].length > 0) {
     create_default_adunits(admob_app, token, function() {
-      remoteLog("Default ad units created");
+      console.log("Default ad units created");
 
       create_bid_adunits(admob_app, token, function() {
-        remoteLog("Interstitial bid ad units created");
+        console.log("Interstitial bid ad units created");
 
         create_banner_bid_adunits(admob_app, token, function() {
-          remoteLog("Banner bid ad units created");
+          console.log("Banner bid ad units created");
 
           create_mrec_bid_adunits(admob_app, token, function() {
-            remoteLog("Mrec bid ad units created");
-            remoteLog("Finished creation of adunits for app " + admob_app['admob_app_id']);
+            console.log("Mrec bid ad units created");
+            console.log("Finished creation of adunits for app " + admob_app['admob_app_id']);
 
             complete();
           })
@@ -644,30 +641,30 @@ function create_all_adunits(admob_app, token, complete) {
 function create_default_adunits(admob_app, token, complete) {
   var admob_app_id = admob_app['admob_app_id'];
   existed_default_adunits(admob_app_id, token, function(existed_adunits){
-    remoteLog("Existed ad units: " + JSON.stringify(existed_adunits));
+    console.log("Existed ad units: " + JSON.stringify(existed_adunits));
 
     create_adunit(["image"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
-      remoteLog("Interstitial image adunit added for App (" + admob_app_id +  ") " + adunit_id);
+      console.log("Interstitial image adunit added for App (" + admob_app_id +  ") " + adunit_id);
       progressBar.increaseDefaultCounter();
 
       create_adunit(["text"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
-        remoteLog("Interstitial text adunit added for App (" + admob_app_id +  ") " + adunit_id);
+        console.log("Interstitial text adunit added for App (" + admob_app_id +  ") " + adunit_id);
         progressBar.increaseDefaultCounter();
 
         create_banner_adunit(["text"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
-          remoteLog("Banner text adunit added for App (" + admob_app_id +  ") " + adunit_id);
+          console.log("Banner text adunit added for App (" + admob_app_id +  ") " + adunit_id);
           progressBar.increaseDefaultCounter();
 
           create_banner_adunit(["image"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
-            remoteLog("Banner image adunit added for App (" + admob_app_id +  ") " + adunit_id);
+            console.log("Banner image adunit added for App (" + admob_app_id +  ") " + adunit_id);
             progressBar.increaseDefaultCounter();
 
             create_mrec_adunit(["image"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
-              remoteLog("Mrec image adunit added for App (" + admob_app_id +  ") " + adunit_id);
+              console.log("Mrec image adunit added for App (" + admob_app_id +  ") " + adunit_id);
               progressBar.increaseDefaultCounter();
 
               create_mrec_adunit(["text"], admob_app, token, null, existed_adunits, function(xsrf, adunit_id) {
-                remoteLog("Mrec text adunit added for App (" + admob_app_id +  ") " + adunit_id);
+                console.log("Mrec text adunit added for App (" + admob_app_id +  ") " + adunit_id);
                 progressBar.increaseDefaultCounter();
 
                 complete();
@@ -703,7 +700,7 @@ function create_adunit(types, admob_app, token, bid_floor, existed, complete) {
   }).sort();
 
   if (bid_floor == null && existed["image"].indexOf(types[0]) >= 0) {
-    remoteLog("Interstitial " + types[0] + " already existed.")
+    console.log("Interstitial " + types[0] + " already existed.")
     complete(token, "(already existed)");
     return;
   }
@@ -732,7 +729,7 @@ function create_adunit(types, admob_app, token, bid_floor, existed, complete) {
       notification_bid_floor = bid_floor;
     }
     adunit_created(current_api_key, current_user_id, admob_app_id, adunit_id, 0, notification_bid_floor, function(result){
-      remoteLog(JSON.stringify(result));
+      console.log(JSON.stringify(result));
     });
 
     if (bid_floor != null) {
@@ -754,7 +751,7 @@ function create_banner_adunit(types, admob_app, token, bid_floor, existed, compl
   }).sort();
 
   if (bid_floor == null && existed["banner"].indexOf(types[0]) >= 0) {
-    remoteLog("Banner " + types[0] + " already existed.")
+    console.log("Banner " + types[0] + " already existed.")
     complete(token, "(already existed)");
     return;
   }
@@ -783,7 +780,7 @@ function create_banner_adunit(types, admob_app, token, bid_floor, existed, compl
       notification_bid_floor = bid_floor;
     }
     adunit_created(current_api_key, current_user_id, admob_app_id, adunit_id, 1, notification_bid_floor, function(result){
-      remoteLog(JSON.stringify(result));
+      console.log(JSON.stringify(result));
     });
 
     if (bid_floor != null) {
@@ -806,7 +803,7 @@ function create_mrec_adunit(types, admob_app, token, bid_floor, existed, complet
   }).sort();
 
   if (bid_floor == null && existed["mrec"].indexOf(types[0]) >= 0) {
-    remoteLog("Mrec " + types[0] + " already existed.")
+    console.log("Mrec " + types[0] + " already existed.")
     complete(token, "(already existed)");
     return;
   }
@@ -835,7 +832,7 @@ function create_mrec_adunit(types, admob_app, token, bid_floor, existed, complet
       notification_bid_floor = bid_floor;
     }
     adunit_created(current_api_key, current_user_id, admob_app_id, adunit_id, AD_TYPES['mrec'], notification_bid_floor, function(result){
-      remoteLog(JSON.stringify(result));
+      console.log(JSON.stringify(result));
     });
 
     if (bid_floor != null) {
@@ -850,7 +847,7 @@ function create_mrec_adunit(types, admob_app, token, bid_floor, existed, complet
 
 function create_bid_adunits(admob_app, token, complete) {
   var admob_app_id = admob_app['admob_app_id'];
-  remoteLog("Started to create bid adunits");
+  console.log("Started to create bid adunits");
   bid_floors_in_settings(AD_TYPES['interstitial'], admob_app_id, token, function(bid_floors) {
     progressBar.currentBidAdunit = progressBar.bidAdunitsNum - bid_floors.length;
 
@@ -862,7 +859,7 @@ function create_bid_adunits(admob_app, token, complete) {
 
 function create_banner_bid_adunits(admob_app, token, complete) {
   var admob_app_id = admob_app['admob_app_id'];
-  remoteLog("Started to create banner bid adunits");
+  console.log("Started to create banner bid adunits");
   bid_floors_in_settings(AD_TYPES['banner'], admob_app_id, token, function(bid_floors) {
     progressBar.currentBannerAdunit = progressBar.bannerAdunitsNum - bid_floors.length;
 
@@ -874,7 +871,7 @@ function create_banner_bid_adunits(admob_app, token, complete) {
 
 function create_mrec_bid_adunits(admob_app, token, complete) {
   var admob_app_id = admob_app['admob_app_id'];
-  remoteLog("Started to create mrec bid adunits");
+  console.log("Started to create mrec bid adunits");
   bid_floors_in_settings(AD_TYPES['mrec'], admob_app_id, token, function(bid_floors) {
     progressBar.currentMrecAdunit = progressBar.mrecAdunitsNum - bid_floors.length;
 
@@ -1059,7 +1056,7 @@ function adunits_list(json, admob_app_id) {
   var adunits = json["result"]["1"]["2"];
 
   if (adunits == undefined) {
-    remoteLog("Admob adunits list undefined (empty).");
+    console.log("Admob adunits list undefined (empty).");
     return h;
   }
 
@@ -1079,7 +1076,7 @@ function adunits_list(json, admob_app_id) {
       } else if (adunits[i]["14"] == 0 && appodeal_adunit_type == "mrec") {
         h["mrec"][adunit_id] = adunit_name
       } else {
-        remoteLog("Wrong ad unit type.");
+        console.log("Wrong ad unit type.");
       }
     }
   }
@@ -1107,9 +1104,9 @@ function server_adunits_request(api_key, user_id, admob_app_id, complete) {
     "admob_app_id": admob_app_id
   }
 
-  remoteLog(JSON.stringify(data));
-  remoteLog("Get server ad units list with params")
-  remoteLog("Api_key: " + api_key + " user_id: " + user_id.toString() + " admob_app_id: " + admob_app_id.toString());
+  console.log(JSON.stringify(data));
+  console.log("Get server ad units list with params")
+  console.log("Api_key: " + api_key + " user_id: " + user_id.toString() + " admob_app_id: " + admob_app_id.toString());
 
   var http = new XMLHttpRequest();
   http.open("POST", APP_ADD_UNITS_LIST_URL, true);
@@ -1118,8 +1115,8 @@ function server_adunits_request(api_key, user_id, admob_app_id, complete) {
 
   http.onreadystatechange = function() {
     if (http.readyState == 4 && http.status == 200) {
-      remoteLog("Parse existed adunits from server (with parseJSON)");
-      remoteLog(http.responseText);
+      console.log("Parse existed adunits from server (with parseJSON)");
+      console.log(http.responseText);
       var result = jQuery.parseJSON(http.responseText);
       complete(result);
     }
@@ -1128,15 +1125,15 @@ function server_adunits_request(api_key, user_id, admob_app_id, complete) {
 
 // get server ad_units list
 function get_server_adunits(api_key, user_id, admob_app_id, complete) {
-  remoteLog("Get server adunits");
+  console.log("Get server adunits");
   server_adunits_request(api_key, user_id, admob_app_id, function(result){
     if (result["app"] == undefined || result["app"] == null) {
       var error_message = "Error: valid app not found on server: " + "api_key: " + api_key + " user_id: " + user_id.toString() + " admob_app_id: " + admob_app_id.toString();
-      remoteLog(error_message);
-      remoteLog("Script execution failed. Please contact Appodeal team.");
+      console.log(error_message);
+      console.log("Script execution failed. Please contact Appodeal team.");
       alert(error_message);
     } else {
-      remoteLog("Got " + result["au"].length.toString() + " adunits for App.id: " + result["app"].toString());
+      console.log("Got " + result["au"].length.toString() + " adunits for App.id: " + result["app"].toString());
       complete(result["au"]);
     }
   })
@@ -1149,7 +1146,7 @@ function admob_adunits_list(token, admob_app_id, complete) {
     var list = [];
     var adunits = result["result"]["1"]["2"];
     if (adunits == undefined) {
-      remoteLog("Admob adunits list undefined (empty).");
+      console.log("Admob adunits list undefined (empty).");
       complete(list);
     } else {
       for (i = 0; i < adunits.length; i++) {
@@ -1191,8 +1188,8 @@ function compose_api_adunit_format(adunit, name) {
     adunit_type = "mrec";
   } else {
     adunit_type = "wrong";
-    remoteLog("Wrong ad unit type");
-    remoteLog(adunit);
+    console.log("Wrong ad unit type");
+    console.log(adunit);
   }
 
   if (/\/image(\/|$)/.test(name)) {
@@ -1236,7 +1233,7 @@ function update_server_adunits(api_key, user_id, admob_app, token, complete) {
     get_server_adunits(api_key, user_id, admob_app_id, function(server_adunits){
       var need_update = false;
 
-      remoteLog("Search for absent or invalid server adunits");
+      console.log("Search for absent or invalid server adunits");
 
       // store checked ad units to detect duplicates, nonstandart and avoid them
       var checkedAdunits = [];
@@ -1246,22 +1243,22 @@ function update_server_adunits(api_key, user_id, admob_app, token, complete) {
         var adunit_params = adunitParams(adunit);
 
         if (checkedAdunits.indexOf(adunit_params) >= 0) {
-          remoteLog("Duplicate adunit, ignoring " + JSON.stringify(adunit));
+          console.log("Duplicate adunit, ignoring " + JSON.stringify(adunit));
         } else if (is_standart(adunit) == false) {
           // adunit has nonstandart appodeal params
-          remoteLog("Nonstandart ad unit, ignoring " + JSON.stringify(adunit));
+          console.log("Nonstandart ad unit, ignoring " + JSON.stringify(adunit));
         } else if (find_admob_adunit_in_server_list(adunit, server_adunits)) {
           // adunit found on server
           checkedAdunits.push(adunit_params);
         } else {
           // adunit not found on server
           checkedAdunits.push(adunit_params);
-          remoteLog("Not found " + JSON.stringify(adunit))
+          console.log("Not found " + JSON.stringify(adunit))
           need_update = true;
-          remoteLog("Trying to resend information to server.")
+          console.log("Trying to resend information to server.")
 
           adunit_created(api_key, user_id, admob_app_id, adunit["code"], AD_TYPES[adunit["ad_type"]], adunit["bid_floor"], function(result){
-            remoteLog(JSON.stringify(result));
+            console.log(JSON.stringify(result));
           });
         }
       }
@@ -1302,12 +1299,12 @@ function only_check_server_adunits(api_key, user_id, admob_app_id, token, comple
   admob_adunits_list(token, admob_app_id, function(list) {
     get_server_adunits(api_key, user_id, admob_app_id, function(server_adunits){
       var need_update = false;
-      remoteLog("Final check absent or wrong server adunits");
+      console.log("Final check absent or wrong server adunits");
       for (var adunit_id in list) {
         var adunit = list[adunit_id];
 
         if (!find_admob_adunit_in_server_list(adunit, server_adunits)) {
-          remoteLog("Not found " + JSON.stringify(adunit));
+          console.log("Not found " + JSON.stringify(adunit));
           need_update = true;
         }
       }
@@ -1341,7 +1338,7 @@ function create_banner_adunit_loop(bid_floors, admob_app, token, complete) {
   if (bid_floor != undefined) {
     create_banner_adunit(["image", "text"], admob_app, token, bid_floor, null, function(xsrf, adunit_id) {
       // puts information about created ad unit
-      remoteLog("Banner bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
+      console.log("Banner bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
       progressBar.increaseBannerCounter();
       // run new loop without the last element in array
       create_banner_adunit_loop(bid_floors, admob_app, token, complete)
@@ -1359,7 +1356,7 @@ function create_mrec_adunit_loop(bid_floors, admob_app, token, complete) {
   if (bid_floor != undefined) {
     create_mrec_adunit(["image", "text"], admob_app, token, bid_floor, null, function(xsrf, adunit_id) {
       // puts information about created ad unit
-      remoteLog("Mrec bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
+      console.log("Mrec bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
       progressBar.increaseMrecCounter();
       // run new loop without the last element in array
       create_mrec_adunit_loop(bid_floors, admob_app, token, complete)
@@ -1377,7 +1374,7 @@ function create_adunit_loop(bid_floors, admob_app, token, complete) {
   if (bid_floor != undefined) {
     create_adunit(["image", "text"], admob_app, token, bid_floor, null, function(xsrf, adunit_id) {
       // puts information about created ad unit
-      remoteLog("Interstitial bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
+      console.log("Interstitial bid added for (" + admob_app_id +  ") " + bid_floor.toString() + " " + adunit_id);
       progressBar.increaseBidCounter();
 
       // run new loop without the last element in array
@@ -1391,6 +1388,6 @@ function create_adunit_loop(bid_floors, admob_app, token, complete) {
 // send logs to server in case of error with special error mark
 window.onerror = function() {
   var errorMessage = "admob.js error";
-  remoteLog(errorMessage);
-  sendAndFlushLogs(3, 1, errorMessage);
+  console.log(errorMessage);
+  // sendAndFlushLogs(3, 1, errorMessage);
 }

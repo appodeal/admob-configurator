@@ -124,9 +124,10 @@ function run_script(code) {
 
 var logMessages = [];
 var globalVersion;
+var lastBigRelease = 7.0;
 function remoteLog(object) {
-  var extensionLog = {output_at: Date.now(), content: object};
-  logMessages.push(extensionLog);
+  // var extensionLog = {output_at: Date.now(), content: object};
+  // logMessages.push(extensionLog);
   console.log(object);
 }
 
