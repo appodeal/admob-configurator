@@ -9,7 +9,6 @@ jQuery(function(){
   // OAuth 2.0 client ID
   function addCredentials() {
     var origins = "['http://www.appodeal.com/', 'http://appodeal.com/', 'https://www.appodeal.com/', 'https://appodeal.com/']";
-
     var redirectUris = "['http://www.appodeal.com/admin/oauth2callback', 'http://appodeal.com/admin/oauth2callback', 'https://www.appodeal.com/admin/oauth2callback', 'https://appodeal.com/admin/oauth2callback']";
 
     console.log("Redirected to oauthclient creating page.");
@@ -21,11 +20,12 @@ jQuery(function(){
 
       // set options
       setTimeout(function() {
-        console.log("Insert redirect and origins urls");
+        console.log("Insert display name, redirect and origins urls");
+        name_code = "angular.element(jQuery(\":input[ng-model='oAuthEditorCtrl.client.displayName']\")).controller().client.displayName = 'Appodeal client';";
         origins_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
         redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
         submit_form_code = "angular.element(jQuery(\"form[name='clientForm']\")).controller().submitForm();";
-        run_script(origins_code + redirect_uris_code + submit_form_code);
+        run_script(name_code + origins_code + redirect_uris_code + submit_form_code);
 
         waitUntilClientInfoPresent();
       }, 3000)
@@ -48,6 +48,12 @@ jQuery(function(){
         checkAndSaveClientCredentials(clientId, clientSecret);
       }
     }, 500);
+  }
+
+  // find Appodeal client tr dom
+  function findAppodealClient() {
+    var tr = jQuery("tr[pan-table-row] td a[content*='appodeal.com/admin/oauth2callback']").parents('tr[pan-table-row]');
+    return tr;
   }
 
   // parse the first download link content
@@ -144,10 +150,10 @@ jQuery(function(){
       });
     } else if (clientId) {
       console.log("Credential client_id found, but client_secret not found. Try to reset.");
-      console.log("Go to the first web client");
+      console.log("Go to the Appodeal web client");
 
-      var webClientLink = jQuery("tr[pan-table-row] td a[ng-href]").first();
-      document.location = webClientLink.attr("href");
+      var webClientLink = findAppodealClient().find('a[ng-href]').attr('href');
+      document.location = webClientLink;
       // process credential details page
     } else {
       alert("Credential client id not found. Please, ask for support.");
@@ -202,12 +208,12 @@ jQuery(function(){
     return oauthPageUrl(project_name);
   }
 
-  function wait_for_credentials() {
+  function waitForCredentials() {
     // Check zero clients
     var no_clients = jQuery(".p6n-zero-state-widget");
 
     // Download JSON (with credential info) links in credentials table
-    var download_links = jQuery("a.jfk-button.jfk-button-flat[download]");
+    var download_links = findAppodealClient().find("a.jfk-button.jfk-button-flat[download]");
 
     if (download_links.length) {
       // download links exist
@@ -217,6 +223,10 @@ jQuery(function(){
     } else if (no_clients.length) {
       // no clients widget exists
       clearInterval(credentials_interval);
+
+      startCredentialsCreating();
+    } else {
+      console.log("Credential not found!");
 
       startCredentialsCreating();
     }
@@ -249,7 +259,7 @@ jQuery(function(){
         resetCredentialSecret();
       } else {
         console.log("Run credentials processing");
-        credentials_interval = setInterval(wait_for_credentials, 2000);
+        credentials_interval = setInterval(waitForCredentials, 2000);
       }
     });
   }
