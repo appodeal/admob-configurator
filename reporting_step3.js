@@ -5,7 +5,7 @@ jQuery(function(){
   var consents_interval = null;
 
   function wait_for_consents() {
-    console.log('waiting for save button..');
+    console.log('Wait for save button.');
 
     var project_name = locationProjectName();
     var save_button = jQuery("jfk-button[jfk-on-action='ctrl.submit()']");
@@ -16,15 +16,9 @@ jQuery(function(){
 
       // turn of interval repeating:
       clearInterval(consents_interval);
-      console.log('button found. adding consents');
+      console.log('Button found. Add consents.');
 
-      var jq = document.createElement('script');
-      jq.src = "https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js";
-      document.getElementsByTagName('head')[0].appendChild(jq);
-      console.log('added jquery to document body...');
-
-      console.log("waiting 2s");
-      window.setTimeout(function() {
+      appendJQuery(function() {
         var script = document.createElement('script');
         var console_log_code = "console.log('Set project name and save'); ";
         var select_save_code = "jQuery(\"jfk-button[jfk-on-action='ctrl.submit()']\")";
@@ -33,12 +27,12 @@ jQuery(function(){
         var code = console_log_code + set_val_code + "setTimeout(function() {angular.element(" + select_save_code + ").controller().submit();}, 1000);";
         script.appendChild(document.createTextNode(code));
         document.getElementsByTagName('head')[0].appendChild(script);
-      }, 2000);
 
-      window.setTimeout(function() {
-        console.log("finished clicking save button");
-        document.location.href = credentialPageUrl(project_name);
-      }, 5000);
+        window.setTimeout(function() {
+          console.log("Save button clicked");
+          document.location.href = credentialPageUrl(project_name);
+        }, 5000);
+      });
     }
   }
 

@@ -1,4 +1,5 @@
 APPODEAL_SYNC_STATUS = "https://www.appodeal.com/api/v1/sync_status";
+APPODEAL_API_KEY_URL = "https://www.appodeal.com/api/v2/get_api_key";
 
 function click(e) {
   if (e.target.id == 'reporting') {
@@ -62,18 +63,31 @@ function getLocalStatus(items) {
   var reportingBtn = document.getElementById('reporting');
   var admobBtn = document.getElementById('admob');
 
+  // user email present
   if (items['appodeal_email']) {
     loginElement.id = 'logout';
     loginElement.innerHTML = '<span>Done</span>' + items['appodeal_email'] + " (Logout)";
-    // Show step 2 if step 1 is complete
-    addClickListener(apiBtn);
 
     if (items['appodeal_api_key'] && items['appodeal_user_id']) {
-      apiBtn.innerHTML = '<span>Done</span>API Key: ' + items['appodeal_api_key'] + ' (Refresh)';
-      // Show steps 3 and 4
+      // user email, api key and user_id are present
+      // show next steps
       addClickListener(reportingBtn);
-
       getRemoteStatus(reportingBtn, admobBtn, items);
+    } else {
+      // api key is empty
+      getAppodealApiKey(function(result) {
+        if (result['api_key'] && result['user_id']) {
+          chrome.storage.local.set({
+            'appodeal_api_key': result['api_key'],
+            'appodeal_user_id': result['user_id']
+          }, function() {
+            // user email, api key and user_id are present
+            // show next steps
+            addClickListener(reportingBtn);
+            getRemoteStatus(reportingBtn, admobBtn, items);
+          });
+        }
+      });
     }
   }
 }
@@ -121,6 +135,19 @@ function getRemoteStatus(reportingBtn, admobBtn, items) {
 function getAppodealSyncStatus(items, complete) {
   var http = new XMLHttpRequest();
   http.open("GET", APPODEAL_SYNC_STATUS + "?user_id=" + items['appodeal_user_id'] + "&api_key=" + items['appodeal_api_key'], true);
+  http.send();
+  http.onreadystatechange = function() {
+    if(http.readyState == 4 && http.status == 200) {
+      result = JSON.parse(http.responseText);
+      complete(result);
+    }
+  }
+}
+
+// get api key from appodeal
+function getAppodealApiKey(complete) {
+  var http = new XMLHttpRequest();
+  http.open("GET", APPODEAL_API_KEY_URL, true);
   http.send();
   http.onreadystatechange = function() {
     if(http.readyState == 4 && http.status == 200) {
