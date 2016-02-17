@@ -63,31 +63,31 @@ function getLocalStatus(items) {
   var reportingBtn = document.getElementById('reporting');
   var admobBtn = document.getElementById('admob');
 
+  // user email present
   if (items['appodeal_email']) {
     loginElement.id = 'logout';
     loginElement.innerHTML = '<span>Done</span>' + items['appodeal_email'] + " (Logout)";
 
-    if (!items['appodeal_api_key']) {
-      getAppodealApiKey(function(result) {
-        chrome.storage.local.set({'appodeal_api_key': result['api_key'], 'appodeal_user_id': result['user_id']}, function() {
-          // check next steps
-        });
-      });
-    }
-
-    // Show step 2 if step 1 is complete
-    // addClickListener(apiBtn);
-
-    // getAppodealApiKey(function(result) {
-    //   console.log(result);
-    // });
-
     if (items['appodeal_api_key'] && items['appodeal_user_id']) {
-      apiBtn.innerHTML = '<span>Done</span>API Key: ' + items['appodeal_api_key'] + ' (Refresh)';
-      // Show steps 3 and 4
+      // user email, api key and user_id are present
+      // show next steps
       addClickListener(reportingBtn);
-
       getRemoteStatus(reportingBtn, admobBtn, items);
+    } else {
+      // api key is empty
+      getAppodealApiKey(function(result) {
+        if (result['api_key'] && result['user_id']) {
+          chrome.storage.local.set({
+            'appodeal_api_key': result['api_key'],
+            'appodeal_user_id': result['user_id']
+          }, function() {
+            // user email, api key and user_id are present
+            // show next steps
+            addClickListener(reportingBtn);
+            getRemoteStatus(reportingBtn, admobBtn, items);
+          });
+        }
+      });
     }
   }
 }

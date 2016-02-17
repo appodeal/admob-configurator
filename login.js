@@ -1,30 +1,25 @@
 ﻿if ($('.welcome a')[0] == undefined) {
+  // appodeal user email not found
   chrome.storage.local.remove(['appodeal_email', 'appodeal_api_key', 'appodeal_user_id'])
 } else {
+  // logged in to Appodeal
+  // get user email
   appodeal_email = $('.welcome a')[0].text
+  // check existed email, api_key and user_id
   chrome.storage.local.get({
     'appodeal_email': null,
     'appodeal_api_key': null,
     'appodeal_user_id': null
   }, function(items) {
     if (appodeal_email != items['appodeal_email']) {
+      // logged in to new account
+      // remove old api keys, user id and email
       chrome.storage.local.remove(['appodeal_email', 'appodeal_api_key', 'appodeal_user_id'], function(items) {
-        data = {
-          'appodeal_email': appodeal_email
-        }
+        data = { 'appodeal_email': appodeal_email }
+        // save new email
         chrome.storage.local.set(data);
         alert("You have successfully logged in (Appodeal Chrome Extension).")
       })
-    } else {
-      if (window.location.href == "http://www.appodeal.com/profile/api_integration" || window.location.href == "https://www.appodeal.com/profile/api_integration") {
-        data = {
-          'appodeal_email': $('.welcome a')[0].text,
-          'appodeal_api_key': $('input', '.content2l_block')[0].value,
-          'appodeal_user_id': $('input', '.content2l_block')[1].value
-        }
-        alert("API Key Saved.")
-      }
-      chrome.storage.local.set(data);
     }
   })
 }
