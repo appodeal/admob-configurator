@@ -1,5 +1,4 @@
-APPODEAL_SYNC_STATUS = "https://www.appodeal.com/api/v1/sync_status";
-APPODEAL_API_KEY_URL = "https://www.appodeal.com/api/v2/get_api_key";
+APPODEAL_STATUS_URL = "https://www.appodeal.com/api/v2/get_api_key";
 
 function click(e) {
   if (e.target.id == 'reporting') {
@@ -14,17 +13,7 @@ function click(e) {
     chrome.tabs.update({ url: newURL });
     window.close();
   } else if (e.target.id == 'logout') {
-    chrome.storage.local.clear();
-    // clear badge
-    chrome.browserAction.setBadgeText({text: ""});
-
-    chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "_android_ad_network_session"});
-    chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "_android_ad_network_session"});
-    chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "remember_token"});
-    chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "remember_token"});
-    chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "user_id"});
-    chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "user_id"});
-
+    clearStorageAndCookies();
     var newURL = "https://www.appodeal.com";
     chrome.tabs.update({ url: newURL });
     window.close();
@@ -56,39 +45,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // get local plugin variables and update menu items
 function getLocalStatus(items) {
+  // 1 step button
   var loginElement = document.getElementById("login");
   loginElement.addEventListener('click', click);
-
-  var apiBtn = document.getElementById('api');
+  // 2 step button
   var reportingBtn = document.getElementById('reporting');
+  // 3 step button
   var admobBtn = document.getElementById('admob');
 
-  // user email present
+  // user email present (logged in)
   if (items['appodeal_email']) {
     loginElement.id = 'logout';
     loginElement.innerHTML = '<span>Done</span>' + items['appodeal_email'] + " (Logout)";
-
-    if (items['appodeal_api_key'] && items['appodeal_user_id']) {
-      // user email, api key and user_id are present
-      // show next steps
-      addClickListener(reportingBtn);
-      getRemoteStatus(reportingBtn, admobBtn, items);
-    } else {
-      // api key is empty
-      getAppodealApiKey(function(result) {
-        if (result['api_key'] && result['user_id']) {
-          chrome.storage.local.set({
-            'appodeal_api_key': result['api_key'],
-            'appodeal_user_id': result['user_id']
-          }, function() {
-            // user email, api key and user_id are present
-            // show next steps
-            addClickListener(reportingBtn);
-            getRemoteStatus(reportingBtn, admobBtn, items);
-          });
-        }
-      });
-    }
+    addClickListener(reportingBtn);
+    getRemoteStatus(reportingBtn, admobBtn, items);
   }
 }
 
@@ -112,47 +82,74 @@ function addDoneLabel(btn) {
 function getRemoteStatus(reportingBtn, admobBtn, items) {
   // download appodeal json through API
   // result = {status: 'ok', total: 3, synced: 1, account: 28};
-  getAppodealSyncStatus(items, function(result) {
-    if (result['status'] != 'ok') { return; };
+  getAppodealStatus(function(result) {
+    var data = result['plugin_status'];
 
-    var leftNum = result['total'] - result['synced'];
+    // find number of apps that's left to sync
+    var leftNum = data['total'] - data['synced'];
 
-    if (result['account']) {
+    // check if user has connected his admob account
+    if (data['account']) {
       addDoneLabel(reportingBtn);
       addClickListener(admobBtn);
     }
 
     if (leftNum) {
+      // need to sync apps
       addTextLabel(admobBtn, "<span class = 'gray'>" + leftNum + " left</span>");
-    } else if (result['total']) {
+    } else if (data['total']) {
+      // all synced
       addDoneLabel(admobBtn);
     } else {
+      // user has no apps
       addTextLabel(admobBtn, "<span class = 'gray'>No apps</span>");
     }
   })
 }
 
-function getAppodealSyncStatus(items, complete) {
+// get api key from appodeal
+function getAppodealStatus(complete) {
   var http = new XMLHttpRequest();
-  http.open("GET", APPODEAL_SYNC_STATUS + "?user_id=" + items['appodeal_user_id'] + "&api_key=" + items['appodeal_api_key'], true);
+  http.open("GET", APPODEAL_STATUS_URL, true);
   http.send();
   http.onreadystatechange = function() {
-    if(http.readyState == 4 && http.status == 200) {
-      result = JSON.parse(http.responseText);
-      complete(result);
+    if (http.readyState == 4) {
+      if (http.status == 200) {
+        // request was successful
+        result = JSON.parse(http.responseText);
+        complete(result);
+      } else if (http.status == 403) {
+        // not authenticated
+        clearStorageAndCookies();
+      }
     }
   }
 }
 
-// get api key from appodeal
-function getAppodealApiKey(complete) {
-  var http = new XMLHttpRequest();
-  http.open("GET", APPODEAL_API_KEY_URL, true);
-  http.send();
-  http.onreadystatechange = function() {
-    if(http.readyState == 4 && http.status == 200) {
-      result = JSON.parse(http.responseText);
-      complete(result);
-    }
+// execute logout in browser
+function clearStorageAndCookies() {
+  // immediately remove logout badge in popup and disable buttons
+  var loginElement = document.getElementById("logout");
+  if (loginElement) {
+    loginElement.id = 'login';
+    loginElement.innerHTML = '1. Login to Appodeal';
   }
+
+  var reportingBtn = document.getElementById('reporting');
+  if (reportingBtn) {
+    reportingBtn.className = "gray";
+    reportingBtn.removeEventListener('click', click);
+  }
+
+  // clear local plugin variables
+  chrome.storage.local.clear();
+  // clear badge
+  chrome.browserAction.setBadgeText({text: ""});
+  // clear appodeal cookies
+  chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "_android_ad_network_session"});
+  chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "_android_ad_network_session"});
+  chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "remember_token"});
+  chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "remember_token"});
+  chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "user_id"});
+  chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "user_id"});
 }
