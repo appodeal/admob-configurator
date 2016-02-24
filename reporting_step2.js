@@ -1,43 +1,36 @@
 jQuery(function(){
   var is_working = false;
   var adsence_enabling_interval = null;
-
+  // The AdSense Management API allows publishers to access their inventory
+  // and run earnings and performance reports.
   function wait_for_adsence_btn() {
     console.log('waiting for buttons...');
 
     var token = document.body.innerHTML.match(/:\"(\S+:\d+)\"/)[1]
-    // var x_pan_versionid = document.body.innerHTML.match(/'(polished-path.+?)'/)[1];
     var project_name = locationProjectName();
 
+    // one button should be null, other one exists
+    var enableApiBtn = jQuery("[ng-if='!apiCtrl.api.enabled']");
+    var disableApiBtn = jQuery("[ng-if='apiCtrl.api.enabled']");
+
     // We do not need AdSence API enabling if it has been already enabled:
-    if (jQuery("[ng-if='!apiCtrl.api.enabled']").length && !is_working) {
+    if (enableApiBtn.length && !is_working) {
       // Enable API button found
       is_working = true;
       console.log('enabling adsence api...');
       // turn of interval repeating:
       clearInterval(adsence_enabling_interval);
 
-      var http = new XMLHttpRequest();
-      http.open("POST", 'https://console.developers.google.com/m/project/' + project_name + '/api/adsense', true);
-      http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      http.setRequestHeader("X-Framework-Xsrf-Token", token);
-      json = {id: "adsense", enabled: true}
-      http.send(JSON.stringify(json));
+      var code = "angular.element(jQuery(\"[ng-if='!apiCtrl.api.enabled']\")).controller().toggleApi();";
+      run_script(code);
 
-      http.onreadystatechange = function() {//Call a function when the state changes.
-        setTimeout(function() {
-          console.log('got the answer');
+      console.log("Wait until API is enabled");
 
-          if(http.readyState == 4 && http.status == 200) {
-            console.log('success! redirecting...');
-            document.location.href = projectConsentUrl(project_name);
-          } else {
-            alert("Error enabling Adsense API");
-            chrome.storage.local.remove("reporting_tab_id");
-          }
-        }, 2000);
-      }
-    } else if (jQuery("[ng-if='apiCtrl.api.enabled']").length && !is_working) {
+      waitForElement("[ng-if='apiCtrl.api.enabled']", function(element) {
+        console.log("Api has been enabled successfully.");
+        document.location.href = projectConsentUrl(project_name);
+      })
+    } else if (disableApiBtn.length && !is_working) {
       // Disable API button found
       is_working = true;
       console.log('It seems like Adsence API is enabled already. redirecting...');
@@ -47,5 +40,7 @@ jQuery(function(){
     }
   };
 
-  adsence_enabling_interval = setInterval( wait_for_adsence_btn, 2000 );
+  appendJQuery(function() {
+    adsence_enabling_interval = setInterval( wait_for_adsence_btn, 2000 );
+  });
 });

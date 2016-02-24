@@ -57,7 +57,6 @@ function getLocalStatus(items) {
   if (items['appodeal_email']) {
     loginElement.id = 'logout';
     loginElement.innerHTML = '<span>Done</span>' + items['appodeal_email'] + " (Logout)";
-    addClickListener(reportingBtn);
     getRemoteStatus(reportingBtn, admobBtn, items);
   }
 }
@@ -80,30 +79,31 @@ function addDoneLabel(btn) {
 
 // get sync status from appodeal account (app's num and reporting)
 function getRemoteStatus(reportingBtn, admobBtn, items) {
-  // download appodeal json through API
-  // result = {status: 'ok', total: 3, synced: 1, account: 28};
   getAppodealStatus(function(result) {
-    var data = result['plugin_status'];
+    updateAppodealCredentials(result, items, function() {
+      var data = result['plugin_status'];
 
-    // find number of apps that's left to sync
-    var leftNum = data['total'] - data['synced'];
+      // find number of apps that's left to sync
+      var leftNum = data['total'] - data['synced'];
 
-    // check if user has connected his admob account
-    if (data['account']) {
-      addDoneLabel(reportingBtn);
-      addClickListener(admobBtn);
-    }
+      // check if user has connected his admob account
+      if (data['account']) {
+        addDoneLabel(reportingBtn);
+        addClickListener(admobBtn);
+      }
+      addClickListener(reportingBtn);
 
-    if (leftNum) {
-      // need to sync apps
-      addTextLabel(admobBtn, "<span class = 'gray'>" + leftNum + " left</span>");
-    } else if (data['total']) {
-      // all synced
-      addDoneLabel(admobBtn);
-    } else {
-      // user has no apps
-      addTextLabel(admobBtn, "<span class = 'gray'>No apps</span>");
-    }
+      if (leftNum) {
+        // need to sync apps
+        addTextLabel(admobBtn, "<span class = 'gray'>" + leftNum + " left</span>");
+      } else if (data['total']) {
+        // all synced
+        addDoneLabel(admobBtn);
+      } else {
+        // user has no apps
+        addTextLabel(admobBtn, "<span class = 'gray'>No apps</span>");
+      }
+    });
   })
 }
 
@@ -135,12 +135,6 @@ function clearStorageAndCookies() {
     loginElement.innerHTML = '1. Login to Appodeal';
   }
 
-  var reportingBtn = document.getElementById('reporting');
-  if (reportingBtn) {
-    reportingBtn.className = "gray";
-    reportingBtn.removeEventListener('click', click);
-  }
-
   // clear local plugin variables
   chrome.storage.local.clear();
   // clear badge
@@ -152,4 +146,43 @@ function clearStorageAndCookies() {
   chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "remember_token"});
   chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "user_id"});
   chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "user_id"});
+}
+
+// get sync status from appodeal and save it to local chrome storage
+function updateAppodealCredentials(result, items, callback) {
+  var localCredentials = {};
+
+  if (result['user_id']) {
+    localCredentials['appodeal_user_id'] = result['user_id'];
+  } else {
+    chrome.storage.local.remove("appodeal_user_id");
+  }
+
+  if (result['api_key']) {
+    localCredentials['appodeal_api_key'] = result['api_key'];
+  } else {
+    chrome.storage.local.remove("appodeal_api_key");
+  }
+
+  if (result['plugin_status']['account']) {
+    localCredentials['appodeal_admob_account_id'] = result['plugin_status']['account'];
+  } else {
+    chrome.storage.local.remove("appodeal_admob_account_id");
+  }
+
+  if (result['plugin_status']['publisher_id']) {
+    localCredentials['appodeal_admob_account_publisher_id'] = result['plugin_status']['publisher_id'];
+  } else {
+    chrome.storage.local.remove("appodeal_admob_account_publisher_id");
+  }
+
+  if (result['plugin_status']['email']) {
+    localCredentials['appodeal_admob_account_email'] = result['plugin_status']['email'];
+  } else {
+    chrome.storage.local.remove("appodeal_admob_account_email");
+  }
+
+  chrome.storage.local.set(localCredentials, function() {
+    callback();
+  });
 }

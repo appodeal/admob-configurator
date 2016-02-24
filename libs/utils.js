@@ -178,3 +178,16 @@ function sendAndFlushLogs(part, mode, note) {
     }
   })
 }
+
+// waiting for element
+function waitForElement(selector, callback) {
+  var checkElement = setInterval(function() {
+    var element = jQuery(selector);
+    if (element.length) {
+      // element is found
+      clearInterval(checkElement);
+      // run code here after enabling API
+      callback(element);
+    }
+  }, 500);
+}
