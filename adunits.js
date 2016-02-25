@@ -31,6 +31,9 @@ var admobStoreIds = [];
 // top progress bar element
 var progressBar;
 
+// admob account model
+var admob;
+
 chrome.storage.local.get("admob_processing", function(result) {
   if (result['admob_processing']) {
     document.body.onload = function() {
@@ -42,7 +45,10 @@ chrome.storage.local.get("admob_processing", function(result) {
       checkExtensionVersion(function() {
         initProgressIndicators();
 
-        create_apps();
+        // create_apps();
+        admob = new Admob(377, "39d1d978999d47e6ae4a072e28796bcd");
+        admob.getRemoteInventory(function(json) {console.log(json)});
+        admob.getLocalInventory(function(json) {console.log(json)});
       });
     }
   }
