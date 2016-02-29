@@ -79,11 +79,11 @@ setTimeout(function() {
     console.log("Appodeal project not found. Click new project button");
 
     // start page 'create new project' button (new accounts)
-    var startButton = jQuery("#zerostatecard-blank_project");
+    var createEmptyProjectBtn = jQuery("#zerostatecard-blank_project section");
 
-    if (startButton.length) {
-      console.log("Start page new project button found");
-      startButton.click();
+    if (createEmptyProjectBtn.length) {
+      console.log("Create empty project panel found");
+      run_script('angular.element(jQuery(\"#zerostatecard-blank_project section\")).triggerHandler(\"click\")');
     } else {
       console.log("Should stay at the project page");
       run_script('angular.element($("#projects-create")).controller().openCreateProjectDialog()');
