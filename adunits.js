@@ -51,6 +51,7 @@ chrome.storage.local.get("admob_processing", function(result) {
           admob = new Admob(items['appodeal_user_id'], items['appodeal_api_key']);
           admob.syncInventory(function() {
             console.log(admob);
+            console.log("Apps and adunits have been synced successfully.");
           });
         } else {
           alert("Something went wrong (user_id or api_key doesn't exist). Please, contact Appodeal Support (Appodeal Chrome Extension).")

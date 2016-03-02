@@ -1,4 +1,5 @@
 var Admob = function(userId, apiKey) {
+  console.log("Initialize admob" + " (" + userId + ", " + apiKey + ")");
   this.userId = userId;
   this.apiKey = apiKey;
   Admob.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
@@ -6,6 +7,7 @@ var Admob = function(userId, apiKey) {
 
 // get remote appodeal apps with adunits
 Admob.prototype.getRemoteInventory = function(callback) {
+  console.log("Get remote inventory");
   var self = this;
   $.get("https://www.appodeal.com/api/v2/apps_with_ad_units", {user_id: self.userId, api_key: self.apiKey})
     .done(function(data) {
@@ -19,6 +21,7 @@ Admob.prototype.getRemoteInventory = function(callback) {
 
 // get local admob apps with adunits
 Admob.prototype.getLocalInventory = function(callback) {
+  console.log("Get local inventory");
   var self = this;
   self.getAccountToken();
   var params = JSON.stringify({method: "initialize", params: {}, xsrf: self.token});
@@ -51,20 +54,30 @@ Admob.prototype.getAccountToken = function() {
 // link Admob apps to play market or itunes
 // send local apps and adunits to appodeal
 Admob.prototype.syncInventory = function(callback) {
+  console.log("Syncing inventory");
   var self = this;
   self.getRemoteInventory(function() {
     self.getLocalInventory(function() {
       self.selectStoreIds();
       self.filterHiddenLocalApps();
       self.mapApps();
-      // self.linkApps();
-      callback();
+      self.createMissingApps(function() {
+        self.linkApps(function() {
+          self.createMissingAdunits(function() {
+            self.syncWithServer(function() {
+              callback();
+            })
+          });
+        });
+      });
     })
   })
 }
 
 // map apps between appodeal and admob
+// for each appodeal app find admob app and select local adunits
 Admob.prototype.mapApps = function() {
+  console.log("Map apps");
   var self = this;
   // duplicate array
   self.inventory = self.remoteInventory.slice(0);
@@ -78,7 +91,7 @@ Admob.prototype.mapApps = function() {
       var mappedLocalApp = $.grep(self.localApps, function(localApp, i) {
         return (remoteApp.admob_app_id == localApp[1]);
       })[0];
-      // find by package name and os
+      // find by package name and os or default app name
       if (!mappedLocalApp) {
         mappedLocalApp = $.grep(self.localApps, function(localApp, i) {
           if (remoteApp.search_in_store && localApp[4] == remoteApp.package_name && localApp[3] == remoteApp.os) {
@@ -89,6 +102,7 @@ Admob.prototype.mapApps = function() {
       }
       // move local app to inventory array
       if (mappedLocalApp) {
+        console.log(remoteApp["store_name"] + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp["id"] + " -> " + mappedLocalApp[1]);
         var localAppIndex = $.inArray(mappedLocalApp, self.localApps);
         if (localAppIndex > -1) {
           self.localApps.splice(localAppIndex, 1);
@@ -107,6 +121,7 @@ Admob.prototype.mapApps = function() {
 
 // store all existing store ids
 Admob.prototype.selectStoreIds = function() {
+  console.log("Select store ids");
   var self = this;
   if (self.localApps) {
     self.storeIds = $.map(self.localApps, function(localApp, i) {
@@ -117,6 +132,7 @@ Admob.prototype.selectStoreIds = function() {
 
 // Work only with visible admob apps
 Admob.prototype.filterHiddenLocalApps = function() {
+  console.log("Filter hidden local apps");
   var self = this;
   if (self.localApps) {
     self.localApps = $.grep(self.localApps, function(localApp, i) {
@@ -154,4 +170,28 @@ Admob.adUnitTypeRegex = function(name) {
   } else {
     return null;
   }
+}
+
+// Create local apps for all apps from inventory with missign local apps
+Admob.prototype.createMissingApps = function(callback) {
+  console.log("Create missing apps");
+  callback();
+}
+
+// Link local apps with play market or itunes
+Admob.prototype.linkApps = function(callback) {
+  console.log("Link apps with Play Market and App Store");
+  callback();
+}
+
+// create local adunits in local apps
+Admob.prototype.createMissingAdunits = function(callback) {
+  console.log("Create missing adunits");
+  callback();
+}
+
+// send information about local apps and adunits to server
+Admob.prototype.syncWithServer = function(callback) {
+  console.log("Sync with server");
+  callback();
 }
