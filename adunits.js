@@ -43,10 +43,8 @@ chrome.storage.local.get("admob_processing", function(result) {
       alert(startMessage);
 
       checkExtensionVersion(function() {
-        initProgressIndicators();
-
+        // initProgressIndicators();
         // create_apps();
-
       });
     }
   }
