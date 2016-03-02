@@ -1,13 +1,13 @@
 var Admob = function(userId, apiKey) {
   this.userId = userId;
   this.apiKey = apiKey;
-  this.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
+  Admob.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
 };
 
 // get remote appodeal apps with adunits
 Admob.prototype.getRemoteInventory = function(callback) {
   var self = this;
-  $.get("https://www.appodeal.com/api/v2/apps_with_ad_units", {user_id: this.userId, api_key: this.apiKey})
+  $.get("https://www.appodeal.com/api/v2/apps_with_ad_units", {user_id: self.userId, api_key: self.apiKey})
     .done(function(data) {
       self.remoteInventory = data.applications;
       callback(self.remoteInventory);
@@ -21,9 +21,9 @@ Admob.prototype.getRemoteInventory = function(callback) {
 Admob.prototype.getLocalInventory = function(callback) {
   var self = this;
   self.getAccountToken();
-  var params = JSON.stringify({method: "initialize", params: {}, xsrf: this.token});
+  var params = JSON.stringify({method: "initialize", params: {}, xsrf: self.token});
   $.ajax({method: "POST",
-    url: this.inventoryUrl,
+    url: Admob.inventoryUrl,
     contentType: "application/javascript; charset=UTF-8",
     dataType: "json",
     data: params})
@@ -44,9 +44,13 @@ Admob.prototype.getAccountToken = function() {
   return this.token;
 }
 
-// compose inventory of apps and adunits, remote and local with mapping appodeal to admob
+// get appodeal apps
 // exclude hidden, inactive and 3rd party apps
-Admob.prototype.getInventory = function(callback) {
+// compose inventory of apps and adunits, remote and local with mapping appodeal to admob
+// create local apps and adunits
+// link Admob apps to play market or itunes
+// send local apps and adunits to appodeal
+Admob.prototype.syncInventory = function(callback) {
   var self = this;
   self.getRemoteInventory(function() {
     self.getLocalInventory(function() {
@@ -89,10 +93,16 @@ Admob.prototype.mapApps = function() {
         if (localAppIndex > -1) {
           self.localApps.splice(localAppIndex, 1);
           self.inventory[index]['localApp'] = mappedLocalApp;
+          // map local adunits
+          self.inventory[index]['localAdunits'] = self.selectLocalAdunits(mappedLocalApp[1]);
         }
       }
     }
   });
+  // do not store useless arrays
+  self.localAdunits = null;
+  self.localApps = null;
+  self.remoteInventory = null;
 }
 
 // store all existing store ids

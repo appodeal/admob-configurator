@@ -38,14 +38,24 @@ chrome.storage.local.get("admob_processing", function(result) {
   if (result['admob_processing']) {
     document.body.onload = function() {
       chrome.storage.local.remove("admob_processing");
+      // show start notification
       var startMessage = "Please allow several minutes to sync your inventory. Click OK and be patient.";
       console.log(startMessage);
       alert(startMessage);
-
-      checkExtensionVersion(function() {
-        // initProgressIndicators();
-        // create_apps();
-      });
+      // get api key and user id from storage and sync inventory
+      chrome.storage.local.get({
+        'appodeal_api_key': null,
+        'appodeal_user_id': null
+      }, function(items) {
+        if (items['appodeal_api_key'] && items['appodeal_user_id']) {
+          admob = new Admob(items['appodeal_user_id'], items['appodeal_api_key']);
+          admob.syncInventory(function() {
+            console.log(admob);
+          });
+        } else {
+          alert("Something went wrong (user_id or api_key doesn't exist). Please, contact Appodeal Support (Appodeal Chrome Extension).")
+        }
+      })
     }
   }
 })
@@ -74,18 +84,10 @@ function getTheLatestVersion(complete) {
   });
 }
 
-function checkExtensionVersion(complete) {
+function checkExtensionVersion() {
   var currentVersion = extension_version();
   globalVersion = currentVersion;
   console.log("User's extension version -> " + currentVersion);
-
-  if (currentVersion < lastBigRelease) {
-    var message = "You are not using the latest version of Appodeal Chrome Extension (" + version + "). Please visit chrome extension page chrome://extensions/ and ensure that extension is updated.";
-    console.log(message);
-    alert(message);
-  } else {
-    complete();
-  }
 }
 
 function get_appodeal_app_list() {
