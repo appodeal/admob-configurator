@@ -11,8 +11,12 @@ Admob.prototype.getRemoteInventory = function(callback) {
   var self = this;
   $.get("https://www.appodeal.com/api/v2/apps_with_ad_units", {user_id: self.userId, api_key: self.apiKey})
     .done(function(data) {
-      self.remoteInventory = data.applications;
-      callback(self.remoteInventory);
+      self.inventory = data.applications;
+      if (self.inventory && self.inventory.length) {
+        callback();
+      } else {
+        console.log("Not found appodeal apps");
+      }
     })
     .fail(function(data) {
       console.log("Failed to get remote inventory: " + JSON.stringify(data));
@@ -66,12 +70,12 @@ Admob.prototype.syncInventory = function(callback) {
           self.createMissingAdunits(function() {
             self.syncWithServer(function() {
               callback();
-            })
+            });
           });
         });
       });
-    })
-  })
+    });
+  });
 }
 
 // map apps between appodeal and admob
@@ -79,8 +83,6 @@ Admob.prototype.syncInventory = function(callback) {
 Admob.prototype.mapApps = function() {
   console.log("Map apps");
   var self = this;
-  // duplicate array
-  self.inventory = self.remoteInventory.slice(0);
   // iterate over remote apps and map them to admob apps;
   // mapped local apps moved from localApps arrays
   // inside remote apps in inventory array
@@ -116,7 +118,6 @@ Admob.prototype.mapApps = function() {
   // do not store useless arrays
   self.localAdunits = null;
   self.localApps = null;
-  self.remoteInventory = null;
 }
 
 // store all existing store ids
@@ -164,17 +165,23 @@ Admob.prototype.selectLocalAdunits = function(admobAppId) {
 Admob.adUnitTypeRegex = function(name) {
   // works with both old and new adunit names
   var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec)\//.exec(name);
-
   if (matchedType && matchedType.length > 1) {
-    return matchedType[2];
-  } else {
-    return null;
+    return (matchedType[2]);
   }
 }
 
 // Create local apps for all apps from inventory with missign local apps
 Admob.prototype.createMissingApps = function(callback) {
   console.log("Create missing apps");
+  var self = this;
+  // select apps without local admob app
+  var newApps = $.grep(self.inventory, function(app, i) {
+    return (!app['localApp']);
+  })
+  // create missing local apps
+  newApps.forEach(function(app, index, apps) {
+
+  })
   callback();
 }
 
