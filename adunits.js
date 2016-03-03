@@ -54,7 +54,7 @@ chrome.storage.local.get("admob_processing", function(result) {
             console.log("Apps and adunits have been synced successfully.");
           });
         } else {
-          alert("Something went wrong (user_id or api_key doesn't exist). Please, contact Appodeal Support (Appodeal Chrome Extension).")
+          alert("Something went wrong (user_id or api_key doesn't exist). Please, contact Appodeal Support (Appodeal Chrome Extension).");
         }
       })
     }
