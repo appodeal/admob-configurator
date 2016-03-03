@@ -5,6 +5,59 @@ var Admob = function(userId, apiKey) {
   Admob.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
 };
 
+// get appodeal apps
+// exclude hidden, inactive and 3rd party apps
+// compose inventory of apps and adunits, remote and local with mapping appodeal to admob
+// create local apps and adunits
+// link Admob apps to play market or itunes
+// send local apps and adunits to appodeal
+Admob.prototype.syncInventory = function(callback) {
+  console.log("Syncing inventory");
+  var self = this;
+  self.getRemoteInventory(function() {
+    self.getLocalInventory(function() {
+      self.selectStoreIds();
+      self.filterHiddenLocalApps();
+      self.mapApps();
+      self.createMissingApps(function() {
+        self.linkApps(function() {
+          self.createMissingAdunits(function() {
+            self.syncWithServer(function() {
+              callback();
+            });
+          });
+        });
+      });
+    });
+  });
+}
+
+// default appodeal local app name (not linked to store yet)
+Admob.defaultAppName = function(app) {
+  return ('Appodeal/' + app.id);
+}
+
+// loop with next after callback, mutate array
+Admob.synchronousEach = function(array, callback, finish) {
+  var element = array.pop();
+  if (element) {
+    callback(element, function() {
+      Admob.synchronousEach(array, callback, finish);
+    })
+  } else {
+    finish();
+  }
+}
+
+// Check if adunit has appodeal-configured type
+Admob.adUnitTypeRegex = function(name) {
+  // works with both old and new adunit names
+  var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec)\//.exec(name);
+  if (matchedType && matchedType.length > 1) {
+    return (matchedType[2]);
+  }
+}
+
 // get remote appodeal apps with adunits
 Admob.prototype.getRemoteInventory = function(callback) {
   console.log("Get remote inventory");
@@ -51,33 +104,6 @@ Admob.prototype.getAccountToken = function() {
   return this.token;
 }
 
-// get appodeal apps
-// exclude hidden, inactive and 3rd party apps
-// compose inventory of apps and adunits, remote and local with mapping appodeal to admob
-// create local apps and adunits
-// link Admob apps to play market or itunes
-// send local apps and adunits to appodeal
-Admob.prototype.syncInventory = function(callback) {
-  console.log("Syncing inventory");
-  var self = this;
-  self.getRemoteInventory(function() {
-    self.getLocalInventory(function() {
-      self.selectStoreIds();
-      self.filterHiddenLocalApps();
-      self.mapApps();
-      self.createMissingApps(function() {
-        self.linkApps(function() {
-          self.createMissingAdunits(function() {
-            self.syncWithServer(function() {
-              callback();
-            });
-          });
-        });
-      });
-    });
-  });
-}
-
 // map apps between appodeal and admob
 // for each appodeal app find admob app and select local adunits
 Admob.prototype.mapApps = function() {
@@ -88,7 +114,7 @@ Admob.prototype.mapApps = function() {
   // inside remote apps in inventory array
   self.inventory.forEach(function(remoteApp, index, apps) {
     if (self.localApps) {
-      var defaultAppName = 'Appodeal/' + remoteApp.id;
+      var defaultName = Admob.defaultAppName(remoteApp);
       // find by admob app id
       var mappedLocalApp = $.grep(self.localApps, function(localApp, i) {
         return (remoteApp.admob_app_id == localApp[1]);
@@ -99,7 +125,7 @@ Admob.prototype.mapApps = function() {
           if (remoteApp.search_in_store && localApp[4] == remoteApp.package_name && localApp[3] == remoteApp.os) {
             return (true);
           }
-          return (localApp[2] == defaultAppName)
+          return (localApp[2] == defaultName)
         })[0];
       }
       // move local app to inventory array
@@ -161,15 +187,6 @@ Admob.prototype.selectLocalAdunits = function(admobAppId) {
   return (selectedAdunits);
 }
 
-// Check if adunit has appodeal-configured type
-Admob.adUnitTypeRegex = function(name) {
-  // works with both old and new adunit names
-  var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec)\//.exec(name);
-  if (matchedType && matchedType.length > 1) {
-    return (matchedType[2]);
-  }
-}
-
 // Create local apps for all apps from inventory with missign local apps
 Admob.prototype.createMissingApps = function(callback) {
   console.log("Create missing apps");
@@ -179,10 +196,18 @@ Admob.prototype.createMissingApps = function(callback) {
     return (!app['localApp']);
   })
   // create missing local apps
-  newApps.forEach(function(app, index, apps) {
-
+  Admob.synchronousEach(newApps, function(app, next) {
+    self.createLocalApp(app, function(localApp) {
+      // set newly created local app for remote app in inventory
+      var inventoryAppIndex = $.inArray(app, self.inventory);
+      if (inventoryAppIndex > -1) {
+        self.inventory[inventoryAppIndex]['localApp'] = localApp;
+        next();
+      }
+    })
+  }, function() {
+    callback();
   })
-  callback();
 }
 
 // Link local apps with play market or itunes
@@ -201,4 +226,29 @@ Admob.prototype.createMissingAdunits = function(callback) {
 Admob.prototype.syncWithServer = function(callback) {
   console.log("Sync with server");
   callback();
+}
+
+// create local app with default app name
+Admob.prototype.createLocalApp = function(app, callback) {
+  console.log("Create app #" + app.id);
+  var self = this;
+  var name = Admob.defaultAppName(app);
+  var params = JSON.stringify(
+    {
+      method: "insertInventory",
+      params: {2: {2: name, 3: app.os}},
+      xsrf: self.token
+    });
+  $.ajax({method: "POST",
+    url: Admob.inventoryUrl,
+    contentType: "application/javascript; charset=UTF-8",
+    dataType: "json",
+    data: params})
+    .done(function(data) {
+      var localApp = data.result[1][1][0];
+      callback(localApp);
+    })
+    .fail(function(data) {
+      console.log("Failed to create local app: " + JSON.stringify(data));
+    });
 }
