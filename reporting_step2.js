@@ -26,7 +26,14 @@ jQuery(function(){
 
       console.log("Wait until API is enabled");
 
-      waitForElement("[ng-if='apiCtrl.api.enabled']", function(element) {
+      var adblock = jQuery('div[class="layout-align-center-center layout-row flex ng-hide"]');
+      var msg = "Please, disable AdBlock or add console.developers.google.com in whitelist to sync you inventory (Appodeal Chrome Extension)."
+
+      if (adblock.length == 0 ) { 
+        alert(msg);
+        }
+
+      waitForElement("[ng-if='apictrl.api.enabled']", function(element) {
         console.log("Api has been enabled successfully.");
         document.location.href = projectConsentUrl(project_name);
       })
