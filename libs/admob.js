@@ -51,7 +51,11 @@ Admob.inventoryPost = function(json, callback) {
     dataType: "json",
     data: params})
     .done(function(data) {
-      callback(data);
+      if (data.result) {
+        callback(data);
+      } else {
+        console.log("No result in inventory request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+      }
     })
     .fail(function(data) {
       console.log("Failed to make an inventory request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
@@ -262,8 +266,8 @@ Admob.prototype.mapApps = function() {
     }
   });
   // do not store useless arrays
-  self.localAdunits = null;
-  self.localApps = null;
+  delete self.localAdunits;
+  delete self.localApps;
 }
 
 // store all existing store ids
@@ -374,9 +378,12 @@ Admob.prototype.createMissingAdunits = function(callback) {
   })
 }
 
-// send information about local apps and adunits to server
+// send information about local apps and adunits to the server
 Admob.prototype.syncWithServer = function(callback) {
   console.log("Sync with server");
+  // make an array of new and different adunits
+
+  // send array to the server
   callback();
 }
 
