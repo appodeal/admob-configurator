@@ -165,9 +165,10 @@ Admob.missingAdunits = function(app) {
   var missingScheme = [];
   // select all elements from scheme that are not existing in localScheme
   var missingScheme = $.grep(scheme, function(s) {
-    return $.grep(localScheme, function(l) {
-      return (JSON.stringify(s) == JSON.stringify(l));
-    }).length == 0
+    var str = JSON.stringify(s);
+    return !(localScheme.findByProperty(function(l) {
+      return (str == JSON.stringify(l));
+    }).element);
   })
   return (missingScheme);
 }
@@ -235,17 +236,17 @@ Admob.prototype.mapApps = function() {
     if (self.localApps) {
       var defaultName = Admob.defaultAppName(remoteApp);
       // find by admob app id
-      var mappedLocalApp = $.grep(self.localApps, function(localApp, i) {
+      var mappedLocalApp = self.localApps.findByProperty(function(localApp) {
         return (remoteApp.admob_app_id == localApp[1]);
-      })[0];
+      }).element;
       // find by package name and os or default app name
       if (!mappedLocalApp) {
-        mappedLocalApp = $.grep(self.localApps, function(localApp, i) {
+        var mappedLocalApp = self.localApps.findByProperty(function(localApp) {
           if (remoteApp.search_in_store && localApp[4] == remoteApp.package_name && localApp[3] == remoteApp.os) {
             return (true);
           }
-          return (localApp[2] == defaultName)
-        })[0];
+          return (localApp[2] == defaultName);
+        }).element;
       }
       // move local app to inventory array
       if (mappedLocalApp) {
@@ -363,14 +364,9 @@ Admob.prototype.createMissingAdunits = function(callback) {
   console.log("Create missing adunits");
   var self = this;
   // create missing local adunits
-  Admob.synchronousEach(self.missingAdunits.slice(0, 5), function(s, next) {
-    self.createLocalAdunit(s, function() {
-      // set newly created local app for remote app in inventory
-      // var inventoryAppIndex = $.inArray(app, self.inventory);
-      // if (inventoryAppIndex > -1) {
-      //   self.inventory[inventoryAppIndex].localApp = localApp;
-      //   next();
-      // }
+  Admob.synchronousEach(self.missingAdunits.slice(0, 4), function(s, next) {
+    self.createLocalAdunit(s, function(adunit) {
+      self.addLocalAdunitToInventory(adunit);
       next();
     })
   }, function() {
@@ -390,7 +386,6 @@ Admob.prototype.createLocalApp = function(app, callback) {
   var self = this;
   var name = Admob.defaultAppName(app);
   var params = {method: "insertInventory", params: {2: {2: name, 3: app.os}}, xsrf: self.token};
-
   Admob.inventoryPost(params, function(data) {
     var localApp = data.result[1][1][0];
     callback(localApp);
@@ -436,21 +431,15 @@ Admob.prototype.searchAppInStores = function(app, callback) {
   var searchString = Admob.limitAppNameForSearch(app.store_name);
   params = {
     "method": "searchMobileApplication",
-    "params": {
-      "2": searchString,
-      "3": 0,
-      "4": 1000,
-      "5": app.os
-    },
-    "xsrf": self.token
+    "params": {"2": searchString, "3": 0, "4": 1000, "5": app.os}, "xsrf": self.token
   }
   Admob.inventoryPost(params, function(data) {
     var storeApps = data.result[2];
     var storeApp;
     if (storeApps) {
-      storeApp = $.grep(storeApps, function(a, i) {
+      storeApp = storeApps.findByProperty(function(a) {
         return (a[4] == app.package_name);
-      })[0];
+      }).element;
     }
     callback(storeApp);
   })
@@ -465,16 +454,8 @@ Admob.prototype.updateAppStoreHash = function(app, storeApp, callback) {
     "method": "updateMobileApplication",
     "params": {
       "2": {
-        "1": app.localApp[1],
-        "2": storeApp[2],
-        "3": storeApp[3],
-        "4": storeApp[4],
-        "6": storeApp[6],
-        "19": 0,
-        "21": {
-          "1": 0,
-          "5": 0
-        }
+        "1": app.localApp[1], "2": storeApp[2], "3": storeApp[3], "4": storeApp[4], "6": storeApp[6],
+        "19": 0, "21": {"1": 0, "5": 0}
       }
     },
     "xsrf": self.token
@@ -498,21 +479,14 @@ Admob.prototype.addStoreId = function(storeId) {
   }
 }
 
-// create local adunit from scheme
+// create local adunit from scheme and insert bid floor if required
+// scheme is a handy hash with params for creating new adunit
 Admob.prototype.createLocalAdunit = function(s, callback) {
   console.log("Create adunit " + s.name);
   var self = this;
   params = {
     "method": "insertInventory",
-    "params": {
-      "3": {
-        "2": s.app,
-        "3": s.name,
-        "14": s.adType,
-        "16": s.formats
-      }
-    },
-    "xsrf": self.token
+    "params": {"3": {"2": s.app, "3": s.name, "14": s.adType, "16": s.formats}}, "xsrf": self.token
   }
   Admob.inventoryPost(params, function(data) {
     var localAdunit = data.result[1][2][0];
@@ -521,23 +495,8 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
       var mediationParams = {
         "method": "updateMediation",
         "params": {
-          "2": s.app,
-          "3": localAdunit[1],
-          "4": [
-            {
-              "2": 1,
-              "3": "1",
-              "5": {
-                "1": {
-                  "1": s.bid,
-                  "2": "USD"
-                }
-              },
-              "7": 0,
-              "9": 1
-            }
-          ],
-          "5": 0
+          "2": s.app, "3": localAdunit[1],
+          "4": [{"2": 1, "3": "1", "5": {"1": {"1": s.bid, "2": "USD"}}, "7": 0, "9": 1}], "5": 0
         },
         "xsrf": self.token
       }
@@ -549,4 +508,31 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
       callback(localAdunit);
     }
   })
+}
+
+// helper to find element with in array by the conditions
+Array.prototype.findByProperty = function(condition) {
+  var self = this;
+  for (var i = 0, len = self.length; i < len; i++) {
+    if (condition(self[i])) {
+      return ({index: i, element: self[i]})
+    }
+  }
+  return ({}); // the object was not found
+};
+
+// find app in inventory by admob app id, add new local adunit
+// we should keep local adunits arrays in inventory up to date
+Admob.prototype.addLocalAdunitToInventory = function(localAdunit) {
+  var self = this;
+  var app = self.inventory.findByProperty(function(a) {
+    return (a.localApp && a.localApp[1] == localAdunit[2]);
+  }).element;
+  if (app) {
+    if (app.localAdunits) {
+      app.localAdunits.push(localAdunit);
+    } else {
+      app.localAdunits = [localAdunit];
+    }
+  }
 }
