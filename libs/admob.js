@@ -194,6 +194,9 @@ Admob.adunitBid = function(adunit) {
 // make scheme array from existing local adunits to compare it with the full scheme and find missing
 Admob.localAdunitsToScheme = function(app) {
   var scheme = [];
+  if (!app.localAdunits) {
+    return scheme;
+  }
   app.localAdunits.forEach(function(adunit) {
     var adTypeName = Admob.adUnitTypeRegex(adunit[3]);
     var admobAppId = app.localApp[1];
