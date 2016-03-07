@@ -21,7 +21,7 @@ jQuery(function(){
       // set options
       setTimeout(function() {
         console.log("Insert display name, redirect and origins urls");
-        name_code = "angular.element(jQuery(\":input[ng-model='oAuthEditorCtrl.client.displayName']\")).controller().client.displayName = 'Appodeal client';";
+        name_code = "angular.element(jQuery(\"" + ":input[ng-model='oAuthEditorCtrl.client.displayName']\")).controller().client.displayName = 'Appodeal client';";
         origins_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
         redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
         submit_form_code = "angular.element(jQuery(\"form[name='clientForm']\")).controller().submitForm();";
