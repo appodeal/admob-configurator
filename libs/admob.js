@@ -44,8 +44,8 @@ Admob.prototype.syncInventory = function(callback) {
         self.linkApps(function() {
           self.makeMissingAdunitsList();
           self.createMissingAdunits(function() {
-            self.syncWithServer(function() {
-              self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.");
+            self.syncWithServer(function(params) {
+              self.finishDialog(params);
               callback();
             })
           })
@@ -53,6 +53,25 @@ Admob.prototype.syncInventory = function(callback) {
       })
     })
   })
+}
+
+// show finish dialog with results info
+Admob.prototype.finishDialog = function(params) {
+  console.log("Show report");
+  var self = this;
+  var report = [];
+  if (params.apps.length) {
+    params.apps.forEach(function(app) {
+      report.push("<h4>" + app.name + "</h4>");
+      app.adunits.forEach(function(adunit) {
+        report.push("<p>" + adunit.name + "</p>");
+      })
+    })
+  } else {
+    report.push("New apps not found.")
+  }
+  self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.<h3>Synchronized inventory</h3>" +
+    report.join(""));
 }
 
 // show modal dialog with step results
@@ -118,7 +137,7 @@ Admob.prototype.newAdunitsForServer = function(app) {
     }).element;
     // remote adunit not found
     if (!f) {
-      var serverAdunitFormat = {code: code, ad_type: adTypeInt, bid_floor: bid};
+      var serverAdunitFormat = {code: code, ad_type: adTypeInt, bid_floor: bid, name: l[3]};
       adunits.push(serverAdunitFormat);
     }
   })
@@ -490,7 +509,7 @@ Admob.prototype.syncWithServer = function(callback) {
   // make an array of new and different adunits
   var params = {api_key: self.apiKey, user_id: self.userId, apps: []};
   self.inventory.forEach(function(app) {
-    var h = {id: app.id, admob_app_id: app.localApp[1], adunits: []};
+    var h = {id: app.id, name: app.localApp[2], admob_app_id: app.localApp[1], adunits: []};
     h.adunits.push.apply(h.adunits, self.newAdunitsForServer(app));
     if (h.admob_app_id != app.admob_app_id || h.adunits.length) {
       params.apps.push(h);
@@ -499,11 +518,11 @@ Admob.prototype.syncWithServer = function(callback) {
   // send array to the server
   if (params.apps.length) {
     Admob.syncPost(params, function(data) {
-      callback();
+      callback(params);
     })
   } else {
     console.log("Not found new apps or adunits");
-    callback();
+    callback(params);
   }
 }
 

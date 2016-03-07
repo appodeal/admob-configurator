@@ -52,3 +52,17 @@
     background:rgba(0,0,0,1);
     text-decoration:none;
 }
+
+.popup-content h4 {
+    margin-bottom: 5px;
+}
+
+.popup-content p {
+    margin-top: 6px;
+    margin-bottom: 0px;
+}
+
+.popup-scroll {
+    overflow-y: auto;
+    max-height: 300px;
+}

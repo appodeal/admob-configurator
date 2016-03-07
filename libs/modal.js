@@ -3,8 +3,10 @@ var Modal = function() {
     var popup = [
     '<div class="popup" data-popup="popup-1">',
     '    <div class="popup-inner">',
-    '        <h2 class="popup-title"></h2>',
-    '        <p class="popup-content"></p>',
+    '        <div class="popup-scroll">',
+    '          <h2 class="popup-title"></h2>',
+    '          <p class="popup-content"></p>',
+    '        </div>',
     '        <p><a data-popup-close="popup-1" href="#">Close</a></p>',
     '        <a class="popup-close" data-popup-close="popup-1" href="#">x</a>',
     '    </div>',
