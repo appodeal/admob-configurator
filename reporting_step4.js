@@ -232,25 +232,11 @@ jQuery(function(){
     }
   };
 
-  // check if admob has already enabled new interface at credentials page
-  function new_interface() {
-    // check if page has the new tab for consents which were a separate page before
-    var new_element = jQuery("g-tab[g-tab-value='consent']");
-
-    if (new_element.length) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   // start checking and creating client id
   function run() {
     console.log("Run reporting step 4")
 
     appendJQuery(function() {
-      console.log("Is interface new? " + new_interface());
-
       if (isOauthClientPage()) {
         console.log("Oauth client page");
         addCredentials();

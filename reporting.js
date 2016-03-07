@@ -8,14 +8,7 @@ function find_and_go_to_project() {
   var project_link = jQuery('a:contains("Appodeal")');
   if (project_link.length > 0) {
     console.log('Project found. Redirecting.');
-
-    var project_id;
-    if (betaConsole()) {
-      project_id = project_link.attr('href').match(/\?project=(.+)$/)[1];
-    } else {
-      project_id = project_link.attr('href').match(/project\/(.+)$/)[1];
-    }
-
+    var project_id = project_link.attr('href').match(/\?project=(.+)$/)[1];
     document.location.href = overviewPageUrl(project_id);
   }
 }
