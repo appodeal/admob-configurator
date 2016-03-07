@@ -4,6 +4,10 @@ var Admob = function(userId, apiKey) {
   this.apiKey = apiKey;
   // internal admob request url
   Admob.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
+  // get all current user's apps and adunits from server
+  Admob.remoteInventoryUrl = "https://www.appodeal.com/api/v2/apps_with_ad_units";
+  // sync local adunits with the server
+  Admob.syncUrl = "https://www.appodeal.com/api/v2/sync_inventory";
   // internal admob params
   Admob.types = {text: 0, image: 1, video: 2};
   // appodeal ad unit params
@@ -61,6 +65,29 @@ Admob.inventoryPost = function(json, callback) {
       console.log("Failed to make an inventory request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
     });
 }
+
+// make a request to admob inventory url
+Admob.syncPost = function(json, callback) {
+  console.log("Sync with server");
+  var params = JSON.stringify(json);
+  $.ajax({method: "POST",
+    url: Admob.syncUrl,
+    contentType: "application/json",
+    dataType: "json",
+    data: params})
+    .done(function(data) {
+      // success and updated apps exists
+      if (data.code == 0 && data.result) {
+        callback(data);
+      } else {
+        console.log("Wrong server answer " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+      }
+    })
+    .fail(function(data) {
+      console.log("Failed to make a server sync request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+    });
+}
+
 
 // default appodeal local app name (not linked to store yet)
 Admob.defaultAppName = function(app) {
@@ -195,7 +222,7 @@ Admob.adunitName = function(app, adName, typeName, bidFloor) {
 Admob.prototype.getRemoteInventory = function(callback) {
   console.log("Get remote inventory");
   var self = this;
-  $.get("https://www.appodeal.com/api/v2/apps_with_ad_units", {user_id: self.userId, api_key: self.apiKey})
+  $.get(Admob.remoteInventoryUrl, {user_id: self.userId, api_key: self.apiKey})
     .done(function(data) {
       self.inventory = data.applications;
       if (self.inventory && self.inventory.length) {
@@ -381,10 +408,26 @@ Admob.prototype.createMissingAdunits = function(callback) {
 // send information about local apps and adunits to the server
 Admob.prototype.syncWithServer = function(callback) {
   console.log("Sync with server");
+  var self = this;
   // make an array of new and different adunits
+  var params = {api_key: self.apiKey, user_id: self.userId, apps: []};
+  self.inventory.forEach(function(app) {
+    var h = {id: app.id, admob_app_id: app.localApp[1], adunits: []};
 
+    if (h.admob_app_id != app.admob_app_id || h.adunits.length) {
+      params.apps.push(h);
+    }
+  })
   // send array to the server
-  callback();
+  if (params.apps.length) {
+    Admob.syncPost(params, function(data) {
+      console.log(data)
+      callback();
+    })
+  } else {
+    console.log("Not found new apps or adunits");
+    callback();
+  }
 }
 
 // create local app with default app name
