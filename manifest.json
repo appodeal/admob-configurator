@@ -30,7 +30,8 @@
     },
     {
       "matches": ["https://apps.admob.com/*"],
-      "js": ["adunits.js", "libs/progressBar.js", "libs/admob.js"]
+      "js": ["adunits.js", "libs/progressBar.js", "libs/admob.js", "libs/modal.js"],
+      "css": ["libs/modal.css"]
     }
   ],
   "background": {

@@ -18,6 +18,8 @@ var Admob = function(userId, apiKey, publisherId, accountEmail) {
   Admob.interstitialBids = [0.15, 0.25, 0.65, 0.8, 1.25, 2.15, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0];
   Admob.bannerBids = [0.1, 0.2, 0.35, 0.5, 0.7];
   Admob.mrecBids = [0.15, 0.3, 0.6, 0.8, 1.25, 2];
+  // initialize modal window
+  this.modal = new Modal();
 };
 
 // get appodeal apps
@@ -29,6 +31,7 @@ var Admob = function(userId, apiKey, publisherId, accountEmail) {
 Admob.prototype.syncInventory = function(callback) {
   console.log("Sync inventory");
   var self = this;
+  self.modal.show("Appodeal Chrome Extension", "Please allow several minutes to sync your inventory.");
   if (!self.getAccountId() || !self.isPublisherIdRight()) {
     return;
   };
@@ -42,6 +45,7 @@ Admob.prototype.syncInventory = function(callback) {
           self.makeMissingAdunitsList();
           self.createMissingAdunits(function() {
             self.syncWithServer(function() {
+              self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.");
               callback();
             })
           })
@@ -50,6 +54,8 @@ Admob.prototype.syncInventory = function(callback) {
     })
   })
 }
+
+// show modal dialog with step results
 
 // make a request to admob inventory url
 Admob.inventoryPost = function(json, callback) {

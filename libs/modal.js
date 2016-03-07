@@ -1,20 +1,27 @@
 var Modal = function() {
-  if (jQuery(".popup").length) {
-  } else {
+  if (!$(".popup").length) {
     var popup = [
     '<div class="popup" data-popup="popup-1">',
     '    <div class="popup-inner">',
-    '        <h2>Wow! This is Awesome! (Popup #1)</h2>',
-    '        <p>Donec in volutpat nisi. In quam lectus, aliquet rhoncus cursus a, congue et arcu. Vestibulum tincidunt neque id nisi pulvinar aliquam. Nulla luctus luctus ipsum at ultricies. Nullam nec velit dui. Nullam sem eros, pulvinar sed pellentesque ac, feugiat et turpis. Donec gravida ipsum cursus massa malesuada tincidunt. Nullam finibus nunc mauris, quis semper neque ultrices in. Ut ac risus eget eros imperdiet posuere nec eu lectus.</p>',
+    '        <h2 class="popup-title"></h2>',
+    '        <p class="popup-content"></p>',
     '        <p><a data-popup-close="popup-1" href="#">Close</a></p>',
     '        <a class="popup-close" data-popup-close="popup-1" href="#">x</a>',
     '    </div>',
     '</div>'
     ].join('');
+    $("body").append(popup);
   }
+  this.popup = $(".popup");
+  this.title = $(".popup-title");
+  this.content = $(".popup-content");
+  var closeScript = "$('[data-popup-close]').on('click', function(e){$('.popup').fadeOut(350); e.preventDefault();});";
+  run_script(closeScript);
 }
 
 // show modal dialog
-Modal.prototype.show = function() {
-
+Modal.prototype.show = function(title, content) {
+  this.title.html(title);
+  this.content.html(content);
+  this.popup.fadeIn(350);
 }
