@@ -1,7 +1,9 @@
-var Admob = function(userId, apiKey) {
-  console.log("Initialize admob" + " (" + userId + ", " + apiKey + ")");
+var Admob = function(userId, apiKey, publisherId, accountEmail) {
+  console.log("Initialize admob" + " (" + userId + ", " + apiKey + ", " + publisherId + ", " + accountEmail + ")");
   this.userId = userId;
   this.apiKey = apiKey;
+  this.publisherId = publisherId;
+  this.accountEmail = accountEmail;
   // internal admob request url
   Admob.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
   // get all current user's apps and adunits from server
@@ -27,6 +29,9 @@ var Admob = function(userId, apiKey) {
 Admob.prototype.syncInventory = function(callback) {
   console.log("Sync inventory");
   var self = this;
+  if (!self.getAccountId() || !self.isPublisherIdRight()) {
+    return;
+  };
   self.getRemoteInventory(function() {
     self.getLocalInventory(function() {
       self.selectStoreIds();
@@ -68,7 +73,6 @@ Admob.inventoryPost = function(json, callback) {
 
 // make a request to admob inventory url
 Admob.syncPost = function(json, callback) {
-  console.log("Sync with server");
   var params = JSON.stringify(json);
   $.ajax({method: "POST",
     url: Admob.syncUrl,
@@ -88,6 +92,56 @@ Admob.syncPost = function(json, callback) {
     });
 }
 
+// make server adunit code from adunit internal id
+Admob.prototype.adunitServerId = function(internalId) {
+  return ("ca-app-" + this.accountId + "/" + internalId);
+}
+
+// find new and updated adunits (compare local and remote)
+// convert to server request format
+Admob.prototype.newAdunitsForServer = function(app) {
+  var self = this;
+  adunits = [];
+  app.localAdunits.forEach(function(l) {
+    var code = self.adunitServerId(l[1]);
+    var bid = Admob.adunitBid(l);
+    var adType = Admob.adUnitTypeRegex(l[3]);
+    var adTypeInt = Admob.adTypes[adType];
+    var f = app.ad_units.findByProperty(function(r) {
+      return (r.code == code && r.ad_type == adType && r.bid_floor == bid && r.account_key == self.accountId);
+    }).element;
+    // remote adunit not found
+    if (!f) {
+      var serverAdunitFormat = {code: code, ad_type: adTypeInt, bid_floor: bid};
+      adunits.push(serverAdunitFormat);
+    }
+  })
+  return (adunits);
+}
+
+// get admob account Publisher ID (ex.: pub-8707429396915445)
+Admob.prototype.getAccountId = function() {
+  this.accountId = document.body.innerHTML.match(/(pub-\d+)<\/li>/)[1];
+  if (!this.accountId) {
+    var error = "Error retrieving current account id";
+    console.log(error);
+    alert(error);
+  }
+  return (this.accountId);
+}
+
+// check if publisher id (remote) is similar to current admob account id
+Admob.prototype.isPublisherIdRight = function() {
+  var self = this;
+
+  if (self.publisherId != self.accountId) {
+    var error = "Current Admob account " + self.accountId + " differs from the Admob reporting account " + self.accountEmail + ". Please run step \"2. Enable Admob reporting\" to sync your current Admob account.";
+    console.log(error);
+    alert(error);
+    return false;
+  }
+  return true;
+}
 
 // default appodeal local app name (not linked to store yet)
 Admob.defaultAppName = function(app) {
@@ -124,6 +178,19 @@ Admob.adUnitTypeRegex = function(name) {
   }
 }
 
+// get bid from local adunit
+Admob.adunitBid = function(adunit) {
+  if (adunit[10]) {
+    bid = adunit[10][0][5][1][1];
+    var f = parseInt(bid) / 1000000;
+    return (f);
+  } else if (adunit[16].length == 1 && adunit[16][0] == 0) {
+      return "text";
+  } else if (adunit[16].length == 1 && adunit[16][0] == 1) {
+      return "image";
+  }
+}
+
 // make scheme array from existing local adunits to compare it with the full scheme and find missing
 Admob.localAdunitsToScheme = function(app) {
   var scheme = [];
@@ -144,7 +211,7 @@ Admob.localAdunitsToScheme = function(app) {
     var hash;
     if (adunit[10]) {
       bid = adunit[10][0][5][1][1];
-      var floatBid = parseInt(bid) / 1000000;
+      var floatBid = Admob.adunitBid(adunit);
       name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
       hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid};
     } else {
@@ -395,9 +462,11 @@ Admob.prototype.createMissingAdunits = function(callback) {
   console.log("Create missing adunits");
   var self = this;
   // create missing local adunits
-  Admob.synchronousEach(self.missingAdunits.slice(0, 4), function(s, next) {
+  self.progressBar = new ProgressBar(self.missingAdunits.length);
+  Admob.synchronousEach(self.missingAdunits, function(s, next) {
     self.createLocalAdunit(s, function(adunit) {
       self.addLocalAdunitToInventory(adunit);
+      self.progressBar.increase();
       next();
     })
   }, function() {
@@ -413,7 +482,7 @@ Admob.prototype.syncWithServer = function(callback) {
   var params = {api_key: self.apiKey, user_id: self.userId, apps: []};
   self.inventory.forEach(function(app) {
     var h = {id: app.id, admob_app_id: app.localApp[1], adunits: []};
-
+    h.adunits.push.apply(h.adunits, self.newAdunitsForServer(app));
     if (h.admob_app_id != app.admob_app_id || h.adunits.length) {
       params.apps.push(h);
     }
@@ -421,7 +490,6 @@ Admob.prototype.syncWithServer = function(callback) {
   // send array to the server
   if (params.apps.length) {
     Admob.syncPost(params, function(data) {
-      console.log(data)
       callback();
     })
   } else {
