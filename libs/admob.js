@@ -42,12 +42,10 @@ Admob.prototype.syncInventory = function(callback) {
       self.mapApps();
       self.createMissingApps(function() {
         self.linkApps(function() {
-          self.makeMissingAdunitsList();
+          self.makeMissingAdunitsLists();
           self.createMissingAdunits(function() {
-            self.syncWithServer(function(params) {
-              self.finishDialog(params);
-              callback();
-            })
+            self.finishDialog();
+            callback();
           })
         })
       })
@@ -56,22 +54,14 @@ Admob.prototype.syncInventory = function(callback) {
 }
 
 // show finish dialog with results info
-Admob.prototype.finishDialog = function(params) {
+Admob.prototype.finishDialog = function() {
   console.log("Show report");
   var self = this;
-  var report = [];
-  if (params.apps.length) {
-    params.apps.forEach(function(app) {
-      report.push("<h4>" + app.name + "</h4>");
-      app.adunits.forEach(function(adunit) {
-        report.push("<p>" + adunit.name + "</p>");
-      })
-    })
-  } else {
-    report.push("New apps not found.")
+  if (self.report.length == 0) {
+    self.report.push("New apps not found.")
   }
   self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.<h3>Synchronized inventory</h3>" +
-    report.join(""));
+    self.report.join(""));
 }
 
 // show modal dialog with step results
@@ -170,7 +160,9 @@ Admob.prototype.isPublisherIdRight = function() {
 
 // default appodeal local app name (not linked to store yet)
 Admob.defaultAppName = function(app) {
-  return ('Appodeal/' + app.id);
+  var maxLength = 80;
+  var name = 'Appodeal/' + app.id + "/" + app.appName;
+  return name.substring(0, maxLength);
 }
 
 // limit long search string (app name) length by reducing words number
@@ -288,7 +280,6 @@ Admob.adunitsScheme = function(app) {
 Admob.missingAdunits = function(app) {
   var scheme = Admob.adunitsScheme(app);
   var localScheme = Admob.localAdunitsToScheme(app);
-  var missingScheme = [];
   // select all elements from scheme that are not existing in localScheme
   var missingScheme = $.grep(scheme, function(s) {
     var str = JSON.stringify(s);
@@ -360,7 +351,6 @@ Admob.prototype.mapApps = function() {
   // inside remote apps in inventory array
   self.inventory.forEach(function(remoteApp, index, apps) {
     if (self.localApps) {
-      var defaultName = Admob.defaultAppName(remoteApp);
       // find by admob app id
       var mappedLocalApp = self.localApps.findByProperty(function(localApp) {
         return (remoteApp.admob_app_id == localApp[1]);
@@ -371,12 +361,14 @@ Admob.prototype.mapApps = function() {
           if (remoteApp.search_in_store && localApp[4] == remoteApp.package_name && localApp[3] == remoteApp.os) {
             return (true);
           }
-          return (localApp[2] == defaultName);
+          // check if name is default (Appodeal/12345/...)
+          var appodealMatch = localApp[2].match(/^Appodeal\/(\d+)(\/|$)/);
+          return (appodealMatch && parseInt(appodealMatch[1]) == remoteApp.id)
         }).element;
       }
       // move local app to inventory array
       if (mappedLocalApp) {
-        console.log(remoteApp.store_name + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
+        console.log(remoteApp.appName + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
         var localAppIndex = $.inArray(mappedLocalApp, self.localApps);
         if (localAppIndex > -1) {
           self.localApps.splice(localAppIndex, 1);
@@ -475,13 +467,11 @@ Admob.prototype.linkApps = function(callback) {
 }
 
 // find missing local adunits
-Admob.prototype.makeMissingAdunitsList = function() {
+Admob.prototype.makeMissingAdunitsLists = function() {
   console.log("Make missing adunits list");
   var self = this;
-  self.missingAdunits = [];
   self.inventory.forEach(function(app, index, apps) {
-    var list = Admob.missingAdunits(app);
-    self.missingAdunits.push.apply(self.missingAdunits, list);
+    app.missingAdunits = Admob.missingAdunits(app);
   })
 }
 
@@ -489,12 +479,17 @@ Admob.prototype.makeMissingAdunitsList = function() {
 Admob.prototype.createMissingAdunits = function(callback) {
   console.log("Create missing adunits");
   var self = this;
+  // reports generating
+  self.report = [];
+  // init progress bar
+  var missingAdunitsNum = 0;
+  self.inventory.forEach(function(app) {
+    missingAdunitsNum += app.missingAdunits.length;
+  });
+  self.progressBar = new ProgressBar(missingAdunitsNum);
   // create missing local adunits
-  self.progressBar = new ProgressBar(self.missingAdunits.length);
-  Admob.synchronousEach(self.missingAdunits, function(s, next) {
-    self.createLocalAdunit(s, function(adunit) {
-      self.addLocalAdunitToInventory(adunit);
-      self.progressBar.increase();
+  Admob.synchronousEach(self.inventory, function(app, next) {
+    self.createAdunits(app, function() {
       next();
     })
   }, function() {
@@ -502,35 +497,52 @@ Admob.prototype.createMissingAdunits = function(callback) {
   })
 }
 
+// create local adunits for app from prepared scheme
+// sync app adunits with server
+Admob.prototype.createAdunits = function(app, callback) {
+  var self = this;
+  Admob.synchronousEach(app.missingAdunits, function(s, next) {
+    self.createLocalAdunit(s, function(adunit) {
+      self.addLocalAdunitToInventory(app, adunit);
+      self.progressBar.increase();
+      next();
+    })
+  }, function() {
+    self.syncWithServer(app, function(params) {
+      callback();
+    })
+  })
+}
+
 // send information about local apps and adunits to the server
-Admob.prototype.syncWithServer = function(callback) {
-  console.log("Sync with server");
+Admob.prototype.syncWithServer = function(app, callback) {
   var self = this;
   // make an array of new and different adunits
   var params = {api_key: self.apiKey, user_id: self.userId, apps: []};
-  self.inventory.forEach(function(app) {
-    var h = {id: app.id, name: app.localApp[2], admob_app_id: app.localApp[1], adunits: []};
-    h.adunits.push.apply(h.adunits, self.newAdunitsForServer(app));
-    if (h.admob_app_id != app.admob_app_id || h.adunits.length) {
-      params.apps.push(h);
-    }
-  })
+  var h = {id: app.id, name: app.localApp[2], admob_app_id: app.localApp[1], adunits: self.newAdunitsForServer(app)};
+  if (h.admob_app_id != app.admob_app_id || h.adunits.length) {
+    params.apps.push(h);
+  }
   // send array to the server
   if (params.apps.length) {
+    console.log("Sync app " + h.name + " with server");
     Admob.syncPost(params, function(data) {
+      self.report.push("<h4>" + h.name + "</h4>");
+      h.adunits.forEach(function(adunit) {
+        self.report.push("<p>" + adunit.name + "</p>");
+      })
       callback(params);
     })
   } else {
-    console.log("Not found new apps or adunits");
     callback(params);
   }
 }
 
 // create local app with default app name
 Admob.prototype.createLocalApp = function(app, callback) {
-  console.log("Create app #" + app.id);
   var self = this;
   var name = Admob.defaultAppName(app);
+  console.log("Create app " + name);
   var params = {method: "insertInventory", params: {2: {2: name, 3: app.os}}, xsrf: self.token};
   Admob.inventoryPost(params, function(data) {
     var localApp = data.result[1][1][0];
@@ -541,7 +553,6 @@ Admob.prototype.createLocalApp = function(app, callback) {
 // link local app with Play Market and App Store
 // search by name; update local app with linked data hash
 Admob.prototype.linkLocalApp = function(app, callback) {
-  console.log("Link app #" + app.id + " to store");
   var self = this;
   // check if there is no linked local app with a current package name
   // include hidden and not appodeal apps
@@ -559,12 +570,10 @@ Admob.prototype.linkLocalApp = function(app, callback) {
           }
         })
       } else {
-        console.log("App #" + app.id + " not found in stores by name");
         callback();
       }
     })
   } else {
-    console.log("App #" + app.id + " among already linked, hidden or user's admob apps");
     callback();
   }
 }
@@ -669,16 +678,10 @@ Array.prototype.findByProperty = function(condition) {
 
 // find app in inventory by admob app id, add new local adunit
 // we should keep local adunits arrays in inventory up to date
-Admob.prototype.addLocalAdunitToInventory = function(localAdunit) {
-  var self = this;
-  var app = self.inventory.findByProperty(function(a) {
-    return (a.localApp && a.localApp[1] == localAdunit[2]);
-  }).element;
-  if (app) {
-    if (app.localAdunits) {
-      app.localAdunits.push(localAdunit);
-    } else {
-      app.localAdunits = [localAdunit];
-    }
+Admob.prototype.addLocalAdunitToInventory = function(app, localAdunit) {
+  if (app.localAdunits) {
+    app.localAdunits.push(localAdunit);
+  } else {
+    app.localAdunits = [localAdunit];
   }
 }
