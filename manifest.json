@@ -3,7 +3,7 @@
   "name": "Appodeal",
   "short_name": "Appodeal Admob Sync",
   "description": "This extension will create and sync Appodeal adunits in your Admob account.",
-  "version": "7.2",
+  "version": "8.0",
   "browser_action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html"
@@ -30,7 +30,8 @@
     },
     {
       "matches": ["https://apps.admob.com/*"],
-      "js": ["admob.js", "libs/progressBar.js"]
+      "js": ["adunits.js", "libs/progressBar.js", "libs/admob.js", "libs/modal.js"],
+      "css": ["libs/modal.css"]
     }
   ],
   "background": {

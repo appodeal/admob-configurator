@@ -21,7 +21,7 @@ jQuery(function(){
       // set options
       setTimeout(function() {
         console.log("Insert display name, redirect and origins urls");
-        name_code = "angular.element(jQuery(\":input[ng-model='oAuthEditorCtrl.client.displayName']\")).controller().client.displayName = 'Appodeal client';";
+        name_code = "angular.element(jQuery(\"" + ":input[ng-model='oAuthEditorCtrl.client.displayName']\")).controller().client.displayName = 'Appodeal client';";
         origins_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
         redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
         submit_form_code = "angular.element(jQuery(\"form[name='clientForm']\")).controller().submitForm();";
@@ -232,25 +232,11 @@ jQuery(function(){
     }
   };
 
-  // check if admob has already enabled new interface at credentials page
-  function new_interface() {
-    // check if page has the new tab for consents which were a separate page before
-    var new_element = jQuery("g-tab[g-tab-value='consent']");
-
-    if (new_element.length) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   // start checking and creating client id
   function run() {
     console.log("Run reporting step 4")
 
     appendJQuery(function() {
-      console.log("Is interface new? " + new_interface());
-
       if (isOauthClientPage()) {
         console.log("Oauth client page");
         addCredentials();
