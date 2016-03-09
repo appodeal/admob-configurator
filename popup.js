@@ -3,7 +3,7 @@ APPODEAL_STATUS_URL = "https://www.appodeal.com/api/v2/get_api_key";
 function click(e) {
   if (e.target.id == 'reporting') {
     var newURL = "https://apps.admob.com/#home";
-    chrome.tabs.create({url: newURL, "selected": true}, function(tab) {
+    chrome.tabs.update({url: newURL}, function(tab) {
       chrome.storage.local.set({ "reporting_tab_id" : tab.id });
       window.close();
     });
@@ -18,7 +18,7 @@ function click(e) {
     window.close();
   } else if (e.target.id == 'admob') {
     var newURL = "https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD";
-    chrome.tabs.create({"url": newURL, "selected": true}, function(tab) {
+    chrome.tabs.update({"url": newURL}, function(tab) {
       setAdmobProcessingAndClose();
     });
   } else {
