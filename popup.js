@@ -2,10 +2,9 @@ APPODEAL_STATUS_URL = "https://www.appodeal.com/api/v2/get_api_key";
 
 function click(e) {
   if (e.target.id == 'reporting') {
-    var newURL = 'https://apps.admob.com/#monetize';
-    chrome.tabs.update({ url: newURL }, function(tab) {
+    var newURL = "https://apps.admob.com/#home";
+    chrome.tabs.create({url: newURL, "selected": true}, function(tab) {
       chrome.storage.local.set({ "reporting_tab_id" : tab.id });
-      console.log('hm...');
       window.close();
     });
   } else if (e.target.id == 'login') {
@@ -17,16 +16,10 @@ function click(e) {
     var newURL = "https://www.appodeal.com";
     chrome.tabs.update({ url: newURL });
     window.close();
-  } else if (e.target.id == 'api') {
-    var newURL = "http://www.appodeal.com/profile/api_integration";
-    chrome.tabs.update({ url: newURL });
-    window.close();
   } else if (e.target.id == 'admob') {
-    var newURL = "https://apps.admob.com/#monetize";
-    chrome.tabs.update({ url: newURL }, function(tab) {
-      chrome.storage.local.set({ "admob_processing" : true }, function() {
-        window.close();
-      });
+    var newURL = "https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD";
+    chrome.tabs.create({"url": newURL, "selected": true}, function(tab) {
+      setAdmobProcessingAndClose();
     });
   } else {
     window.close();
@@ -184,5 +177,11 @@ function updateAppodealCredentials(result, items, callback) {
 
   chrome.storage.local.set(localCredentials, function() {
     callback();
+  });
+}
+
+function setAdmobProcessingAndClose() {
+  chrome.storage.local.set({ "admob_processing" : true }, function() {
+    window.close();
   });
 }

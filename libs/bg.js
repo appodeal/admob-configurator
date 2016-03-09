@@ -12,7 +12,7 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
       } else if (details_url.match(/\/apiui\/consent/) || details_url.match(/consent\?project=/)) {
         console.log("calling reporting_step3.js");
         chrome.tabs.executeScript(details.tabId, { file: "reporting_step3.js" });
-      } else if (details.url.toString().match(/apps\.admob\.com\/#monetize/)) {
+      } else if (details.url.toString().match(/apps\.admob\.com\/#home/)) {
         console.log('calling get_admob_account.js');
         chrome.tabs.executeScript(details.tabId, { file: "get_admob_account.js" });
       } else if (details.url == "https://console.developers.google.com/project" || details.url == "https://console.developers.google.com/start") {
