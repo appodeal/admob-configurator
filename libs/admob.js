@@ -79,11 +79,11 @@ Admob.prototype.finishDialog = function() {
 Admob.prototype.showErrorDialog = function(content) {
   console.log("Error dialog");
   var self = this;
-  var message = "Please try again later or contact Appodeal support.";
+  var message = "Sorry, something went wrong! Please try again later or contact Appodeal support.";
   if (content) {
     message = message + "<h3>" + content + "</h3>";
   }
-  self.modal.show("An error occurred.", message);
+  self.modal.show("Appodeal Chrome Extension", message);
 }
 
 // show modal dialog with step results
@@ -109,7 +109,8 @@ Admob.inventoryPost = function(json, callback) {
 }
 
 // make a request to admob inventory url
-Admob.syncPost = function(json, callback) {
+Admob.prototype.syncPost = function(json, callback) {
+  var self = this;
   var params = JSON.stringify(json);
   $.ajax({method: "POST",
     url: Admob.syncUrl,
@@ -122,10 +123,12 @@ Admob.syncPost = function(json, callback) {
         callback(data);
       } else {
         console.log("Wrong sync answer " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+        self.showErrorDialog("Wrong answer for a server sync request.");
       }
     })
     .fail(function(data) {
       console.log("Failed to make a server sync request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+      self.showErrorDialog("Failed to make a server sync request.");
     });
 }
 
@@ -554,7 +557,7 @@ Admob.prototype.syncWithServer = function(app, callback) {
   // send array to the server
   if (params.apps.length) {
     console.log("Sync app " + h.name + " with server");
-    Admob.syncPost(params, function(data) {
+    self.syncPost(params, function(data) {
       // collect and send reports to server
       var items = [];
       items.push("<h4>" + h.name + "</h4>");
