@@ -77,8 +77,9 @@ Admob.prototype.finishDialog = function() {
 }
 
 Admob.prototype.showErrorDialog = function(content) {
-  console.log("Error dialog");
   var self = this;
+  console.log(JSON.stringify(self));
+  console.log("Something went wrong");
   var message = "Sorry, something went wrong! Please try again later or contact Appodeal support.";
   if (content) {
     message = message + "<h3>" + content + "</h3>";
