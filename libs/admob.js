@@ -46,11 +46,12 @@ Admob.prototype.syncInventory = function(callback) {
       self.mapApps(function() {
         self.createMissingApps(function() {
           self.linkApps(function() {
-            self.makeMissingAdunitsLists();
-            self.createMissingAdunits(function() {
-              self.finishDialog();
-              callback();
-            })
+            self.makeMissingAdunitsLists(function() {
+              self.createMissingAdunits(function() {
+                self.finishDialog();
+                callback();
+              })
+            });
           })
         })
       });
@@ -77,6 +78,7 @@ Admob.prototype.finishDialog = function() {
   });
 }
 
+// show error modal window, send report to server
 Admob.prototype.showErrorDialog = function(content) {
   var self = this;
   console.log(JSON.stringify(self));
@@ -85,11 +87,22 @@ Admob.prototype.showErrorDialog = function(content) {
   var message = "Sorry, something went wrong! Please try again later or contact Appodeal support.";
   if (content) {
     message = message + "<h3>" + content + "</h3>";
+    self.sendReports({mode: 1}, [content], function() {
+      console.log("Sent error report");
+    })
   }
   self.modal.show("Appodeal Chrome Extension", message);
 }
 
-// show modal dialog with step results
+// show information modal window
+Admob.prototype.showInfoDialog = function(content) {
+  var self = this;
+  console.log(content);
+  self.sendReports({mode: 0}, [content], function() {
+    console.log("Sent information report");
+  })
+  self.modal.show("Appodeal Chrome Extension", content);
+}
 
 // make a request to admob inventory url
 Admob.prototype.inventoryPost = function(json, callback) {
@@ -167,13 +180,13 @@ Admob.prototype.newAdunitsForServer = function(app) {
 
 // get admob account Publisher ID (ex.: pub-8707429396915445)
 Admob.prototype.getAccountId = function() {
-  this.accountId = document.body.innerHTML.match(/(pub-\d+)<\/li>/)[1];
-  if (!this.accountId) {
+  var self = this;
+  self.accountId = document.body.innerHTML.match(/(pub-\d+)<\/li>/)[1];
+  if (!self.accountId) {
     var error = "Error retrieving current account id";
-    console.log(error);
-    alert(error);
+    self.showErrorDialog(error);
   }
-  return (this.accountId);
+  return (self.accountId);
 }
 
 // get chrome extension version
@@ -184,11 +197,9 @@ Admob.prototype.getVersion = function() {
 // check if publisher id (remote) is similar to current admob account id
 Admob.prototype.isPublisherIdRight = function() {
   var self = this;
-
   if (self.publisherId != self.accountId) {
-    var error = "Current Admob account " + self.accountId + " differs from the Admob reporting account " + self.accountEmail + ". Please run step \"2. Enable Admob reporting\" to sync your current Admob account.";
-    console.log(error);
-    alert(error);
+    var info = "<h3>Wrong account.</h3>Please login to your Admob account " + self.accountEmail + " or run step 2 to sync this account.";
+    self.showInfoDialog(info);
     return false;
   }
   return true;
@@ -506,12 +517,17 @@ Admob.prototype.linkApps = function(callback) {
 }
 
 // find missing local adunits
-Admob.prototype.makeMissingAdunitsLists = function() {
+Admob.prototype.makeMissingAdunitsLists = function(callback) {
   console.log("Make missing adunits list");
   var self = this;
-  self.inventory.forEach(function(app, index, apps) {
-    app.missingAdunits = Admob.missingAdunits(app);
-  })
+  try {
+    self.inventory.forEach(function(app, index, apps) {
+      app.missingAdunits = Admob.missingAdunits(app);
+    })
+    callback();
+  } catch(e) {
+    self.showErrorDialog("Missing adunits list: " + e.message);
+  }
 }
 
 // create local adunits in local apps
