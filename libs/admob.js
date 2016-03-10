@@ -43,16 +43,17 @@ Admob.prototype.syncInventory = function(callback) {
     self.getLocalInventory(function() {
       self.selectStoreIds();
       self.filterHiddenLocalApps();
-      self.mapApps();
-      self.createMissingApps(function() {
-        self.linkApps(function() {
-          self.makeMissingAdunitsLists();
-          self.createMissingAdunits(function() {
-            self.finishDialog();
-            callback();
+      self.mapApps(function() {
+        self.createMissingApps(function() {
+          self.linkApps(function() {
+            self.makeMissingAdunitsLists();
+            self.createMissingAdunits(function() {
+              self.finishDialog();
+              callback();
+            })
           })
         })
-      })
+      });
     })
   })
 }
@@ -378,45 +379,51 @@ Admob.prototype.getPageToken = function() {
 
 // map apps between appodeal and admob
 // for each appodeal app find admob app and select local adunits
-Admob.prototype.mapApps = function() {
+Admob.prototype.mapApps = function(callback) {
   console.log("Map apps");
   var self = this;
   // iterate over remote apps and map them to admob apps;
   // mapped local apps moved from localApps arrays
   // inside remote apps in inventory array
-  self.inventory.forEach(function(remoteApp, index, apps) {
-    if (self.localApps) {
-      // find by admob app id
-      var mappedLocalApp = self.localApps.findByProperty(function(localApp) {
-        return (remoteApp.admob_app_id == localApp[1]);
-      }).element;
-      // find by package name and os or default app name
-      if (!mappedLocalApp) {
+  try {
+    self.inventory.forEach(function(remoteApp, index, apps) {
+      if (self.localApps) {
+        // find by admob app id
         var mappedLocalApp = self.localApps.findByProperty(function(localApp) {
-          if (remoteApp.search_in_store && localApp[4] == remoteApp.package_name && localApp[3] == remoteApp.os) {
-            return (true);
-          }
-          // check if name is default (Appodeal/12345/...)
-          var appodealMatch = localApp[2].match(/^Appodeal\/(\d+)(\/|$)/);
-          return (appodealMatch && parseInt(appodealMatch[1]) == remoteApp.id)
+          return (remoteApp.admob_app_id == localApp[1]);
         }).element;
-      }
-      // move local app to inventory array
-      if (mappedLocalApp) {
-        console.log(remoteApp.appName + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
-        var localAppIndex = $.inArray(mappedLocalApp, self.localApps);
-        if (localAppIndex > -1) {
-          self.localApps.splice(localAppIndex, 1);
-          self.inventory[index].localApp = mappedLocalApp;
-          // map local adunits
-          self.inventory[index].localAdunits = self.selectLocalAdunits(mappedLocalApp[1]);
+        // find by package name and os or default app name
+        if (!mappedLocalApp) {
+          var mappedLocalApp = self.localApps.findByProperty(function(localApp) {
+            if (remoteApp.search_in_store && localApp[4] == remoteApp.package_name && localApp[3] == remoteApp.os) {
+              return (true);
+            }
+            // check if name is default (Appodeal/12345/...)
+            var appodealMatch = localApp[2].match(/^Appodeal\/(\d+)(\/|$)/);
+            return (appodealMatch && parseInt(appodealMatch[1]) == remoteApp.id)
+          }).element;
+        }
+        // move local app to inventory array
+        if (mappedLocalApp) {
+          console.log(remoteApp.appName + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
+          var localAppIndex = $.inArray(mappedLocalApp, self.localApps);
+          if (localAppIndex > -1) {
+            self.localApps.splice(localAppIndex, 1);
+            remoteApp.localApp = mappedLocalApp;
+            // map local adunits
+            remoteApp.localAdunits = self.selectLocalAdunits(mappedLocalApp[1]);
+          }
         }
       }
-    }
-  });
-  // do not store useless arrays
-  delete self.localAdunits;
-  delete self.localApps;
+    });
+    // do not store useless arrays
+    delete self.localAdunits;
+    delete self.localApps;
+    callback();
+  } catch(e) {
+    console.log(e.message);
+    self.showErrorDialog("Map apps: " + e.message);
+  }
 }
 
 // store all existing store ids
@@ -472,11 +479,8 @@ Admob.prototype.createMissingApps = function(callback) {
   Admob.synchronousEach(newApps, function(app, next) {
     self.createLocalApp(app, function(localApp) {
       // set newly created local app for remote app in inventory
-      var inventoryAppIndex = $.inArray(app, self.inventory);
-      if (inventoryAppIndex > -1) {
-        self.inventory[inventoryAppIndex].localApp = localApp;
-        next();
-      }
+      app.localApp = localApp;
+      next();
     })
   }, function() {
     callback();
@@ -586,8 +590,13 @@ Admob.prototype.createLocalApp = function(app, callback) {
   console.log("Create app " + name);
   var params = {method: "insertInventory", params: {2: {2: name, 3: app.os}}, xsrf: self.token};
   self.inventoryPost(params, function(data) {
-    var localApp = data.result[1][1][0];
-    callback(localApp);
+    try {
+      var localApp = data.result[1][1][0];
+      callback(localApp);
+    } catch(e) {
+      console.log(e.message);
+      self.showErrorDialog("Create local app: " + e.message);
+    }
   })
 }
 
@@ -603,12 +612,9 @@ Admob.prototype.linkLocalApp = function(app, callback) {
       if (storeApp) {
         self.updateAppStoreHash(app, storeApp, function(localApp) {
           // update inventory array with new linked local app
-          var inventoryAppIndex = $.inArray(app, self.inventory);
-          if (inventoryAppIndex > -1) {
-            self.inventory[inventoryAppIndex].localApp = localApp;
-            console.log("App #" + app.id + " has been linked to store");
-            callback();
-          }
+          app.localApp = localApp;
+          console.log("App #" + app.id + " has been linked to store");
+          callback();
         })
       } else {
         callback();
@@ -657,10 +663,14 @@ Admob.prototype.updateAppStoreHash = function(app, storeApp, callback) {
     "xsrf": self.token
   }
   self.inventoryPost(params, function(data) {
-    var localApp = data.result[1][1][0];
-    if (localApp) {
-      self.addStoreId(app.package_name);
-      callback(localApp);
+    try {
+      var localApp = data.result[1][1][0];
+      if (localApp) {
+        self.addStoreId(app.package_name);
+        callback(localApp);
+      }
+    } catch(e) {
+      self.showErrorDialog("Link app to store: " + e.message);
     }
   })
 }
