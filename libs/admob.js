@@ -81,6 +81,7 @@ Admob.prototype.showErrorDialog = function(content) {
   var self = this;
   console.log(JSON.stringify(self));
   console.log("Something went wrong");
+  console.log(content);
   var message = "Sorry, something went wrong! Please try again later or contact Appodeal support.";
   if (content) {
     message = message + "<h3>" + content + "</h3>";
@@ -421,7 +422,6 @@ Admob.prototype.mapApps = function(callback) {
     delete self.localApps;
     callback();
   } catch(e) {
-    console.log(e.message);
     self.showErrorDialog("Map apps: " + e.message);
   }
 }
@@ -594,7 +594,6 @@ Admob.prototype.createLocalApp = function(app, callback) {
       var localApp = data.result[1][1][0];
       callback(localApp);
     } catch(e) {
-      console.log(e.message);
       self.showErrorDialog("Create local app: " + e.message);
     }
   })
@@ -636,14 +635,18 @@ Admob.prototype.searchAppInStores = function(app, callback) {
     "params": {"2": searchString, "3": 0, "4": 1000, "5": app.os}, "xsrf": self.token
   }
   self.inventoryPost(params, function(data) {
-    var storeApps = data.result[2];
-    var storeApp;
-    if (storeApps) {
-      storeApp = storeApps.findByProperty(function(a) {
-        return (a[4] == app.package_name);
-      }).element;
+    try {
+      var storeApps = data.result[2];
+      var storeApp;
+      if (storeApps) {
+        storeApp = storeApps.findByProperty(function(a) {
+          return (a[4] == app.package_name);
+        }).element;
+      }
+      callback(storeApp);
+    } catch(e) {
+      self.showErrorDialog("Search app in stores: " + e.message);
     }
-    callback(storeApp);
   })
 }
 
