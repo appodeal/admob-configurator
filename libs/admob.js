@@ -89,7 +89,8 @@ Admob.prototype.showErrorDialog = function(content) {
 // show modal dialog with step results
 
 // make a request to admob inventory url
-Admob.inventoryPost = function(json, callback) {
+Admob.prototype.inventoryPost = function(json, callback) {
+  var self = this;
   var params = JSON.stringify(json);
   $.ajax({method: "POST",
     url: Admob.inventoryUrl,
@@ -101,10 +102,12 @@ Admob.inventoryPost = function(json, callback) {
         callback(data);
       } else {
         console.log("No result in inventory request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+        self.showErrorDialog("No result in an internal inventory request.");
       }
     })
     .fail(function(data) {
       console.log("Failed to make an inventory request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+      self.showErrorDialog("Failed to make an internal request.");
     });
 }
 
@@ -358,7 +361,7 @@ Admob.prototype.getLocalInventory = function(callback) {
   console.log("Get local inventory");
   var self = this;
   self.getPageToken();
-  Admob.inventoryPost({method: "initialize", params: {}, xsrf: self.token}, function(data) {
+  self.inventoryPost({method: "initialize", params: {}, xsrf: self.token}, function(data) {
     self.localApps = data.result[1][1];
     self.localAdunits = data.result[1][2];
     callback(data.result);
@@ -581,7 +584,7 @@ Admob.prototype.createLocalApp = function(app, callback) {
   var name = Admob.defaultAppName(app);
   console.log("Create app " + name);
   var params = {method: "insertInventory", params: {2: {2: name, 3: app.os}}, xsrf: self.token};
-  Admob.inventoryPost(params, function(data) {
+  self.inventoryPost(params, function(data) {
     var localApp = data.result[1][1][0];
     callback(localApp);
   })
@@ -625,7 +628,7 @@ Admob.prototype.searchAppInStores = function(app, callback) {
     "method": "searchMobileApplication",
     "params": {"2": searchString, "3": 0, "4": 1000, "5": app.os}, "xsrf": self.token
   }
-  Admob.inventoryPost(params, function(data) {
+  self.inventoryPost(params, function(data) {
     var storeApps = data.result[2];
     var storeApp;
     if (storeApps) {
@@ -652,7 +655,7 @@ Admob.prototype.updateAppStoreHash = function(app, storeApp, callback) {
     },
     "xsrf": self.token
   }
-  Admob.inventoryPost(params, function(data) {
+  self.inventoryPost(params, function(data) {
     var localApp = data.result[1][1][0];
     if (localApp) {
       self.addStoreId(app.package_name);
@@ -680,7 +683,7 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
     "method": "insertInventory",
     "params": {"3": {"2": s.app, "3": s.name, "14": s.adType, "16": s.formats}}, "xsrf": self.token
   }
-  Admob.inventoryPost(params, function(data) {
+  self.inventoryPost(params, function(data) {
     var localAdunit = data.result[1][2][0];
     // insert mediation
     if (s.bid) {
@@ -692,7 +695,7 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
         },
         "xsrf": self.token
       }
-      Admob.inventoryPost(mediationParams, function(data) {
+      self.inventoryPost(mediationParams, function(data) {
         var localAdunit = data.result[1][2][0];
         callback(localAdunit);
       })
