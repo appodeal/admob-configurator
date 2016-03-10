@@ -31,7 +31,11 @@ var Admob = function(userId, apiKey, publisherId, accountEmail) {
 Admob.prototype.syncInventory = function(callback) {
   console.log("Sync inventory");
   var self = this;
+  self.getVersion();
   self.modal.show("Appodeal Chrome Extension", "Please allow several minutes to sync your inventory.");
+  self.sendReports({mode: 0}, ["<h4>Sync inventory</h4>"], function() {
+    console.log("Sent start reports");
+  });
   if (!self.getAccountId() || !self.isPublisherIdRight()) {
     return;
   };
@@ -57,11 +61,19 @@ Admob.prototype.syncInventory = function(callback) {
 Admob.prototype.finishDialog = function() {
   console.log("Show report");
   var self = this;
+  var items = [];
   if (self.report.length == 0) {
-    self.report.push("New apps not found.")
+    var noAppsMsg = "New apps not found.";
+    self.report.push(noAppsMsg);
+    items.push("<h4>" + noAppsMsg + "</h4>");
   }
+  items.push("<h4>Admob is synced with Appodeal now.</h4>");
   self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.<h3>Synchronized inventory</h3>" +
     self.report.join(""));
+  // send finish reports
+  self.sendReports({mode: 0, timeShift: 1000}, items, function() {
+    console.log("Sent finish reports");
+  });
 }
 
 // show modal dialog with step results
@@ -99,7 +111,7 @@ Admob.syncPost = function(json, callback) {
       if (data.code == 0 && data.result) {
         callback(data);
       } else {
-        console.log("Wrong server answer " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+        console.log("Wrong sync answer " + JSON.stringify(json) + " -> " + JSON.stringify(data));
       }
     })
     .fail(function(data) {
@@ -143,6 +155,11 @@ Admob.prototype.getAccountId = function() {
     alert(error);
   }
   return (this.accountId);
+}
+
+// get chrome extension version
+Admob.prototype.getVersion = function() {
+  this.version = extensionVersion();
 }
 
 // check if publisher id (remote) is similar to current admob account id
@@ -527,10 +544,16 @@ Admob.prototype.syncWithServer = function(app, callback) {
   if (params.apps.length) {
     console.log("Sync app " + h.name + " with server");
     Admob.syncPost(params, function(data) {
-      self.report.push("<h4>" + h.name + "</h4>");
+      // collect and send reports to server
+      var items = [];
+      items.push("<h4>" + h.name + "</h4>");
       h.adunits.forEach(function(adunit) {
-        self.report.push("<p>" + adunit.name + "</p>");
+        items.push("<p>" + adunit.name + "</p>");
       })
+      self.report.push.apply(self.report, items);
+      self.sendReports({mode: 0}, items, function() {
+        console.log("Sent reports from " + app.appName);
+      });
       callback(params);
     })
   } else {
@@ -684,4 +707,20 @@ Admob.prototype.addLocalAdunitToInventory = function(app, localAdunit) {
   } else {
     app.localAdunits = [localAdunit];
   }
+}
+
+// send logs to server
+Admob.prototype.sendReports = function(params, items, callback) {
+  var self = this;
+  var output_at = Date.now();
+  if (params.timeShift) {
+    output_at += params.timeShift;
+  }
+  // {output_at: Date.now(), content: object}
+  var reportItems = $.map(items, function(item, i) {
+    return {output_at: output_at + i, content: item};
+  })
+  sendLogs(self.apiKey, self.userId, params.mode, 3, self.version, reportItems, function() {
+    callback();
+  })
 }

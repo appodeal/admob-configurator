@@ -67,9 +67,8 @@ function setBadgeNum(num) {
   }
 }
 
-function extension_version() {
-  var version = parseFloat(chrome.runtime.getManifest().version);
-  return version;
+function extensionVersion() {
+  return parseFloat(chrome.runtime.getManifest().version);
 }
 
 // async jQuery load
@@ -156,4 +155,32 @@ function waitForElement(selector, callback) {
       callback(element);
     }
   }, 500);
+}
+
+function sendLogs(apiKey, userId, mode, part, version, items, callback) {
+  var json = {
+    "api_key": apiKey,
+    "user_id": userId,
+    "part": part,
+    "mode": mode,
+    "version": version,
+    "items": items
+  }
+  var params = JSON.stringify(json);
+  $.ajax({method: "POST",
+    url: "https://www.appodeal.com/api/v2/save_extension_logs",
+    contentType: "application/json",
+    dataType: "json",
+    data: params})
+    .done(function(data) {
+      if (data.code != 0) {
+        console.log("Wrong report answer " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+      }
+    })
+    .fail(function(data) {
+      console.log("Failed to send reports " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+    })
+    .always(function(data) {
+      callback(data);
+    });
 }

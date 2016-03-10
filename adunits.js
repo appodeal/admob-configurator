@@ -1,5 +1,6 @@
 chrome.storage.local.get("admob_processing", function(result) {
   if (result['admob_processing']) {
+    console.log("Start admob adunits processing");
     document.body.onload = function() {
       startInventorySync();
     }
