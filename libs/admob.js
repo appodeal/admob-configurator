@@ -76,6 +76,16 @@ Admob.prototype.finishDialog = function() {
   });
 }
 
+Admob.prototype.showErrorDialog = function(content) {
+  console.log("Error dialog");
+  var self = this;
+  var message = "Please try again later or contact Appodeal support.";
+  if (content) {
+    message = message + "<h3>" + content + "</h3>";
+  }
+  self.modal.show("An error occurred.", message);
+}
+
 // show modal dialog with step results
 
 // make a request to admob inventory url
@@ -336,6 +346,7 @@ Admob.prototype.getRemoteInventory = function(callback) {
     })
     .fail(function(data) {
       console.log("Failed to get remote inventory: " + JSON.stringify(data));
+      self.showErrorDialog("Failed to get remote inventory.");
     });
 };
 
