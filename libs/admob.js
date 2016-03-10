@@ -698,23 +698,31 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
     "params": {"3": {"2": s.app, "3": s.name, "14": s.adType, "16": s.formats}}, "xsrf": self.token
   }
   self.inventoryPost(params, function(data) {
-    var localAdunit = data.result[1][2][0];
-    // insert mediation
-    if (s.bid) {
-      var mediationParams = {
-        "method": "updateMediation",
-        "params": {
-          "2": s.app, "3": localAdunit[1],
-          "4": [{"2": 1, "3": "1", "5": {"1": {"1": s.bid, "2": "USD"}}, "7": 0, "9": 1}], "5": 0
-        },
-        "xsrf": self.token
-      }
-      self.inventoryPost(mediationParams, function(data) {
-        var localAdunit = data.result[1][2][0];
+    try {
+      var localAdunit = data.result[1][2][0];
+      // insert mediation
+      if (s.bid) {
+        var mediationParams = {
+          "method": "updateMediation",
+          "params": {
+            "2": s.app, "3": localAdunit[1],
+            "4": [{"2": 1, "3": "1", "5": {"1": {"1": s.bid, "2": "USD"}}, "7": 0, "9": 1}], "5": 0
+          },
+          "xsrf": self.token
+        }
+        self.inventoryPost(mediationParams, function(data) {
+          try {
+            var localAdunit = data.result[1][2][0];
+            callback(localAdunit);
+          } catch(e) {
+            self.showErrorDialog("Insert bid floor: " + e.message);
+          }
+        })
+      } else {
         callback(localAdunit);
-      })
-    } else {
-      callback(localAdunit);
+      }
+    } catch(e) {
+      self.showErrorDialog("Create local adunit: " + e.message);
     }
   })
 }
