@@ -16,8 +16,7 @@ function find_and_go_to_project() {
 function find_and_go_to_created_project() {
   var project_link = jQuery('a:contains("Appodeal")');
   if (project_link.length > 0) {
-    console.log('Project found. Redirecting.');
-
+    console.log('Project created and found. Redirecting.');
     clearInterval(project_created_interval);
     var project_name = locationProjectName();
     document.location.href = overviewPageUrl(project_name);
@@ -42,8 +41,8 @@ function wait_for_project_name() {
       console.log("Project confirmation check");
 
       if (firstProjectConfirmation.length) {
-        var msg = "To create Appodeal project you must first agree to the terms of Admob.";
-        console.log(msg);
+        var msg = "To create Appodeal project you must first agree to the terms of Admob. Then restart step 2.";
+        sendOut(0, msg);
         alert(msg);
       } else {
         console.log('Click OK button.');
@@ -64,6 +63,8 @@ function wait_for_project_name() {
     }, 2000);
   }
 }
+
+sendOut(0, "Find or create Appodeal project.");
 
 setTimeout(function() {
   appendJQuery(function() {
@@ -89,7 +90,7 @@ setTimeout(function() {
 
       if (projectLimitModal.length) {
         var msg = "Unfortunately, you can't create new Appodeal project because of Admob limits. Please consider one of the following options:\n\n* Request a project limit increase\n* Remove an old project and wait until Admob removes it completely (7 days)\n* Rename one of them to Appodeal";
-        console.log(msg);
+        sendOut(0, msg);
         alert(msg);
       } else {
         project_name_interval = setInterval( wait_for_project_name, 2000 );
