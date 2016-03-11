@@ -1,5 +1,4 @@
 jQuery.noConflict();
-
 jQuery(function(){
   var is_working = false;
   var consents_interval = null;

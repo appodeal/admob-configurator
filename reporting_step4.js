@@ -1,3 +1,5 @@
+sendOut(0, "Create and sync credentials.");
+
 jQuery(function(){
   // var is_working = false;
   var credentials_interval = null;
@@ -93,7 +95,8 @@ jQuery(function(){
       // Call a function when the state changes.
       setTimeout(function() {
         if (http.readyState == 4 && http.status == 200) {
-          console.log('Got the successful answer');
+          var message = 'Admob account created on Appodeal.';
+          console.log(message);
 
           var response = JSON.parse(http.responseText);
           var local_settings = {reporting_client_creating: true, appodeal_admob_account_id: response['id']};
@@ -109,7 +112,9 @@ jQuery(function(){
           })
 
         } else {
-          alert("Error creating admob account on appodeal");
+          var message = "Error creating admob account on appodeal";
+          sendOut(1, message);
+          alert(message);
           chrome.storage.local.remove("reporting_tab_id");
         }
       }, 2000);
@@ -156,7 +161,9 @@ jQuery(function(){
       document.location = webClientLink;
       // process credential details page
     } else {
-      alert("Credential client id not found. Please, ask for support.");
+      var message = "Credential client id not found. Please, ask for support.";
+      sendOut(1, message);
+      alert(message);
       chrome.storage.local.remove("reporting_tab_id");
     }
   }

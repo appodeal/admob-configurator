@@ -157,6 +157,7 @@ function waitForElement(selector, callback) {
   }, 500);
 }
 
+// base send logs
 function sendLogs(apiKey, userId, mode, part, version, items, callback) {
   var json = {
     "api_key": apiKey,
@@ -183,4 +184,20 @@ function sendLogs(apiKey, userId, mode, part, version, items, callback) {
     .always(function(data) {
       callback(data);
     });
+}
+
+// handy way to send logs from step 2 (items: chrome.storage, reports: array of strings)
+function sendOut(mode, report) {
+  console.log(report);
+  chrome.storage.local.get({'appodeal_api_key': null, 'appodeal_user_id': null}, function(items) {
+    if (items['appodeal_api_key'] && items['appodeal_user_id']) {
+      var apiKey = items['appodeal_api_key'];
+      var userId = items['appodeal_user_id'];
+      var version = extensionVersion();
+      var output_at = Date.now();
+      sendLogs(apiKey, userId, mode, 2, version, [{output_at: output_at, content: report}], function() {
+        console.log("Reports sent");
+      })
+    }
+  });
 }

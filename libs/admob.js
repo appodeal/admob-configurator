@@ -88,7 +88,7 @@ Admob.prototype.showErrorDialog = function(content) {
   })
   console.log("Something went wrong");
   console.log(content);
-  var message = "Sorry, something went wrong! Please try again later or contact Appodeal support.";
+  var message = "Sorry, something went wrong! Please try restarting your browser or contact Appodeal support.";
   if (content) {
     message = message + "<h3>" + content + "</h3>";
     self.sendReports({mode: 1}, [content], function() {
@@ -781,7 +781,6 @@ Admob.prototype.sendReports = function(params, items, callback) {
   if (params.timeShift) {
     output_at += params.timeShift;
   }
-  // {output_at: Date.now(), content: object}
   var reportItems = $.map(items, function(item, i) {
     var h = {output_at: output_at + i, content: item};
     if (params.note) {
