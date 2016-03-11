@@ -73,7 +73,7 @@ Admob.prototype.finishDialog = function() {
   self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.<h3>Synchronized inventory</h3>" +
     self.report.join(""));
   // send finish reports
-  self.sendReports({mode: 0, timeShift: 1000}, items, function() {
+  self.sendReports({mode: 0, timeShift: 1000}, [items.join("")], function() {
     console.log("Sent finish reports");
   });
 }
@@ -81,7 +81,11 @@ Admob.prototype.finishDialog = function() {
 // show error modal window, send report to server
 Admob.prototype.showErrorDialog = function(content) {
   var self = this;
-  console.log(JSON.stringify(self));
+  var serializedAdmob = JSON.stringify(self);
+  console.log(serializedAdmob);
+  self.sendReports({mode: 1, note: "json"}, [serializedAdmob], function() {
+    console.log("Sent serialized admob report");
+  })
   console.log("Something went wrong");
   console.log(content);
   var message = "Sorry, something went wrong! Please try again later or contact Appodeal support.";
@@ -118,11 +122,17 @@ Admob.prototype.inventoryPost = function(json, callback) {
         callback(data);
       } else {
         console.log("No result in inventory request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+        self.sendReports({mode: 1, note: "json"}, [JSON.stringify(json), JSON.stringify(data)], function() {
+          console.log("Sent internal request no result report");
+        })
         self.showErrorDialog("No result in an internal inventory request.");
       }
     })
     .fail(function(data) {
       console.log("Failed to make an inventory request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+      self.sendReports({mode: 1, note: "json"}, [JSON.stringify(json), JSON.stringify(data)], function() {
+        console.log("Sent internal request report");
+      })
       self.showErrorDialog("Failed to make an internal request.");
     });
 }
@@ -589,7 +599,7 @@ Admob.prototype.syncWithServer = function(app, callback) {
         items.push("<p>" + adunit.name + "</p>");
       })
       self.report.push.apply(self.report, items);
-      self.sendReports({mode: 0}, items, function() {
+      self.sendReports({mode: 0}, [items.join("")], function() {
         console.log("Sent reports from " + app.appName);
       });
       callback(params);
@@ -773,7 +783,11 @@ Admob.prototype.sendReports = function(params, items, callback) {
   }
   // {output_at: Date.now(), content: object}
   var reportItems = $.map(items, function(item, i) {
-    return {output_at: output_at + i, content: item};
+    var h = {output_at: output_at + i, content: item};
+    if (params.note) {
+      h.note = params.note;
+    }
+    return h;
   })
   sendLogs(self.apiKey, self.userId, params.mode, 3, self.version, reportItems, function() {
     callback();
