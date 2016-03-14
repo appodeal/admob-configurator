@@ -46,12 +46,17 @@ Admob.prototype.syncInventory = function(callback) {
       self.mapApps(function() {
         self.createMissingApps(function() {
           self.linkApps(function() {
-            self.makeMissingAdunitsLists(function() {
-              self.createMissingAdunits(function() {
-                self.finishDialog();
-                callback();
-              })
-            });
+            self.updateFormats(function() {
+              self.makeMissingAdunitsLists(function() {
+                self.createMissingAdunits(function() {
+                  self.finishDialog();
+                  self.sendReports({mode: 0, note: "json"}, [JSON.stringify(self)], function() {
+                    console.log("Sent finish inventory report");
+                  })
+                  callback();
+                })
+              });
+            })
           })
         })
       });
@@ -318,7 +323,7 @@ Admob.adunitsScheme = function(app) {
   // interstitial adunits
   Admob.interstitialBids.forEach(function(bid) {
     var name = Admob.adunitName(app, "interstitial", "image", bid);
-    scheme.push({app: app.localApp[1], name: name, adType: 1, formats: [0, 1], bid: admobBidFloor(bid)})
+    scheme.push({app: app.localApp[1], name: name, adType: 1, formats: [0, 1, 2], bid: admobBidFloor(bid)})
   })
   // banner adunits
   Admob.bannerBids.forEach(function(bid) {
@@ -553,7 +558,7 @@ Admob.prototype.createMissingAdunits = function(callback) {
   });
   self.progressBar = new ProgressBar(missingAdunitsNum);
   // create missing local adunits
-  Admob.synchronousEach(self.inventory, function(app, next) {
+  Admob.synchronousEach(self.inventory.slice(), function(app, next) {
     self.createAdunits(app, function() {
       next();
     })
@@ -789,6 +794,63 @@ Admob.prototype.sendReports = function(params, items, callback) {
     return h;
   })
   sendLogs(self.apiKey, self.userId, params.mode, 3, self.version, reportItems, function() {
+    callback();
+  })
+}
+
+// Add video format to adunit
+Admob.prototype.updateAdunitFormats = function(adunit, callback) {
+  console.log("Update adunit formats " + adunit[3]);
+  var self = this;
+  // set all formats (text, image, video)
+  adunit[16] = [0, 1, 2];
+  var params = {method: "updateAdUnit", params: {2: adunit}, xsrf: self.token};
+  self.inventoryPost(params, function(data) {
+    try {
+      var updatedAdunit = data.result[1][2][0];
+      callback(updatedAdunit);
+    } catch(e) {
+      self.showErrorDialog("Update adunit formats: " + e.message);
+    }
+  })
+}
+
+// Add video format to all app adunits
+Admob.prototype.updateAppAdunitFormats = function(app, callback) {
+  var self = this;
+  if (app.localAdunits) {
+    // select interstitial adunits with bid floor and without video format
+    var adunits = $.grep(app.localAdunits, function(adunit) {
+      return (adunit[10] && adunit[14] == 1 && JSON.stringify(adunit[16]) != "[0,1,2]");
+    });
+    // update selected adunits
+    Admob.synchronousEach(adunits, function(adunit, next) {
+      var adunitIndex = $.inArray(adunit, app.localAdunits);
+      self.updateAdunitFormats(adunit, function(updatedAdunit) {
+        // put updated adunit to inventory app local adunits array
+        if (adunitIndex > -1) {
+          app.localAdunits[adunitIndex] = updatedAdunit;
+        }
+        next();
+      })
+    }, function() {
+      callback();
+    })
+  } else {
+    callback();
+  }
+}
+
+// Add video format to all appodeal app's adunits
+Admob.prototype.updateFormats = function(callback) {
+  console.log("Update absent formats");
+  var self = this;
+  // update formats in all local adunits from appodeal apps
+  Admob.synchronousEach(self.inventory.slice(), function(app, next) {
+    self.updateAppAdunitFormats(app, function() {
+      next();
+    })
+  }, function() {
     callback();
   })
 }
