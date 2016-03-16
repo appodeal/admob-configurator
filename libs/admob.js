@@ -93,9 +93,9 @@ Admob.prototype.showErrorDialog = function(content) {
   })
   console.log("Something went wrong");
   console.log(content);
-  var message = "Sorry, something went wrong! Please try restarting your browser or contact Appodeal support.";
+  var message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support.";
   if (content) {
-    message = message + "<h3>" + content + "</h3>";
+    message = message + "<h4>" + content + "</h4>";
     self.sendReports({mode: 1}, [content], function() {
       console.log("Sent error report");
     })
@@ -116,6 +116,12 @@ Admob.prototype.showInfoDialog = function(content) {
 // make a request to admob inventory url
 Admob.prototype.inventoryPost = function(json, callback) {
   var self = this;
+  self.inventoryPostRetry(0, json, callback);
+}
+
+// make a request to admob inventory and retry in case of error
+Admob.prototype.inventoryPostRetry = function(retry, json, callback) {
+  var self = this;
   var params = JSON.stringify(json);
   $.ajax({method: "POST",
     url: Admob.inventoryUrl,
@@ -135,10 +141,21 @@ Admob.prototype.inventoryPost = function(json, callback) {
     })
     .fail(function(data) {
       console.log("Failed to make an inventory request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
-      self.sendReports({mode: 1, note: "json"}, [JSON.stringify(json), JSON.stringify(data)], function() {
-        console.log("Sent internal request report");
-      })
-      self.showErrorDialog("Failed to make an internal request.");
+      if (retry) {
+        self.sendReports({mode: 1, note: "json"}, [JSON.stringify(json), JSON.stringify(data)], function() {
+          console.log("Sent internal request report");
+        })
+        self.showErrorDialog("Failed to make an internal request.");
+      } else {
+        self.sendReports({mode: 0, note: "json"}, ["Request error, try again.", JSON.stringify(json), JSON.stringify(data)], function() {
+          console.log("Sent retry request report");
+        })
+        // wait and try again
+        setTimeout(function() {
+          console.log("Post inventory request again");
+          self.inventoryPostRetry(1, json, callback);
+        }, 5000)
+      }
     });
 }
 
