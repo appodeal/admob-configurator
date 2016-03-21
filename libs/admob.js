@@ -799,12 +799,8 @@ Admob.prototype.addLocalAdunitToInventory = function(app, localAdunit) {
 // send logs to server
 Admob.prototype.sendReports = function(params, items, callback) {
   var self = this;
-  var output_at = Date.now();
-  if (params.timeShift) {
-    output_at += params.timeShift;
-  }
   var reportItems = $.map(items, function(item, i) {
-    var h = {output_at: output_at + i, content: item};
+    var h = {content: item};
     if (params.note) {
       h.note = params.note;
     }

@@ -3,6 +3,7 @@
 var is_working = false;
 var project_name_interval = null;
 var project_created_interval = null;
+var modal;
 
 function find_and_go_to_project() {
   var project_link = jQuery('a:contains("Appodeal")');
@@ -41,9 +42,9 @@ function wait_for_project_name() {
       console.log("Project confirmation check");
 
       if (firstProjectConfirmation.length) {
-        var msg = "To create Appodeal project you must first agree to the terms of Admob. Then restart step 2.";
+        var msg = "You must agree to the terms of Admob and start step 2 again.";
         sendOut(0, msg);
-        alert(msg);
+        modal.show("Appodeal Chrome Extension", msg);
       } else {
         console.log('Click OK button.');
 
@@ -68,6 +69,9 @@ sendOut(0, "Find or create Appodeal project.");
 
 setTimeout(function() {
   appendJQuery(function() {
+    modal = new Modal();
+    modal.show("Appodeal Chrome Extension", "Preparing Appodeal project.");
+
     find_and_go_to_project();
 
     console.log("Appodeal project not found. Click new project button");
@@ -89,9 +93,9 @@ setTimeout(function() {
       console.log("Project limit check");
 
       if (projectLimitModal.length) {
-        var msg = "Unfortunately, you can't create new Appodeal project because of Admob limits. Please consider one of the following options:\n\n* Request a project limit increase\n* Remove an old project and wait until Admob removes it completely (7 days)\n* Rename one of them to Appodeal";
+        var msg = "Unfortunately, you can't create new Appodeal project because of Admob limits. Please consider one of the following options:<br><br><ul><li>Rename one of them to <b>Appodeal</b></li><li>Request a project limit increase</li><li>Remove an old project and wait until Admob removes it completely (7 days)</li></ul>";
         sendOut(0, msg);
-        alert(msg);
+        modal.show("Appodeal Chrome Extension", msg);
       } else {
         project_name_interval = setInterval( wait_for_project_name, 2000 );
       }

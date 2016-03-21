@@ -1,5 +1,5 @@
 sendOut(0, "Create and sync credentials.");
-
+var modal;
 jQuery(function(){
   // var is_working = false;
   var credentials_interval = null;
@@ -69,11 +69,6 @@ jQuery(function(){
   function addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key, appodeal_user_id) {
     var url = "https://www.appodeal.com/api/v1/add_admob_account.json";
     var email = jQuery('span.p6n-profileemail').first().text().toLowerCase();
-
-    var http = new XMLHttpRequest();
-    http.open("POST", url, true);
-    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
     json = {
       "email" : email,
       "client_id": clientId,
@@ -82,43 +77,37 @@ jQuery(function(){
       "api_key": appodeal_api_key,
       "user_id": appodeal_user_id
     };
-
     console.log(JSON.stringify(json));
-
-    http.send(JSON.stringify(json));
-
-    alert("Please grant permission to Appodeal to read your Admob reports and proceed with the next step.");
-
-    http.onreadystatechange = function() {
-      console.log('State changed');
-
-      // Call a function when the state changes.
-      setTimeout(function() {
-        if (http.readyState == 4 && http.status == 200) {
-          var message = 'Admob account created on Appodeal.';
-          console.log(message);
-
-          var response = JSON.parse(http.responseText);
-          var local_settings = {reporting_client_creating: true, appodeal_admob_account_id: response['id']};
-
-          chrome.storage.local.set(local_settings, function() {
-            console.log('redirecting to oauth...');
-
-            var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=http://www.appodeal.com/admin/oauth2callback&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + clientId + "&client_id=" + clientId + "&access_type=offline";
-
+    modal.show("Appodeal Chrome Extension", "Please grant permission to Appodeal to read your Admob reports.<br>You will be automatically redirected in 5 seconds.");
+    setTimeout(function() {
+      var http = new XMLHttpRequest();
+      http.open("POST", url, true);
+      http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      http.send(JSON.stringify(json));
+      http.onreadystatechange = function() {
+        console.log('State changed');
+        // Call a function when the state changes.
+        setTimeout(function() {
+          if (http.readyState == 4 && http.status == 200) {
+            var message = 'Admob account created on Appodeal.';
+            console.log(message);
+            var response = JSON.parse(http.responseText);
+            var local_settings = {reporting_client_creating: true, appodeal_admob_account_id: response['id']};
+            chrome.storage.local.set(local_settings, function() {
+              console.log('redirecting to oauth...');
+              var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=http://www.appodeal.com/admin/oauth2callback&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + clientId + "&client_id=" + clientId + "&access_type=offline";
+              chrome.storage.local.remove("reporting_tab_id");
+              document.location.href = final_href;
+            })
+          } else {
+            var message = "Error creating admob account on appodeal";
+            sendOut(1, message);
+            modal.show("Appodeal Chrome Extension", message);
             chrome.storage.local.remove("reporting_tab_id");
-
-            document.location.href = final_href;
-          })
-
-        } else {
-          var message = "Error creating admob account on appodeal";
-          sendOut(1, message);
-          alert(message);
-          chrome.storage.local.remove("reporting_tab_id");
-        }
-      }, 2000);
-    }
+          }
+        }, 2000);
+      }
+    }, 5000);
   }
 
   function fetchCredentials(download_links) {
@@ -163,7 +152,7 @@ jQuery(function(){
     } else {
       var message = "Credential client id not found. Please, ask for support.";
       sendOut(1, message);
-      alert(message);
+      modal.show("Appodeal Chrome Extension", message);
       chrome.storage.local.remove("reporting_tab_id");
     }
   }
@@ -244,6 +233,8 @@ jQuery(function(){
     console.log("Run reporting step 4")
 
     appendJQuery(function() {
+      modal = new Modal();
+      modal.show("Appodeal Chrome Extension", "Preparing credentials.");
       if (isOauthClientPage()) {
         console.log("Oauth client page");
         addCredentials();
