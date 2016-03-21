@@ -1,4 +1,4 @@
-jQuery.noConflict();
+var modal;
 jQuery(function(){
   var is_working = false;
   var consents_interval = null;
@@ -18,6 +18,8 @@ jQuery(function(){
       console.log('Button found. Add consents.');
 
       appendJQuery(function() {
+        modal = new Modal();
+        modal.show("Appodeal Chrome Extension", "Saving the consent screen.");
         var script = document.createElement('script');
         var console_log_code = "console.log('Set project name and save'); ";
         var select_save_code = "jQuery(\"jfk-button[jfk-on-action='ctrl.submit()']\")";

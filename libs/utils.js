@@ -91,59 +91,6 @@ function run_script(code) {
   document.getElementsByTagName('head')[0].appendChild(script);
 }
 
-var logMessages = [];
-var globalVersion;
-var lastBigRelease = 7.0;
-function remoteLog(object) {
-  // var extensionLog = {output_at: Date.now(), content: object};
-  // logMessages.push(extensionLog);
-  console.log(object);
-}
-
-function sendAndFlushLogs(part, mode, note) {
-  // get global variables
-  console.log("Sending logs to Appodeal: " + note);
-  chrome.storage.local.get({'appodeal_api_key': null, 'appodeal_user_id': null}, function(items) {
-    var globalApiKey = items['appodeal_api_key'];
-    var globalUserId = items['appodeal_user_id'];
-    if (globalApiKey && globalUserId) {
-      // set default batch note
-      var items = logMessages;
-      if (note) {
-        items.forEach(function (item, index, array) {
-          if (!item['note']) {
-            items[index]['note'] = note;
-          }
-        });
-      }
-      // compose data json to send
-      data = {
-         "api_key":globalApiKey,
-         "user_id":globalUserId,
-         "part":part,
-         "mode":mode,
-         "version":globalVersion,
-         "items":items
-      }
-      // flush messages
-      logMessages = [];
-      // send log data to server
-      var http = new XMLHttpRequest();
-      http.open("POST", APPODEAL_EXTENSION_LOGS, true);
-      http.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-      http.send(JSON.stringify(data));
-
-      http.onreadystatechange = function() {
-        if (http.readyState == 4 && http.status == 200) {
-          console.log("Logs have been sent to Appodeal");
-        }
-      }
-    } else {
-      console.log("Can't send logs to Appodeal");
-    }
-  })
-}
-
 // waiting for element
 function waitForElement(selector, callback) {
   var checkElement = setInterval(function() {
@@ -151,7 +98,6 @@ function waitForElement(selector, callback) {
     if (element.length) {
       // element is found
       clearInterval(checkElement);
-      // run code here after enabling API
       callback(element);
     }
   }, 500);
