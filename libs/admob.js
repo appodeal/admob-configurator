@@ -50,16 +50,16 @@ Admob.prototype.syncInventory = function(callback) {
               self.makeMissingAdunitsLists(function() {
                 self.createMissingAdunits(function() {
                   self.finishDialog();
-                  self.sendReports({mode: 0, note: "json"}, [JSON.stringify(self)], function() {
+                  self.sendReports({mode: 0, note: "json"}, [JSON.stringify({message: "Finish", admob: self})], function() {
                     console.log("Sent finish inventory report");
                   })
                   callback();
                 })
-              });
+              })
             })
           })
         })
-      });
+      })
     })
   })
 }
@@ -86,21 +86,12 @@ Admob.prototype.finishDialog = function() {
 // show error modal window, send report to server
 Admob.prototype.showErrorDialog = function(content) {
   var self = this;
-  var serializedAdmob = JSON.stringify(self);
-  console.log(serializedAdmob);
-  self.sendReports({mode: 1, note: "json"}, [serializedAdmob], function() {
-    console.log("Sent serialized admob report");
-  })
-  console.log("Something went wrong");
-  console.log(content);
-  var message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support.";
-  if (content) {
-    message = message + "<h4>" + content + "</h4>";
-    self.sendReports({mode: 1}, [content], function() {
-      console.log("Sent error report");
-    })
-  }
+  var message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support.<h4>" + content + "</h4>";
   self.modal.show("Appodeal Chrome Extension", message);
+  // send json with current admob object state
+  var serializedAdmob = JSON.stringify({message: message, admob: self});
+  console.log(serializedAdmob);
+  self.sendReports({mode: 1, note: "json"}, [serializedAdmob], function() {});
 }
 
 // show information modal window
@@ -113,16 +104,29 @@ Admob.prototype.showInfoDialog = function(content) {
   self.modal.show("Appodeal Chrome Extension", content);
 }
 
-// make a request to admob inventory url
-Admob.prototype.inventoryPost = function(json, callback) {
-  var self = this;
-  self.inventoryPostRetry(0, json, callback);
-}
-
 // make a request to admob inventory and retry in case of error
-Admob.prototype.inventoryPostRetry = function(retry, json, callback) {
+Admob.prototype.inventoryPost = function(json, callback, options) {
   var self = this;
+  if (typeof(options) === 'undefined') { options = {} };
   var params = JSON.stringify(json);
+  // result with error or something
+  function errorEvent(content, data) {
+    if (options.retry) {
+      if (options.skip) {
+        self.jsonReport(0, content, json, data);
+        callback();
+      } else {
+        self.jsonReport(1, content, json, data);
+        self.showErrorDialog(content);
+      }
+    } else {
+      self.jsonReport(0, content + " Try again", json, data);
+      setTimeout(function() {
+        options.retry = 1;
+        self.inventoryPost(json, callback, options);
+      }, 5000)
+    }
+  }
   $.ajax({method: "POST",
     url: Admob.inventoryUrl,
     contentType: "application/javascript; charset=UTF-8",
@@ -132,31 +136,20 @@ Admob.prototype.inventoryPostRetry = function(retry, json, callback) {
       if (data.result) {
         callback(data);
       } else {
-        console.log("No result in inventory request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
-        self.sendReports({mode: 1, note: "json"}, [JSON.stringify(json), JSON.stringify(data)], function() {
-          console.log("Sent internal request no result report");
-        })
-        self.showErrorDialog("No result in an internal inventory request.");
+        errorEvent("No result in an internal inventory request.", data);
       }
     })
     .fail(function(data) {
-      console.log("Failed to make an inventory request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
-      if (retry) {
-        self.sendReports({mode: 1, note: "json"}, [JSON.stringify(json), JSON.stringify(data)], function() {
-          console.log("Sent internal request report");
-        })
-        self.showErrorDialog("Failed to make an internal request.");
-      } else {
-        self.sendReports({mode: 0, note: "json"}, ["Request error, try again.", JSON.stringify(json), JSON.stringify(data)], function() {
-          console.log("Sent retry request report");
-        })
-        // wait and try again
-        setTimeout(function() {
-          console.log("Post inventory request again");
-          self.inventoryPostRetry(1, json, callback);
-        }, 5000)
-      }
+      errorEvent("Failed to make an internal request.", data);
     });
+}
+
+// send json to server (message and request with response format)
+Admob.prototype.jsonReport = function(mode, content, json, data) {
+  var self = this;
+  console.log(content + " " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+  var r = {message: content, request: json, response: data};
+  self.sendReports({mode: mode, note: "json"}, [JSON.stringify(r)], function() {});
 }
 
 // make a request to admob inventory url
@@ -173,12 +166,12 @@ Admob.prototype.syncPost = function(json, callback) {
       if (data.code == 0 && data.result) {
         callback(data);
       } else {
-        console.log("Wrong sync answer " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+        self.jsonReport(1, "Wrong answer for a server sync request.", json, data);
         self.showErrorDialog("Wrong answer for a server sync request.");
       }
     })
     .fail(function(data) {
-      console.log("Failed to make a server sync request " + JSON.stringify(json) + " -> " + JSON.stringify(data));
+      self.jsonReport(1, "Failed to make a server sync request.", json, data);
       self.showErrorDialog("Failed to make a server sync request.");
     });
 }
@@ -242,15 +235,6 @@ Admob.defaultAppName = function(app) {
   var maxLength = 80;
   var name = 'Appodeal/' + app.id + "/" + app.appName;
   return name.substring(0, maxLength);
-}
-
-// limit long search string (app name) length by reducing words number
-Admob.limitAppNameForSearch = function(appName) {
-  if (appName.length > 80) {
-    return appName.split(/\s+/).slice(0, 5).join(" ").substring(0, 80);
-  } else {
-    return appName;
-  }
 }
 
 // loop with next after callback, mutate array
@@ -387,7 +371,8 @@ Admob.adunitName = function(app, adName, typeName, bidFloor) {
 Admob.prototype.getRemoteInventory = function(callback) {
   console.log("Get remote inventory");
   var self = this;
-  $.get(Admob.remoteInventoryUrl, {user_id: self.userId, api_key: self.apiKey})
+  var json = {user_id: self.userId, api_key: self.apiKey};
+  $.get(Admob.remoteInventoryUrl, json)
     .done(function(data) {
       self.inventory = data.applications;
       if (self.inventory && self.inventory.length) {
@@ -397,7 +382,7 @@ Admob.prototype.getRemoteInventory = function(callback) {
       }
     })
     .fail(function(data) {
-      console.log("Failed to get remote inventory: " + JSON.stringify(data));
+      self.jsonReport(1, "Failed to get remote inventory.", json, data);
       self.showErrorDialog("Failed to get remote inventory.");
     });
 };
@@ -659,8 +644,10 @@ Admob.prototype.linkLocalApp = function(app, callback) {
       if (storeApp) {
         self.updateAppStoreHash(app, storeApp, function(localApp) {
           // update inventory array with new linked local app
-          app.localApp = localApp;
-          console.log("App #" + app.id + " has been linked to store");
+          if (localApp) {
+            app.localApp = localApp;
+            console.log("App #" + app.id + " has been linked to store");
+          }
           callback();
         })
       } else {
@@ -677,7 +664,7 @@ Admob.prototype.linkLocalApp = function(app, callback) {
 Admob.prototype.searchAppInStores = function(app, callback) {
   console.log("Search app #" + app.id + " in stores");
   var self = this;
-  var searchString = Admob.limitAppNameForSearch(app.store_name);
+  var searchString = app.package_name;
   params = {
     "method": "searchMobileApplication",
     "params": {"2": searchString, "3": 0, "4": 1000, "5": app.os}, "xsrf": self.token
@@ -693,9 +680,10 @@ Admob.prototype.searchAppInStores = function(app, callback) {
       }
       callback(storeApp);
     } catch(e) {
-      self.showErrorDialog("Search app in stores: " + e.message);
+      self.jsonReport(0, "Search app in stores: " + e.message, params, data);
+      callback();
     }
-  })
+  }, {skip: true})
 }
 
 // update local app with market hash (data from search in stores)
@@ -721,9 +709,10 @@ Admob.prototype.updateAppStoreHash = function(app, storeApp, callback) {
         callback(localApp);
       }
     } catch(e) {
-      self.showErrorDialog("Link app to store: " + e.message);
+      self.jsonReport(0, "Link app to store: " + e.message, params, data);
+      callback();
     }
-  })
+  }, {skip: true})
 }
 
 // add new store id to store ids array
