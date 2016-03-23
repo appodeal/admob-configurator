@@ -18,7 +18,7 @@
         data = { 'appodeal_email': appodeal_email }
         // save new email
         chrome.storage.local.set(data);
-        alert("You have successfully logged in (Appodeal Chrome Extension).")
+        console.log("You have successfully logged in (Appodeal Chrome Extension).")
       })
     }
   })
