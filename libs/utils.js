@@ -115,13 +115,8 @@ function sendOut(mode, report) {
 }
 
 // hash with the latest critical updates for 2 and 3 steps
-function criticalUpdates() {
+function criticalUpdates(callback) {
   chrome.storage.local.get({'reportingVersion': null, 'adunitsVersion': null}, function(items) {
-    var result = {};
-    if (items['reportingVersion'] && items['adunitsVersion']) {
-      result.reportingVersion = items['reportingVersion'].to_f
-      result.adunitsVersion = items['adunitsVersion'].to_f
-    }
-    result
+    callback(items);
   });
 }
