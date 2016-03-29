@@ -31,42 +31,7 @@ function isCredentialClientPage() {
   return page_link.match(/apis\/credentials\/oauthclient\//);
 }
 
-chrome.extension.onMessage.addListener(function(message, sender) {
-  if (message["sender"] == "badge") {
-    if (message["content"] == "setBadgeColor") {
-      // Set default appodeal badge color
-      setBadgeColor();
-    } else {
-      // Set badge number
-      num = message["num"];
-      setBadgeNum(num);
-    }
-  }
-});
-
-function setBadgeColor() {
-  chrome.browserAction.setBadgeBackgroundColor({
-    color: [255, 70, 70, 255]
-  });
-}
-
-function clearBadge() {
-  chrome.browserAction.setBadgeText({
-    text: ""
-  });
-}
-
-function setBadgeNum(num) {
-  if (num > 0) {
-    var numText = num.toString();
-    chrome.browserAction.setBadgeText({
-      text: numText
-    });
-  } else {
-    clearBadge();
-  }
-}
-
+// get current chrome extension version
 function extensionVersion() {
   return parseFloat(chrome.runtime.getManifest().version);
 }
@@ -85,6 +50,7 @@ function appendJQuery(complete) {
   head.appendChild(jq);
 }
 
+// insert js to the web page internally
 function run_script(code) {
   var script = document.createElement('script');
   script.appendChild(document.createTextNode(code));
@@ -141,9 +107,16 @@ function sendOut(mode, report) {
       var userId = items['appodeal_user_id'];
       var version = extensionVersion();
       var output_at = Date.now();
-      sendLogs(apiKey, userId, mode, 2, version, [{output_at: output_at, content: report}], function() {
+      sendLogs(apiKey, userId, mode, 2, version, [{content: report}], function() {
         console.log("Reports sent");
       })
     }
+  });
+}
+
+// hash with the latest critical updates for 2 and 3 steps
+function criticalUpdates(callback) {
+  chrome.storage.local.get({'reportingVersion': null, 'adunitsVersion': null}, function(items) {
+    callback(items);
   });
 }

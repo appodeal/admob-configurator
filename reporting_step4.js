@@ -150,7 +150,7 @@ jQuery(function(){
       document.location = webClientLink;
       // process credential details page
     } else {
-      var message = "Credential client id not found. Please, ask for support.";
+      var message = "Credential client id not found. Please ask for support.";
       sendOut(1, message);
       modal.show("Appodeal Chrome Extension", message);
       chrome.storage.local.remove("reporting_tab_id");

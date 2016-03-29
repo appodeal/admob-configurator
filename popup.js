@@ -73,7 +73,7 @@ function addDoneLabel(btn) {
 // get sync status from appodeal account (app's num and reporting)
 function getRemoteStatus(reportingBtn, admobBtn, items) {
   getAppodealStatus(function(result) {
-    updateAppodealCredentials(result, items, function() {
+    updateAppodealCredentials(result, function() {
       var data = result['plugin_status'];
 
       // find number of apps that's left to sync
@@ -142,7 +142,7 @@ function clearStorageAndCookies() {
 }
 
 // get sync status from appodeal and save it to local chrome storage
-function updateAppodealCredentials(result, items, callback) {
+function updateAppodealCredentials(result, callback) {
   var localCredentials = {};
 
   if (result['user_id']) {
@@ -173,6 +173,18 @@ function updateAppodealCredentials(result, items, callback) {
     localCredentials['appodeal_admob_account_email'] = result['plugin_status']['email'];
   } else {
     chrome.storage.local.remove("appodeal_admob_account_email");
+  }
+
+  if (result['plugin_status']['adunits']) {
+    localCredentials['adunitsVersion'] = result['plugin_status']['adunits'];
+  } else {
+    chrome.storage.local.remove("adunitsVersion");
+  }
+
+  if (result['plugin_status']['reporting']) {
+    localCredentials['reportingVersion'] = result['plugin_status']['reporting'];
+  } else {
+    chrome.storage.local.remove("reportingVersion");
   }
 
   chrome.storage.local.set(localCredentials, function() {
