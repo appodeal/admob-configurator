@@ -175,6 +175,18 @@ function updateAppodealCredentials(result, items, callback) {
     chrome.storage.local.remove("appodeal_admob_account_email");
   }
 
+  if (result['plugin_status']['adunits']) {
+    localCredentials['adunitsVersion'] = result['plugin_status']['adunits'];
+  } else {
+    chrome.storage.local.remove("appodeal_admob_account_email");
+  }
+
+  if (result['plugin_status']['reporting']) {
+    localCredentials['reportingVersion'] = result['plugin_status']['reporting'];
+  } else {
+    chrome.storage.local.remove("appodeal_admob_account_email");
+  }
+
   chrome.storage.local.set(localCredentials, function() {
     callback();
   });
