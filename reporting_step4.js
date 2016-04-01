@@ -243,7 +243,7 @@ jQuery(function(){
         resetCredentialSecret();
       } else {
         console.log("Run credentials processing");
-        credentials_interval = setInterval(waitForCredentials, 2000);
+        credentials_interval = setInterval(waitForCredentials, 3000);
       }
     });
   }
