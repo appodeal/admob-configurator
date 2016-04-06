@@ -34,22 +34,18 @@ jQuery(function(){
     }, 1000)
   }
 
+  // Wait for credentials dialog (OAuth client: Here is your client ID)
   function waitUntilClientInfoPresent(complete) {
-    console.log("Wait until modal window showed");
-
-    var checkExist = setInterval(function() {
-      if (jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId']").length) {
-        console.log("Modal window exists");
-        clearInterval(checkExist);
-
-        var clientId = jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(0)").text().trim();
-        var clientSecret = jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(1)").text().trim();
-        console.log(clientId, clientSecret);
-
-        console.log("Check And Save Client Credentials");
+    console.log("Wait for credentials dialog");
+    waitForElement("pan-dialog[name='ctrl.dialogs.highlightClientId']", function(dialog) {
+      console.log("Credentials dialog found. Wait until fields are loaded");
+      setTimeout(function() {
+        var clientId = dialog.find(".p6n-snippet-transclude span:eq(0)").text().trim();
+        var clientSecret = dialog.find(".p6n-snippet-transclude span:eq(1)").text().trim();
+        console.log("Client Id:", clientId, "Client Secret:", clientSecret);
         checkAndSaveClientCredentials(clientId, clientSecret);
-      }
-    }, 500);
+      }, 1500)
+    })
   }
 
   // find Appodeal client tr dom
