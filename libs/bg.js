@@ -15,13 +15,10 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
       } else if (details_url.match(/apps\.admob\.com\/(\?pli=1)?#home/)) {
         console.log('calling get_admob_account.js');
         chrome.tabs.executeScript(details.tabId, { file: "get_admob_account.js" });
-      } else if (details_url.match(/console.developers.google.com\/(start|project)($|\?)/)) {
-        console.log('Calling reporting.js');
-        chrome.tabs.executeScript(details.tabId, { file: "reporting.js" });
       } else if (details_url.match(/adsense\/overview/)) {
         console.log("calling reporting_step2.js");
         chrome.tabs.executeScript(details.tabId, { file: "reporting_step2.js" });
-      } else if (details_url == "https://console.developers.google.com/apis/library") {
+      } else if (details_url.match(/apis\/library/)) {
         // create new project from library page (new accounts)
         chrome.tabs.executeScript(details.tabId, { file: "library.js" });
       }
