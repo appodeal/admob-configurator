@@ -1,4 +1,4 @@
-var Admob = function(userId, apiKey, publisherId, accountEmail) {
+var Admob = function(userId, apiKey, publisherId, accountEmail, interstitialBids, bannerBids, mrecBids) {
   console.log("Initialize admob" + " (" + userId + ", " + apiKey + ", " + publisherId + ", " + accountEmail + ")");
   this.userId = userId;
   this.apiKey = apiKey;
@@ -15,9 +15,9 @@ var Admob = function(userId, apiKey, publisherId, accountEmail) {
   // appodeal ad unit params
   Admob.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4};
   // adunits bids
-  Admob.interstitialBids = [0.15, 0.25, 0.65, 0.8, 1.25, 2.15, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0];
-  Admob.bannerBids = [0.1, 0.2, 0.35, 0.5, 0.7];
-  Admob.mrecBids = [0.15, 0.3, 0.6, 0.8, 1.25, 2];
+  Admob.interstitialBids = interstitialBids;
+  Admob.bannerBids = bannerBids;
+  Admob.mrecBids = mrecBids;
   // initialize modal window
   this.modal = new Modal();
 };

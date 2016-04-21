@@ -187,6 +187,24 @@ function updateAppodealCredentials(result, callback) {
     chrome.storage.local.remove("reportingVersion");
   }
 
+  if (result['plugin_status']['interstitialBids']) {
+    localCredentials['interstitialBids'] = result['plugin_status']['interstitialBids'];
+  } else {
+    chrome.storage.local.remove("interstitialBids");
+  }
+
+  if (result['plugin_status']['bannerBids']) {
+    localCredentials['bannerBids'] = result['plugin_status']['bannerBids'];
+  } else {
+    chrome.storage.local.remove("bannerBids");
+  }
+
+  if (result['plugin_status']['mrecBids']) {
+    localCredentials['mrecBids'] = result['plugin_status']['mrecBids'];
+  } else {
+    chrome.storage.local.remove("mrecBids");
+  }
+
   chrome.storage.local.set(localCredentials, function() {
     callback();
   });

@@ -27,7 +27,10 @@ function startInventorySync() {
               items['appodeal_user_id'],
               items['appodeal_api_key'],
               items['appodeal_admob_account_publisher_id'],
-              items['appodeal_admob_account_email']
+              items['appodeal_admob_account_email'],
+              items['interstitialBids'],
+              items['bannerBids'],
+              items['mrecBids']
               );
             admob.syncInventory(function() {
               console.log("Apps and adunits have been synced successfully.");
