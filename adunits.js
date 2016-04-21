@@ -15,7 +15,10 @@ function startInventorySync() {
       'appodeal_api_key': null,
       'appodeal_user_id': null,
       'appodeal_admob_account_publisher_id': null,
-      'appodeal_admob_account_email': null
+      'appodeal_admob_account_email': null,
+      'interstitialBids': null,
+      'bannerBids': null,
+      'mrecBids': null
     }, function(items) {
       if (items['appodeal_api_key'] && items['appodeal_user_id'] && items['appodeal_admob_account_publisher_id']) {
         criticalUpdates(function(updates) {
