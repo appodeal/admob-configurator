@@ -255,17 +255,16 @@ Admob.synchronousEach = function(array, callback, finish) {
 
 // Check if adunit has appodeal-configured type
 Admob.adUnitRegex = function(name) {
+  var result = {};
   // works with both old and new adunit names
   var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec)\//.exec(name);
   if (matchedType && matchedType.length > 1) {
-    var adType = matchedType[2];
-    var appId;
+    result.adType = matchedType[2];
     if (matchedType[1]) {
-      appId = parseInt(matchedType[1].substring(1));
+      result.appId = parseInt(matchedType[1].substring(1));
     }
-    var result = {adType: adType, appId: appId};
-    return result;
   }
+  return result;
 }
 
 // get bid from local adunit
