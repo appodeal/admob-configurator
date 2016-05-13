@@ -187,17 +187,21 @@ Admob.prototype.newAdunitsForServer = function(app) {
   var self = this;
   adunits = [];
   app.localAdunits.forEach(function(l) {
-    var code = self.adunitServerId(l[1]);
-    var bid = Admob.adunitBid(l);
-    var adType = Admob.adUnitTypeRegex(l[3]);
-    var adTypeInt = Admob.adTypes[adType];
-    var f = app.ad_units.findByProperty(function(r) {
-      return (r.code == code && r.ad_type == adType && r.bid_floor == bid && r.account_key == self.accountId);
-    }).element;
-    // remote adunit not found
-    if (!f) {
-      var serverAdunitFormat = {code: code, ad_type: adTypeInt, bid_floor: bid, name: l[3]};
-      adunits.push(serverAdunitFormat);
+    // process adunits with correct appodeal app id only if exists
+    var adAppId = Admob.adUnitRegex(l[3]).appId;
+    if (!adAppId || adAppId == app.id) {
+      var code = self.adunitServerId(l[1]);
+      var bid = Admob.adunitBid(l);
+      var adType = Admob.adUnitRegex(l[3]).adType;
+      var adTypeInt = Admob.adTypes[adType];
+      var f = app.ad_units.findByProperty(function(r) {
+        return (r.code == code && r.ad_type == adType && r.bid_floor == bid && r.account_key == self.accountId);
+      }).element;
+      // remote adunit not found
+      if (!f) {
+        var serverAdunitFormat = {code: code, ad_type: adTypeInt, bid_floor: bid, name: l[3]};
+        adunits.push(serverAdunitFormat);
+      }      
     }
   })
   return (adunits);
@@ -250,11 +254,17 @@ Admob.synchronousEach = function(array, callback, finish) {
 }
 
 // Check if adunit has appodeal-configured type
-Admob.adUnitTypeRegex = function(name) {
+Admob.adUnitRegex = function(name) {
   // works with both old and new adunit names
   var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec)\//.exec(name);
   if (matchedType && matchedType.length > 1) {
-    return (matchedType[2]);
+    var adType = matchedType[2];
+    var appId;
+    if (matchedType[1]) {
+      appId = parseInt(matchedType[1].substring(1));
+    }
+    var result = {adType: adType, appId: appId};
+    return result;
   }
 }
 
@@ -278,30 +288,34 @@ Admob.localAdunitsToScheme = function(app) {
     return scheme;
   }
   app.localAdunits.forEach(function(adunit) {
-    var adTypeName = Admob.adUnitTypeRegex(adunit[3]);
-    var admobAppId = app.localApp[1];
-    var adType = adunit[14];
-    var formats = adunit[16];
-    var adFormatName;
-    // text format name only for text adunits without bid floors
-    if (!adunit[10] && formats.length == 1 && formats[0] == 0) {
-      adFormatName = "text";
-    } else {
-      adFormatName = "image";
+    var adAppId = Admob.adUnitRegex(adunit[3]).appId;
+    // check if adunit has correct appodeal app id (for new name formats)
+    if (!adAppId || adAppId == app.id) {
+      var adTypeName = Admob.adUnitRegex(adunit[3]).adType;
+      var admobAppId = app.localApp[1];
+      var adType = adunit[14];
+      var formats = adunit[16];
+      var adFormatName;
+      // text format name only for text adunits without bid floors
+      if (!adunit[10] && formats.length == 1 && formats[0] == 0) {
+        adFormatName = "text";
+      } else {
+        adFormatName = "image";
+      }
+      var bid;
+      var name;
+      var hash;
+      if (adunit[10]) {
+        bid = adunit[10][0][5][1][1];
+        var floatBid = Admob.adunitBid(adunit);
+        name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
+        hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid};
+      } else {
+        name = Admob.adunitName(app, adTypeName, adFormatName)
+        hash = {app: admobAppId, name: name, adType: adType, formats: formats};
+      }
+      scheme.push(hash); 
     }
-    var bid;
-    var name;
-    var hash;
-    if (adunit[10]) {
-      bid = adunit[10][0][5][1][1];
-      var floatBid = Admob.adunitBid(adunit);
-      name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
-      hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid};
-    } else {
-      name = Admob.adunitName(app, adTypeName, adFormatName)
-      hash = {app: admobAppId, name: name, adType: adType, formats: formats};
-    }
-    scheme.push(hash);
   })
   return(scheme);
 }
@@ -487,7 +501,7 @@ Admob.prototype.selectLocalAdunits = function(admobAppId) {
         return (false);
       }
       // check adunit type
-      var t = Admob.adUnitTypeRegex(adunit[3]);
+      var t = Admob.adUnitRegex(adunit[3]).adType;
       return (adunit[14] == 1 && t == 'interstitial')
         || (adunit[14] == 0 && (t == 'banner' || t == 'mrec'));
     })
