@@ -391,7 +391,7 @@ Admob.prototype.getRemoteInventory = function(callback) {
       if (self.inventory && self.inventory.length) {
         callback();
       } else {
-        console.log("Not found appodeal apps");
+        self.showInfoDialog("Appodeal applications not found. Please add applications to Appodeal.")
       }
     })
     .fail(function(data) {
