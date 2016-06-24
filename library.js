@@ -21,7 +21,7 @@ setTimeout(function() {
       // create Appodeal project
       console.log("show new project window");
       // show new project window
-      $("#p6ntest-create-project").click();
+      $(".p6ntest-create-project").click();
       // set project name (Appodeal)
       console.log("set project name (Appodeal)");
       waitForElement("#p6ntest-project-create-modal", function(element) {
