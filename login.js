@@ -1,10 +1,10 @@
-﻿if ($('.welcome a')[0] == undefined) {
+﻿if ($('.welcome a, .user span')[0] == undefined) {
   // appodeal user email not found
   chrome.storage.local.remove(['appodeal_email', 'appodeal_api_key', 'appodeal_user_id'])
 } else {
   // logged in to Appodeal
   // get user email
-  appodeal_email = $('.welcome a')[0].text
+  var appodeal_email = $('.welcome a, .user span').text();
   // check existed email, api_key and user_id
   chrome.storage.local.get({
     'appodeal_email': null,
