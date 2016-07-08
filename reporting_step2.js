@@ -12,8 +12,9 @@ jQuery(function(){
     var token = document.body.innerHTML.match(/:\"(\S+:\d+)\"/)[1]
     var project_name = locationProjectName();
     // one button should be null, other one exists
-    var enableApiBtn = jQuery("[ng-if='!apiCtrl.isApiEnabled']");
-    var disableApiBtn = jQuery("[ng-if='apiCtrl.isApiEnabled']");
+    var enableApiBtn = jQuery("[ng-if='!apiCtrl.isServiceEnabled()']");
+    var disableApiBtn = jQuery("[ng-if='apiCtrl.isServiceEnabled()']");
+
     // We do not need AdSence API enabling if it has been already enabled:
     if (enableApiBtn.length && !is_working) {
       // Enable API button found
@@ -21,11 +22,11 @@ jQuery(function(){
       console.log('enabling adsence api...');
       // turn of interval repeating:
       clearInterval(adsence_enabling_interval);
-      var code = "angular.element(jQuery(\"[ng-if='!apiCtrl.isApiEnabled']\")).controller().toggleApi();";
+      var code = "angular.element(jQuery(\"[ng-if='!apiCtrl.isServiceEnabled()']\")).controller().toggleApi();";
       run_script(code);
       console.log("Wait until API is enabled");
       // checkAdBlock();
-      waitForElement("[ng-if='apiCtrl.isApiEnabled']", function(element) {
+      waitForElement("[ng-if='apiCtrl.isServiceEnabled()']", function(element) {
         console.log("Api has been enabled successfully.");
         document.location.href = projectConsentUrl(project_name);
       })
