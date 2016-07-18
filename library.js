@@ -13,7 +13,7 @@ setTimeout(function() {
     var appodealProject = $(".p6n-dropdown-row.p6n-dropdown-checkbox.ng-valid:contains('Appodeal')");
     if (appodealProject.length) {
       // select Appodeal project if it's already exists
-      var projectId = appodealProject.attr("meta");
+      var projectId = appodealProject.find("input").attr("value");
       var projectText = appodealProject.text();
       console.log('Project found. Redirect to', projectId, projectText);
       document.location.href = overviewPageUrl(projectId);
