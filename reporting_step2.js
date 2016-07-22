@@ -16,17 +16,32 @@ jQuery(function(){
     var disableBtnCode = "pan-action-bar-button[icon='stop'][action='apiCtrl.toggleApi()']:not(.ng-hide) button";
     var disableApiBtn = $(disableBtnCode);
 
+    // temporary working solution for the old interface
+    var enableApiBtnOld = $("[ng-if='!apiCtrl.isServiceEnabled()']");
+    var disableBtnCodeOld = "[ng-if='apiCtrl.isServiceEnabled()']";
+    var disableApiBtnOld = $(disableBtnCodeOld);
+
     // We do not need AdSence API enabling if it has been already enabled:
-    if (enableApiBtn.length && !is_working) {
+    if ((enableApiBtn.length || enableApiBtnOld.length) && !is_working) {
       // Enable API button found
       is_working = true;
       console.log('enabling adsence api...');
       // turn of interval repeating:
       clearInterval(adsence_enabling_interval);
-      enableApiBtn.click();
+
+      // click to enable adsense api button
+      if (enableApiBtn) {
+        console.log("New Adsense Api button click");
+        enableApiBtn.click();
+      } else {
+        console.log("Old Adsense Api button click");
+        var code = "angular.element(jQuery(\"[ng-if='!apiCtrl.isServiceEnabled()']\")).controller().toggleApi();";
+        run_script(code);
+      }
+
       console.log("Wait until API is enabled");
       // checkAdBlock();
-      waitForElement(disableBtnCode, function(element) {
+      waitForElement(disableBtnCode + ", " + disableBtnCodeOld, function(element) {
         console.log("Api has been enabled successfully.");
         document.location.href = projectConsentUrl(project_name);
       })
