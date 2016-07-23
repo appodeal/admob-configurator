@@ -30,7 +30,7 @@ jQuery(function(){
       clearInterval(adsence_enabling_interval);
 
       // click to enable adsense api button
-      if (enableApiBtn) {
+      if (enableApiBtn.length) {
         console.log("New Adsense Api button click");
         enableApiBtn.click();
       } else {
@@ -45,7 +45,7 @@ jQuery(function(){
         console.log("Api has been enabled successfully.");
         document.location.href = projectConsentUrl(project_name);
       })
-    } else if (disableApiBtn.length && !is_working) {
+    } else if ((disableApiBtn.length || disableApiBtnOld.length) && !is_working) {
       // Disable API button found
       is_working = true;
       console.log('It seems like Adsence API is enabled already. redirecting...');

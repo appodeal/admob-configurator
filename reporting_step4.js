@@ -37,7 +37,7 @@ jQuery(function(){
   // Wait for credentials dialog (OAuth client: Here is your client ID)
   function waitUntilClientInfoPresent(complete) {
     console.log("Wait for credentials dialog");
-    waitForElement("pan-dialog[name='ctrl.dialogs.highlightClientId']", function(dialog) {
+    waitForElement("pan-dialog[name='ctrl.dialogs.highlightClientId'],pan-modal.p6n-api-credential-dialog", function(dialog) {
       console.log("Credentials dialog found. Wait until fields are loaded");
       setTimeout(function() {
         var clientId = dialog.find(".p6n-snippet-transclude span:eq(0)").text().trim();
