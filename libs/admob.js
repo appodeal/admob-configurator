@@ -190,31 +190,34 @@ Admob.prototype.adunitServerId = function(internalId) {
   return ("ca-app-" + this.accountId + "/" + internalId);
 }
 
-// find new and updated adunits (compare local and remote)
+// find new and updated ad units (compare local and remote)
 // convert to server request format
 Admob.prototype.newAdunitsForServer = function(app) {
   var self = this;
-  var adunits = [];
+  var adUnits = [];
   app.localAdunits.forEach(function(l) {
-    // process adunits with correct appodeal app id only if exists
+    // process ad units with correct appodeal app id only if exists
     var adAppId = Admob.adUnitRegex(l[3]).appId;
     if (!adAppId || adAppId == app.id) {
       var code = self.adunitServerId(l[1]);
       var bid = Admob.adunitBid(l);
-      var adType = Admob.adUnitRegex(l[3]).adType;
-      var adTypeInt = Admob.adTypes[adType];
+
+      // integer original ad type of local ad unit
+      var serverAdTypeInt = Admob.getOriginalAdTypeByAdUnit(l);
+
       var stringFormat = Admob.formatNameForServer(l);
       var f = app.ad_units.findByProperty(function(r) {
-        return (r.code == code && r.ad_type == adType && r.bid_floor == bid && r.account_key == self.accountId);
+        // compare ad_type from server (ad unit ad type) with local ad type presented as remote ad type
+        return (r.code == code && Admob.adTypes[r.ad_type] == serverAdTypeInt && r.bid_floor == bid && r.account_key == self.accountId);
       }).element;
-      // remote adunit not found
+      // remote ad unit not found
       if (!f) {
-        var serverAdunitFormat = {code: code, ad_type: adTypeInt, bid_floor: bid, name: l[3], format: stringFormat};
-        adunits.push(serverAdunitFormat);
+        var serverAdUnitFormat = {code: code, ad_type: serverAdTypeInt, bid_floor: bid, name: l[3], format: stringFormat};
+        adUnits.push(serverAdUnitFormat);
       }
     }
   });
-  return (adunits);
+  return (adUnits);
 };
 
 Admob.formatNameForServer = function(adUnit) {
