@@ -239,11 +239,10 @@ Admob.formatNameForServer = function(adUnit) {
         return 'image_and_text';
 
       } else if (Admob.compareSimpleArrays(formats, [Admob.types.video])) {
-        return 'video';
+        return 'simple_video';
 
       } else if (Admob.compareSimpleArrays(formats, [Admob.types.text, Admob.types.image, Admob.types.video])) {
         // create 'all' ad units with image format
-
         return 'image';
       }
     case Admob.localAdTypes.banner:
@@ -351,6 +350,8 @@ Admob.adunitBid = function(adUnit) {
   } else if (adUnit[Admob.unitKeys.formats].length == 1) {
     var firstFormat = adUnit[Admob.unitKeys.formats][0];
 
+    // this part is useless, need to change protocol format
+    // and send default: true/false, do not use for this bid floors
     if (firstFormat == Admob.types.text) {
       return 'text';
     } else if (firstFormat == Admob.types.image) {
