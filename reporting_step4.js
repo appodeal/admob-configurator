@@ -1,5 +1,7 @@
 sendOut(0, "Create and sync credentials.");
 var modal;
+var redirect_uri = "https://www.appodeal.com/admin/oauth2callback";
+
 jQuery(function(){
   // var is_working = false;
   var credentials_interval = null;
@@ -12,7 +14,6 @@ jQuery(function(){
   function addCredentials() {
     var origins = "['http://www.appodeal.com/', 'http://appodeal.com/', 'https://www.appodeal.com/', 'https://appodeal.com/']";
     var redirectUris = "['http://www.appodeal.com/admin/oauth2callback', 'http://appodeal.com/admin/oauth2callback', 'https://www.appodeal.com/admin/oauth2callback', 'https://appodeal.com/admin/oauth2callback']";
-
     console.log("Redirected to oauthclient creating page.");
 
     setTimeout(function() {
@@ -34,18 +35,22 @@ jQuery(function(){
     }, 1000)
   }
 
-  // Wait for credentials dialog (OAuth client: Here is your client ID)
   function waitUntilClientInfoPresent(complete) {
-    console.log("Wait for credentials dialog");
-    waitForElement("pan-dialog[name='ctrl.dialogs.highlightClientId'],pan-modal.p6n-api-credential-dialog", function(dialog) {
-      console.log("Credentials dialog found. Wait until fields are loaded");
-      setTimeout(function() {
-        var clientId = dialog.find(".p6n-snippet-transclude span:eq(0)").text().trim();
-        var clientSecret = dialog.find(".p6n-snippet-transclude span:eq(1)").text().trim();
-        console.log("Client Id:", clientId, "Client Secret:", clientSecret);
+    console.log("Wait until modal window showed");
+
+    var checkExist = setInterval(function() {
+      if (jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId']").length) {
+        console.log("Modal window exists");
+        clearInterval(checkExist);
+
+        var clientId = jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(0)").text().trim();
+        var clientSecret = jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(1)").text().trim();
+        console.log(clientId, clientSecret);
+
+        console.log("Check And Save Client Credentials");
         checkAndSaveClientCredentials(clientId, clientSecret);
-      }, 1500)
-    })
+      }
+    }, 500);
   }
 
   // find Appodeal client tr dom
@@ -91,7 +96,7 @@ jQuery(function(){
             var local_settings = {reporting_client_creating: true, appodeal_admob_account_id: response['id']};
             chrome.storage.local.set(local_settings, function() {
               console.log('redirecting to oauth...');
-              var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=http://www.appodeal.com/admin/oauth2callback&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + clientId + "&client_id=" + clientId + "&access_type=offline";
+              var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri="+redirect_uri+"&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + clientId + "&client_id=" + clientId + "&access_type=offline";
               chrome.storage.local.remove("reporting_tab_id");
               document.location.href = final_href;
             })
@@ -239,7 +244,7 @@ jQuery(function(){
         resetCredentialSecret();
       } else {
         console.log("Run credentials processing");
-        credentials_interval = setInterval(waitForCredentials, 3000);
+        credentials_interval = setInterval(waitForCredentials, 2000);
       }
     });
   }
