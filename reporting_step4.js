@@ -50,7 +50,7 @@ jQuery(function(){
         console.log("Check And Save Client Credentials");
         checkAndSaveClientCredentials(clientId, clientSecret);
       }
-    }, 500);
+    }, 1000);
   }
 
   // find Appodeal client tr dom
