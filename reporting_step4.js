@@ -37,14 +37,14 @@ jQuery(function(){
 
   function waitUntilClientInfoPresent(complete) {
     console.log("Wait until modal window showed");
-
     var checkExist = setInterval(function() {
-      if (jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId']").length) {
+      var modal_dialog = jQuery('pan-modal').find('ng-transclude.p6n-snippet-transclude span');
+      if (modal_dialog.length >= 2) {
         console.log("Modal window exists");
         clearInterval(checkExist);
 
-        var clientId = jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(0)").text().trim();
-        var clientSecret = jQuery("pan-dialog[name='ctrl.dialogs.highlightClientId'] code:eq(1)").text().trim();
+        var clientId = modal_dialog[0].outerText.trim();
+        var clientSecret = modal_dialog[1].outerText.trim();
         console.log(clientId, clientSecret);
 
         console.log("Check And Save Client Credentials");
