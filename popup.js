@@ -28,10 +28,10 @@ function click(e) {
 
 document.addEventListener('DOMContentLoaded', function () {
   chrome.storage.local.get({
-      'appodeal_email': null,
-      'appodeal_api_key': null,
-      'appodeal_user_id': null,
-      'appodeal_admob_account_id': null}, function(items) {
+    'appodeal_email': null,
+    'appodeal_api_key': null,
+    'appodeal_user_id': null,
+    'appodeal_admob_account_id': null}, function(items) {
     getLocalStatus(items);
   })
 });
@@ -203,6 +203,12 @@ function updateAppodealCredentials(result, callback) {
     localCredentials['mrecBids'] = result['plugin_status']['mrecBids'];
   } else {
     chrome.storage.local.remove("mrecBids");
+  }
+
+  if (result['plugin_status']['videoBids']) {
+    localCredentials['videoBids'] = result['plugin_status']['videoBids'];
+  } else {
+    chrome.storage.local.remove("videoBids");
   }
 
   chrome.storage.local.set(localCredentials, function() {
