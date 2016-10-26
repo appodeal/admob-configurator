@@ -36,21 +36,16 @@ jQuery(function(){
   }
 
   function waitUntilClientInfoPresent(complete) {
-    console.log("Wait until modal window showed");
-    var checkExist = setInterval(function() {
-      var modal_dialog = jQuery('pan-modal').find('ng-transclude.p6n-snippet-transclude span');
-      if (modal_dialog.length >= 2) {
-        console.log("Modal window exists");
-        clearInterval(checkExist);
-
-        var clientId = modal_dialog[0].outerText.trim();
-        var clientSecret = modal_dialog[1].outerText.trim();
-        console.log(clientId, clientSecret);
-
-        console.log("Check And Save Client Credentials");
+    console.log("Wait for credentials dialog");
+    waitForElement("md-dialog[name='ctrl.dialogs.highlightClientId'],md-dialog.p6n-api-credential-dialog", function(dialog) {
+      console.log("Credentials dialog found. Wait until fields are loaded");
+      setTimeout(function() {
+        var clientId = dialog.find(".p6n-snippet-transclude span:eq(0)").text().trim();
+        var clientSecret = dialog.find(".p6n-snippet-transclude span:eq(1)").text().trim();
+        console.log("Client Id:", clientId, "Client Secret:", clientSecret);
         checkAndSaveClientCredentials(clientId, clientSecret);
-      }
-    }, 1000);
+      }, 1500)
+    })
   }
 
   // find Appodeal client tr dom
