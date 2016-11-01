@@ -38,7 +38,7 @@ function extensionVersion() {
 
 // async jQuery load
 function appendJQuery(complete) {
-  console.log("Appending jquery from googleapis.")
+  console.log("Appending jquery from googleapis.");
   var head = document.getElementsByTagName("head")[0];
   var jq = document.createElement('script');
   jq.type = 'text/javascript';
@@ -78,7 +78,7 @@ function sendLogs(apiKey, userId, mode, part, version, items, callback) {
     "mode": mode,
     "version": version,
     "items": items
-  }
+  };
   var params = JSON.stringify(json);
   $.ajax({method: "POST",
     url: "https://www.appodeal.com/api/v2/save_extension_logs",

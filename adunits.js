@@ -5,7 +5,7 @@ chrome.storage.local.get("admob_processing", function(result) {
       startInventorySync();
     }, 4000);
   }
-})
+});
 
 function startInventorySync() {
   chrome.storage.local.remove("admob_processing");

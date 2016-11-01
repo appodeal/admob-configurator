@@ -226,7 +226,7 @@ jQuery(function(){
 
   // start checking and creating client id
   function run() {
-    console.log("Run reporting step 4")
+    console.log("Run reporting step 4");
 
     appendJQuery(function() {
       modal = new Modal();

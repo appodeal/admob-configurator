@@ -35,4 +35,4 @@ ProgressBar.prototype.update = function() {
 ProgressBar.prototype.increase = function() {
   this.step += 1;
   this.update();
-}
+};

@@ -27,4 +27,4 @@ criticalUpdates(function(updates) {
       }
     })
   }, 1000);
-})
+});
