@@ -1,4 +1,6 @@
-APPODEAL_STATUS_URL = "https://www.appodeal.com/api/v2/get_api_key";
+APPODEAL_URL = "http://www.appodeal.com";
+APPODEAL_URL_SSL = "https://www.appodeal.com";
+APPODEAL_STATUS_URL = APPODEAL_URL_SSL + "/api/v2/get_api_key";
 
 function click(e) {
   if (e.target.id == 'reporting') {
@@ -8,12 +10,12 @@ function click(e) {
       window.close();
     });
   } else if (e.target.id == 'login') {
-    var newURL = "https://www.appodeal.com/signin";
+    var newURL = APPODEAL_URL_SSL + "/signin";
     chrome.tabs.update({ url: newURL });
     window.close();
   } else if (e.target.id == 'logout') {
     clearStorageAndCookies();
-    var newURL = "https://www.appodeal.com";
+    var newURL = APPODEAL_URL_SSL;
     chrome.tabs.update({ url: newURL });
     window.close();
   } else if (e.target.id == 'admob') {
@@ -133,12 +135,12 @@ function clearStorageAndCookies() {
   // clear badge
   chrome.browserAction.setBadgeText({text: ""});
   // clear appodeal cookies
-  chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "_android_ad_network_session"});
-  chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "_android_ad_network_session"});
-  chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "remember_token"});
-  chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "remember_token"});
-  chrome.cookies.remove({"url": "http://www.appodeal.com", "name": "user_id"});
-  chrome.cookies.remove({"url": "https://www.appodeal.com", "name": "user_id"});
+  chrome.cookies.remove({"url": APPODEAL_URL, "name": "_android_ad_network_session"});
+  chrome.cookies.remove({"url": APPODEAL_URL_SSL, "name": "_android_ad_network_session"});
+  chrome.cookies.remove({"url": APPODEAL_URL, "name": "remember_token"});
+  chrome.cookies.remove({"url": APPODEAL_URL_SSL, "name": "remember_token"});
+  chrome.cookies.remove({"url": APPODEAL_URL, "name": "user_id"});
+  chrome.cookies.remove({"url": APPODEAL_URL_SSL, "name": "user_id"});
 }
 
 // get sync status from appodeal and save it to local chrome storage
