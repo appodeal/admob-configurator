@@ -127,3 +127,11 @@ function triggerMouseEvent(node, eventType) {
   clickEvent.initEvent(eventType, true, true);
   node.dispatchEvent(clickEvent);
 }
+
+function isAdblockEnable(){
+  var result = false;
+  if (!( 'adBlock' in window )) {
+    result = true;
+  }
+  return result;
+}
