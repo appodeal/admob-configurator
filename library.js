@@ -21,7 +21,7 @@ setTimeout(function() {
       // create Appodeal project
       console.log("show new project window");
       // show new project window
-      $(".p6ntest-create-project, #p6ntest-create-project").click();
+      run_script("jQuery('[ng-click=\"psCtrl.showCreateProjectPage()\"]').click();");
       // set project name (Appodeal)
       console.log("set project name (Appodeal)");
       waitForElement("#p6ntest-project-create-modal", function(element) {
@@ -41,6 +41,7 @@ setTimeout(function() {
             console.log("go to the newly created project");
           }
           // go to the newly created project
+          modal.show("Appodeal Chrome Extension", "Creating Appodeal project. Please wait 10 second");
           waitForElement("a:contains('Appodeal')", function(element) {
             console.log("new project is found");
             var projectName = locationProjectName();
@@ -48,7 +49,7 @@ setTimeout(function() {
             console.log("redirect to the new project " + projectUrl);
             document.location.href = projectUrl;
           })
-        }, 2000);
+        }, 10000);
       })
     }
   });
