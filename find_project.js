@@ -43,7 +43,7 @@ jQuery(function () {
             var row = jQuery('[ng-class=\"{\'p6n-tablerow-selected\': projectListCtrl.selectionState[project.id]}\"]');
             if (row.length > 0) {
                 if (row.length >= 2) {
-                    var message = "Appodeal project should be one. Please remove the other and start again the second step";
+                    var message = 'You have more then one project named "Appodeal". Please remove all projects named "Appodeal" except one and retry second step ';
                     console.log(message);
                     modal.show("Appodeal Chrome Extension", message);
                 } else {
