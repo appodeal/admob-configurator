@@ -132,9 +132,12 @@ function triggerMouseEvent(node, eventType) {
   node.dispatchEvent(clickEvent);
 }
 
-function isAdblockEnable(){
+function isAdblockEnable(modal){
   var result = false;
-  if (!( 'adBlock' in window )) {
+  if (document.getElementById('adbanner')) {
+    var message = "To work correctly, turn off the extension AdBlock";
+    console.log(message);
+    modal.show("Appodeal Chrome Extension", message);
     result = true;
   }
   return result;
