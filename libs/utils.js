@@ -19,6 +19,10 @@ function oauthPageUrl(projectName) {
   return "https://console.developers.google.com/apis/credentials/oauthclient?project=" + projectName;
 }
 
+function iamAdminPageUrl(projectName) {
+  return 'https://console.developers.google.com/iam-admin/projects?filter=name:'+projectName+'*';
+}
+
 // page with title Create client ID
 function isOauthClientPage() {
   var page_link = document.location.toString();
