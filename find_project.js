@@ -5,6 +5,7 @@ jQuery(function () {
         // create Appodeal project
         console.log("show new project window");
         // show new project window
+        modal.show("Appodeal Chrome Extension", "Create Appodeal project. Please wait");
         run_script("jQuery('[ng-click=\"psCtrl.showCreateProjectPage()\"]').click();");
         // set project name (Appodeal)
         console.log("set project name (Appodeal)");
@@ -39,7 +40,7 @@ jQuery(function () {
     setTimeout(function () {
         appendJQuery(function () {
             modal = new Modal();
-            modal.show("Appodeal Chrome Extension", "Creating Appodeal project. Please wait");
+            modal.show("Appodeal Chrome Extension", "Find Appodeal project. Please wait");
             var row = jQuery('[ng-class=\"{\'p6n-tablerow-selected\': projectListCtrl.selectionState[project.id]}\"]');
             if (row.length > 0) {
                 if (row.length >= 2) {
