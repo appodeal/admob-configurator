@@ -3,6 +3,7 @@ APPODEAL_URL_SSL = "https://www.appodeal.com";
 APPODEAL_STATUS_URL = APPODEAL_URL_SSL + "/api/v2/get_api_key";
 
 function click(e) {
+  console.log(e.target.id);
   if (e.target.id == 'reporting') {
     var newURL = "https://apps.admob.com/#home";
     chrome.tabs.update({url: newURL}, function(tab) {
@@ -23,6 +24,10 @@ function click(e) {
     chrome.tabs.update({"url": newURL}, function(tab) {
       setAdmobProcessingAndClose();
     });
+  } else if (e.target.id == 'return') {
+    var newURL = APPODEAL_URL_SSL + "/dashboard";
+    chrome.tabs.update({ url: newURL });
+    window.close();
   } else {
     window.close();
   }
@@ -47,6 +52,9 @@ function getLocalStatus(items) {
   var reportingBtn = document.getElementById('reporting');
   // 3 step button
   var admobBtn = document.getElementById('admob');
+  //return
+  var returnBtn = document.getElementById('return');
+  returnBtn.addEventListener('click', click);
 
   // user email present (logged in)
   if (items['appodeal_email']) {
