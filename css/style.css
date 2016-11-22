@@ -1,0 +1,91 @@
+body {
+    margin: 0px;
+    padding: 0px;
+    background: white;
+    min-width: 350px;
+    width: 100%;
+    font-family: "KelsonSansRegular";
+    font-size: 14px;
+    border: 1px solid;
+    color: #313844;
+}
+#header{
+    background: #EC3F21;
+}
+.brand{
+    margin-left:20px;
+}
+#main{
+    padding-left: 23px;
+    padding-right: 23px;
+}
+.caption{
+    font-family: "KelsonSansBold";
+}
+#main div{
+    margin-bottom: 5px;
+}
+
+.text-center{
+    text-align: center;
+}
+.left{
+    float: left;
+}
+.right{
+    float: right;
+}
+ul.menu{
+    padding: 0;
+    list-style: none;
+}
+ul.menu li{
+    display: inline-block;
+    text-align: right;
+}
+hr.line{
+    color: #F3F3F3;
+    background-color:#F3F3F3;
+    border:0 none;
+    height:1px;
+    clear:both;
+}
+.footer{
+    height: 30px;
+}
+#squirrel img{
+    margin-top: -20px;
+}
+.retreat_20{
+    margin-left: 20px;
+}
+.gray{
+    color: #c0c5c9!important;
+    cursor: not-allowed!important;
+    text-decoration: none!important;
+}
+.ion {
+    color: #EC3F21!important;
+    font-size: 28px;
+    position: absolute;
+    margin-top: -5px;
+    display: block;
+    width: 32px;
+}
+#faq{
+    width: 60px;
+}
+#return{
+    width: 150px;
+}
+.point{
+    cursor: pointer;
+}
+.point:hover{
+    color: #EC3F21;
+    text-decoration: underline;
+}
+#main div p{
+    margin-left: 40px;
+}
+

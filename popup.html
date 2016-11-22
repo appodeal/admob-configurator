@@ -1,54 +1,71 @@
 <!doctype html>
 <html>
-  <head>
+<head>
     <title>Create adunits</title>
-    <style>
-    body {
-      margin: 0px;
-      padding: 0px;
-      background: white;
-    }
-
-    div:first-child {
-      margin-top: 0px;
-    }
-
-    div.caption { cursor: default;}
-    div.caption:hover { background: #cccccc;}
-
-    div span { color: green; float: right; }
-
-    div span.gray {color: gray; float: none;}
-    div.gray {color: gray; cursor: default;}
-
-    div {
-      cursor: pointer;
-      padding: 1px 3px;
-      font-family: sans-serif;
-      font-size: 1.5em;
-      width: 400px;
-      margin-top: 1px;
-      padding: 7px;
-      background: #cccccc;
-    }
-    div:hover {
-      background: #aaaaaa;
-    }
-    #red {
-      border: 1px solid red;
-      color: red;
-    }
-      .text_center {
-        text-align: center;
-      }
-    </style>
+    <link href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" media="all">
+    <link href="css/font.css" rel="stylesheet" media="all">
+    <link href="css/style.css" rel="stylesheet" media="all">
     <script src="popup.js"></script>
-  </head>
-  <body>
-    <div class="caption"><strong>Please complete all 3 steps:</strong></div>
-    <div id="login">1. Login to Appodeal</div>
-    <div id="reporting" class="gray">2. Enable Admob reporting</div>
-    <div id="admob" class="gray">3. Sync Appodeal and Admob ad units</div>
-    <div id="return">Return to Appodeal</div>
-  </body>
+</head>
+<body>
+<div id="header">
+    <a class="brand">
+        <img alt="APPODEAL" height="55" src="image/logo.svg" width="144">
+    </a>
+</div>
+<div id="main">
+    <div class="caption">
+        <h4>Please complete all 3 steps:</h4>
+    </div>
+    <hr class="line">
+    <div id="login">
+        <a class="point">
+            <i class="ion">
+                <img alt="1_step" src="image/1_step.png" >
+            </i>
+            <p>Login to Appodeal</p>
+        </a>
+    </div>
+    <div id="reporting">
+        <a class="point gray">
+            <i class="ion">
+                <img alt="1_step" src="image/2_step.png" >
+            </i>
+            <p>Enable Admob reporting</p>
+        </a>
+    </div>
+    <div id="admob">
+        <a class="point gray">
+            <i class="ion">
+                <img alt="1_step" src="image/3_step.png" >
+            </i>
+            <p>Sync Appodeal and Admob ad units</p>
+        </a>
+    </div>
+    <hr class="line">
+    <div class="footer">
+        <ul class="menu">
+            <li id="return">
+                <a class="point">
+                    <i class="ion">
+                        <img alt="question" src="image/appodeal.png" >
+                    </i>
+                    Return to Appodeal
+                </a>
+            </li>
+            <li id="faq" class="retreat_20">
+                <a class="point">
+                    <i class="ion">
+                        <img alt="question" src="image/question.png" >
+                    </i>
+                    FAQ
+                </a>
+            </li>
+            <li id="squirrel">
+                <img alt="squirrel" src="image/squirrel.png" width="55" style="position: absolute">
+            </li>
+        </ul>
+    </div>
+</div>
+</body>
 </html>
