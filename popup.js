@@ -24,7 +24,7 @@ function click(e) {
     chrome.tabs.update({"url": newURL}, function(tab) {
       setAdmobProcessingAndClose();
     });
-  } else if (e.target.id == 'return') {
+  } else if (e.target.id == 'return_link') {
     var newURL = APPODEAL_URL_SSL + "/dashboard";
     chrome.tabs.update({ url: newURL });
     window.close();
@@ -53,7 +53,7 @@ function getLocalStatus(items) {
   // 3 step button
   var admobBtn = document.getElementById('admob');
   //return
-  var returnBtn = document.getElementById('return');
+  var returnBtn = document.getElementById('return_link');
   returnBtn.addEventListener('click', click);
 
   // user email present (logged in)
