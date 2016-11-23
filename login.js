@@ -15,7 +15,7 @@
       // logged in to new account
       // remove old api keys, user id and email
       chrome.storage.local.remove(['appodeal_email', 'appodeal_api_key', 'appodeal_user_id'], function(items) {
-        data = { 'appodeal_email': appodeal_email }
+        data = { 'appodeal_email': appodeal_email };
         // save new email
         chrome.storage.local.set(data);
         console.log("You have successfully logged in (Appodeal Chrome Extension).")

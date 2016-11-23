@@ -84,7 +84,10 @@ hr.line{
     color: #EC3F21;
     text-decoration: underline;
 }
-#main div p{
+#main div a{
     margin-left: 40px;
+}
+.row{
+    padding-bottom: 10px;
 }
 
