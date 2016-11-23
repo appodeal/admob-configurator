@@ -62,6 +62,7 @@ hr.line{
     color: #c0c5c9!important;
     cursor: not-allowed!important;
     text-decoration: none!important;
+    pointer-events:none!important;
 }
 .ion {
     color: #EC3F21!important;

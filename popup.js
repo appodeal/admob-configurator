@@ -177,35 +177,38 @@ function countApps(btn, leftNum) {
 
 // get sync status from appodeal account (app's num and reporting)
 function getRemoteStatus(reportingBtn, admobBtn, items) {
-    getAppodealStatus(function (result) {
-        updateAppodealCredentials(result, function () {
-            var data = result['plugin_status'];
-            console.log(data);
-            // find number of apps that's left to sync
-            var leftNum = data['total'] - data['synced'];
-            console.log(leftNum);
-            // // check if user has connected his admob account
-            if (data['account']) {
-                addDoneLabel(reportingBtn, 'Enable Admob reporting', '2_step', '2Step', 'reporting_link');
-                addDoneLabel(admobBtn, 'Sync Appodeal and Admob ad units', '3_step', '3Step', 'admob_link');
-            }
+    if(items['appodeal_email']){
+        getAppodealStatus(function (result) {
+            updateAppodealCredentials(result, function () {
+                var data = result['plugin_status'];
+                console.log(data);
+                // find number of apps that's left to sync
+                var leftNum = data['total'] - data['synced'];
+                console.log(leftNum);
+                // // check if user has connected his admob account
+                if (data['account']) {
+                    addDoneLabel(reportingBtn, 'Enable Admob reporting', '2_step', '2Step', 'reporting_link');
+                    addDoneLabel(admobBtn, 'Sync Appodeal and Admob ad units', '3_step', '3Step', 'admob_link');
+                }
 
-            if (leftNum) {
-                // need to sync apps
-                countApps(admobBtn, leftNum)
-            } else if (data['total']) {
-                // all synced
-                addDoneLabel(admobBtn, 'Sync Appodeal and Admob ad units', '3_step', '3Step', 'admob_link');
-            } else {
-                // user has no apps
-                addNoApps(admobBtn);
-            }
-        });
-    })
+                if (leftNum) {
+                    // need to sync apps
+                    countApps(admobBtn, leftNum)
+                } else if (data['total']) {
+                    // all synced
+                    addDoneLabel(admobBtn, 'Sync Appodeal and Admob ad units', '3_step', '3Step', 'admob_link');
+                } else {
+                    // user has no apps
+                    addNoApps(admobBtn);
+                }
+            });
+        })
+    }
 }
 
 // get api key from appodeal
 function getAppodealStatus(complete) {
+    console.log(complete);
     var http = new XMLHttpRequest();
     http.open("GET", APPODEAL_STATUS_URL, true);
     http.send();
@@ -213,10 +216,12 @@ function getAppodealStatus(complete) {
         if (http.readyState == 4) {
             if (http.status == 200) {
                 // request was successful
-                result = JSON.parse(http.responseText);
+                var result = JSON.parse(http.responseText);
+                console.log(result);
                 complete(result);
             } else if (http.status == 403) {
                 // not authenticated
+                console.log(http);
                 clearStorageAndCookies();
             }
         }
