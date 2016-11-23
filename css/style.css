@@ -81,6 +81,9 @@ hr.line{
 .point{
     cursor: pointer;
 }
+.not_point{
+    pointer-events:none!important;
+}
 .point:hover{
     color: #EC3F21;
     text-decoration: underline;
@@ -90,5 +93,18 @@ hr.line{
 }
 .row{
     padding-bottom: 10px;
+}
+.button_logout {
+    border: 1px solid #EC3F21;
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-left: 10px!important;
+    margin-top: -2px;
+    position: absolute;
+}
+.button_logout:hover{
+    background-color: #EC3F21;
+    color: #ffffff;
+    cursor: pointer;
 }
 

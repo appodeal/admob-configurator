@@ -3,6 +3,7 @@ var APPODEAL_URL_SSL = "https://www.appodeal.com";
 var APPODEAL_STATUS_URL = APPODEAL_URL_SSL + "/api/v2/get_api_key";
 var FAQ_LINK = 'https://github.com/appodeal/admob-configurator/wiki/FAQ';
 var newURL = null;
+var length_email = 25;
 
 // When the popup HTML has loaded
 window.addEventListener('load', function (evt) {
@@ -29,7 +30,19 @@ function getLocalStatus(items) {
 }
 
 function getLogoutText(item, image, id) {
-    return '<i class="ion"><img alt="1_step" id="1Step" src="image/' + image + '"></i><a id="' + id + '" class="point">' + item['appodeal_email'] + ' (Logout)' + '</a>';
+    var button_logout = '<a id="' + id + '" class="button_logout right">Logout</a>';
+    return '<i class="ion"><img alt="1_step" id="1Step" src="image/' + image + '"></i><a class="not_point">' + kitcut(item['appodeal_email'],length_email)+'</a>'+button_logout;
+}
+
+function kitcut( text, limit) {
+    text = text.trim();
+    if( text.length <= limit) return text;
+    text = text.slice( 0, limit); // тупо отрезать по лимиту
+    var lastSpace = text.lastIndexOf(" ");
+    if( lastSpace > 0) { // нашлась граница слов, ещё укорачиваем
+        text = text.substr(0, lastSpace);
+    }
+    return text + "...";
 }
 
 function getLoginText(image, id) {
