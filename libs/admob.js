@@ -616,7 +616,7 @@ Admob.prototype.syncWithServer = function(app, callback) {
       var items = [];
       items.push("<h4>" + h.name + "</h4>");
       h.adunits.forEach(function(adunit) {
-        items.push("<p>" + adunit.name + "</p>");
+        items.push("<p style='margin-left: 10px'>Ad unit:" + adunit.name + "</p>");
       });
       self.report.push.apply(self.report, items);
       self.sendReports({mode: 0}, [items.join("")], function() {
