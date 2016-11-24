@@ -46,7 +46,7 @@ function kitcut( text, limit) {
 }
 
 function getLoginText(image, id) {
-    return '<i class="ion"><img alt="1_step" id="1Step" src="image/' + image + '"></i><a id="' + id + '" class="point">Login to Appodeal</a>';
+    return '<i class="ion"><img alt="1_step" id="1Step" src="image/' + image + '" style="margin-left: 1px;"></i><a id="' + id + '" class="point">Login to Appodeal</a>';
 }
 
 // execute logout in browser
