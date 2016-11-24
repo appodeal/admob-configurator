@@ -14,9 +14,12 @@ body {
 .brand{
     margin-left:20px;
 }
+.brand img{
+    margin-top:5px;
+}
 #main{
-    padding-left: 23px;
-    padding-right: 23px;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 .caption{
     font-family: "KelsonSansBold";
@@ -54,6 +57,7 @@ hr.line{
 }
 #squirrel img{
     margin-top: -20px;
+    margin-left: 20px;
 }
 .retreat_20{
     margin-left: 20px;
@@ -92,7 +96,8 @@ hr.line{
     margin-left: 40px;
 }
 .row{
-    padding-bottom: 10px;
+    padding-bottom: 15px;
+    margin-left: -3px;
 }
 .button_logout {
     border: 1px solid #EC3F21;
@@ -101,10 +106,20 @@ hr.line{
     margin-left: 10px!important;
     margin-top: -2px;
     position: absolute;
+    color: #EC3F21;
 }
 .button_logout:hover{
     background-color: #EC3F21;
     color: #ffffff;
     cursor: pointer;
+}
+#login .ion {
+    margin-left: -1px;
+}
+#return .ion{
+    margin-left: -5px;
+}
+#return_link{
+    margin-left: 37px!important;
 }
 
