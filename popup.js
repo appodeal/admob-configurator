@@ -200,7 +200,7 @@ function getRemoteStatus(reportingBtn, admobBtn, items) {
                 console.log(leftNum);
                 // // check if user has connected his admob account
                 if (data['account']) {
-                    addDoneLabel(reportingBtn, 'Enable Admob reporting', '2_step', '2Step', 'reporting_link');
+                    addDoneLabel(reportingBtn, 'Enabled Admob reporting', '2_step', '2Step', 'reporting_link');
                     addDoneLabel(admobBtn, 'Sync Appodeal and Admob ad units', '3_step', '3Step', 'admob_link');
                 }
 
@@ -209,7 +209,7 @@ function getRemoteStatus(reportingBtn, admobBtn, items) {
                     countApps(admobBtn, leftNum)
                 } else if (data['total']) {
                     // all synced
-                    addDoneLabel(admobBtn, 'Sync Appodeal and Admob ad units', '3_step', '3Step', 'admob_link');
+                    addDoneLabel(admobBtn, 'Synced Appodeal and Admob ad units', '3_step', '3Step', 'admob_link');
                 } else {
                     // user has no apps
                     addNoApps(admobBtn);
