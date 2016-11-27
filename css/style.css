@@ -11,24 +11,18 @@ body {
 #header{
     background: #EC3F21;
 }
-.brand{
-    margin-left:20px;
-}
 .brand img{
     margin-top:5px;
 }
-#main{
+.caption h4, #main .row, ul.menu, .brand{
     padding-left: 20px;
-    padding-right: 20px;
 }
 .caption{
     font-family: "KelsonSansBold";
 }
-.caption h4{
-    margin-left: -1px;
-}
-#main div{
-    margin-bottom: 5px;
+#main .row{
+    padding-top: 13px;
+    padding-bottom: 13px;
 }
 
 .text-center{
@@ -41,7 +35,6 @@ body {
     float: right;
 }
 ul.menu{
-    padding: 0;
     list-style: none;
 }
 ul.menu li{
@@ -54,6 +47,7 @@ hr.line{
     border:0 none;
     height:1px;
     clear:both;
+    margin: 0 20px;
 }
 .footer{
     height: 30px;
@@ -66,10 +60,10 @@ hr.line{
     margin-left: 20px;
 }
 .gray{
-    color: #c0c5c9!important;
-    cursor: not-allowed!important;
+    /*cursor: not-allowed!important;*/
     text-decoration: none!important;
     pointer-events:none!important;
+    color: #c0c5c9;
 }
 .ion {
     color: #EC3F21!important;
@@ -89,18 +83,10 @@ hr.line{
     cursor: pointer;
 }
 .not_point{
-    pointer-events:none!important;
-}
-.point:hover{
-    color: #EC3F21;
-    text-decoration: underline;
+    pointer-events:none;
 }
 #main div a{
     margin-left: 40px;
-}
-.row{
-    padding-bottom: 15px;
-    margin-left: -3px;
 }
 .button_logout {
     border: 1px solid #EC3F21;
@@ -116,13 +102,51 @@ hr.line{
     color: #ffffff;
     cursor: pointer;
 }
-#login .ion {
-    margin-left: -1px;
-}
 #return .ion{
     margin-left: -5px;
 }
 #return_link{
     margin-left: 37px!important;
 }
-
+.linkWhite{
+    color: #ffffff;
+}
+.svgStep{
+    position: absolute;
+    width: 27px;
+    height: 27px;
+    border-radius: 15px;
+}
+.stepOne{
+    background: url(../image/1-red.svg) #ffffff no-repeat;
+}
+.stepOne.active{
+    background: url(../image/1-white.svg) #EC3F21 no-repeat;
+}
+.stepTwo{
+    background: url(../image/2-red.svg) #ffffff no-repeat;
+}
+.stepTwo.active{
+    background: url(../image/2-white.svg) #EC3F21 no-repeat;
+}
+.stepThree{
+    background: url(../image/3-red.svg) #ffffff no-repeat;
+}
+.stepThree.active{
+    background: url(../image/3-white.svg) #EC3F21 no-repeat;
+}
+.userActive{
+    background: url(../image/user-red.svg) #ffffff no-repeat;
+}
+.userActive.active{
+    background: url(../image/user-white.svg) #EC3F21 no-repeat;
+}
+.stepDone{
+    background: url(../image/check-red.svg) #ffffff no-repeat;
+}
+.stepDone.active{
+    background: url(../image/check-white.svg) #EC3F21 no-repeat;
+}
+ul.menu a:hover{
+    color: #EC3F21;
+}

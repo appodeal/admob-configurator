@@ -20,33 +20,33 @@ window.addEventListener('load', function (evt) {
 });
 // get local plugin variables and update menu items
 function getLocalStatus(items) {
-    console.log(items['appodeal_email']);
     var loginHtml = document.getElementById("login");
     if (items['appodeal_email']) {
-        loginHtml.innerHTML = getLogoutText(items, 'login_user.png', 'logout_link');
+        console.log(items['appodeal_email']);
+        loginHtml.innerHTML = getLogoutText(items, 'userActive', 'logout_link');
     } else {
-        loginHtml.innerHTML = getLoginText('1_step.png', 'login_link');
+        loginHtml.innerHTML = getLoginText('stepOne', 'login_link');
     }
 }
 
-function getLogoutText(item, image, id) {
+function getLogoutText(item, step, id) {
     var button_logout = '<a id="' + id + '" class="button_logout right">Logout</a>';
-    return '<i class="ion"><img alt="1_step" id="1Step" src="image/' + image + '"></i><a class="not_point">' + kitcut(item['appodeal_email'],length_email)+'</a>'+button_logout;
+    return '<i class="ion"><div class="' + step + ' svgStep"></div></i><a class="not_point">' + kitcut(item['appodeal_email'], length_email) + '</a>' + button_logout;
 }
 
-function kitcut( text, limit) {
+function kitcut(text, limit) {
     text = text.trim();
-    if( text.length <= limit) return text;
-    text = text.slice( 0, limit); // тупо отрезать по лимиту
+    if (text.length <= limit) return text;
+    text = text.slice(0, limit); // тупо отрезать по лимиту
     var lastSpace = text.lastIndexOf(" ");
-    if( lastSpace > 0) { // нашлась граница слов, ещё укорачиваем
+    if (lastSpace > 0) { // нашлась граница слов, ещё укорачиваем
         text = text.substr(0, lastSpace);
     }
     return text + "...";
 }
 
-function getLoginText(image, id) {
-    return '<i class="ion"><img alt="1_step" id="1Step" src="image/' + image + '" style="margin-left: 1px;"></i><a id="' + id + '" class="point">Login to Appodeal</a>';
+function getLoginText(step, id) {
+    return '<i class="ion"><div class="' + step + ' svgStep"></div></i><a id="' + id + '" class="point">Login to Appodeal</a>';
 }
 
 // execute logout in browser
@@ -170,27 +170,33 @@ function setEventListen(items) {
     getRemoteStatus(reportingBtn, admobBtn, items);
 }
 
-function addDoneLabel(btn, text, alt, id, aId) {
+function addDoneLabel(btn, text, step, id) {
     if (btn) {
-        btn.innerHTML = '<i class="ion"><img alt="' + alt + '" id="' + id + '" src="image/succes.png"></i><a id="' + aId + '" class="point">' + text + '</a>';
+        btn.innerHTML = '<i class="ion"><div class="' + step + ' svgStep"></div></i><a id="' + id + '" class="point">' + text + '</a>';
     }
 }
 
 function addNoApps(btn) {
     if (btn) {
-        btn.innerHTML = '<i class="ion"><img alt="3_step" id="3Step" src="image/3_step.png"></i><a id="admob_link" class="point gray">No apps</a>';
+        btn.innerHTML = '<i class="ion"><div class="stepThree svgStep"></div></i><a id="admob_link" class="point gray">No apps</a>';
+    }
+}
+
+function enableReport(btn) {
+    if (btn) {
+        btn.innerHTML = '<i class="ion"><div class="stepTwo svgStep"></div></i><a id="reporting_link" class="point">Enable Admob reporting</a>';
     }
 }
 
 function countApps(btn, leftNum) {
     if (btn) {
-        btn.innerHTML = '<i class="ion"><img alt="3_step" id="3Step" src="image/3_step.png"></i><a id="admob_link" class="point">' + leftNum + ' left</a>';
+        btn.innerHTML = '<i class="ion"><div class="stepThree svgStep"></div></i><a id="admob_link" class="point">' + leftNum + ' left</a>';
     }
 }
 
 // get sync status from appodeal account (app's num and reporting)
 function getRemoteStatus(reportingBtn, admobBtn, items) {
-    if(items['appodeal_email']){
+    if (items['appodeal_email']) {
         getAppodealStatus(function (result) {
             updateAppodealCredentials(result, function () {
                 var data = result['plugin_status'];
@@ -200,16 +206,20 @@ function getRemoteStatus(reportingBtn, admobBtn, items) {
                 console.log(leftNum);
                 // // check if user has connected his admob account
                 if (data['account']) {
-                    addDoneLabel(reportingBtn, 'Enabled Admob reporting', '2_step', '2Step', 'reporting_link');
-                    addDoneLabel(admobBtn, 'Sync Appodeal and Admob ad units', '3_step', '3Step', 'admob_link');
+                    addDoneLabel(reportingBtn, 'Enabled Admob reporting', 'stepDone', 'reporting_link');
+                    addDoneLabel(admobBtn, 'Sync Appodeal and Admob ad units', 'stepDone', 'admob_link');
+                } else {
+                    enableReport(reportingBtn);
+                    return null;
                 }
+
 
                 if (leftNum) {
                     // need to sync apps
                     countApps(admobBtn, leftNum)
                 } else if (data['total']) {
                     // all synced
-                    addDoneLabel(admobBtn, 'Synced Appodeal and Admob ad units', '3_step', '3Step', 'admob_link');
+                    addDoneLabel(admobBtn, 'Synced Appodeal and Admob ad units', 'stepDone', 'admob_link');
                 } else {
                     // user has no apps
                     addNoApps(admobBtn);
@@ -282,3 +292,23 @@ function setAdmobProcessingAndClose() {
         window.close();
     });
 }
+
+$(document).ready(function () {
+    $('#main .row').hover(
+        function () {
+            if ($(this).find(".gray").length > 0) {
+                $(this).css("background", "#FACFC8");
+                $(this).find("a.point").addClass("linkWhite");
+            } else if(!$(this).find(".userActive.svgStep").length > 0) {
+                $(this).css("background", "#EC3F21");
+                $(this).find(".svgStep").addClass("active");
+                $(this).find("a.point").addClass("linkWhite");
+            }
+        },
+        function () {
+            $(this).css("background", "#ffffff");
+            $(this).find(".svgStep").removeClass("active");
+            $(this).find("a.point").removeClass("linkWhite");
+        }
+    );
+});
