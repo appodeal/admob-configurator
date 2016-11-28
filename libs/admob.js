@@ -39,29 +39,29 @@ Admob.prototype.syncInventory = function(callback) {
   if (!self.getAccountId() || !self.isPublisherIdRight()) {
     return;
   }
-  // self.getRemoteInventory(function() {
-  //   self.getLocalInventory(function() {
-  //     self.selectStoreIds();
-  //     self.filterHiddenLocalApps();
-  //     self.mapApps(function() {
-  //       self.createMissingApps(function() {
-  //         self.linkApps(function() {
-  //           self.updateFormats(function() {
-  //             self.makeMissingAdunitsLists(function() {
-  //               self.createMissingAdunits(function() {
-  //                 self.finishDialog();
-  //                 self.sendReports({mode: 0, note: "json"}, [JSON.stringify({message: "Finish", admob: self})], function() {
-  //                   console.log("Sent finish inventory report");
-  //                 });
-  //                 callback();
-  //               })
-  //             })
-  //           })
-  //         })
-  //       })
-  //     })
-  //   })
-  // })
+  self.getRemoteInventory(function() {
+    self.getLocalInventory(function() {
+      self.selectStoreIds();
+      self.filterHiddenLocalApps();
+      self.mapApps(function() {
+        self.createMissingApps(function() {
+          self.linkApps(function() {
+            self.updateFormats(function() {
+              self.makeMissingAdunitsLists(function() {
+                self.createMissingAdunits(function() {
+                  self.finishDialog();
+                  self.sendReports({mode: 0, note: "json"}, [JSON.stringify({message: "Finish", admob: self})], function() {
+                    console.log("Sent finish inventory report");
+                  });
+                  callback();
+                })
+              })
+            })
+          })
+        })
+      })
+    })
+  })
 };
 
 // show finish dialog with results info
