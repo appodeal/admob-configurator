@@ -50,5 +50,8 @@
       "webNavigation",
       "https://chrome.google.com/webstore/detail/appodeal/*",
       "https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"
+   ],
+   "web_accessible_resources": [
+      "image/*"
    ]
 }

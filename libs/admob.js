@@ -39,29 +39,29 @@ Admob.prototype.syncInventory = function(callback) {
   if (!self.getAccountId() || !self.isPublisherIdRight()) {
     return;
   }
-  self.getRemoteInventory(function() {
-    self.getLocalInventory(function() {
-      self.selectStoreIds();
-      self.filterHiddenLocalApps();
-      self.mapApps(function() {
-        self.createMissingApps(function() {
-          self.linkApps(function() {
-            self.updateFormats(function() {
-              self.makeMissingAdunitsLists(function() {
-                self.createMissingAdunits(function() {
-                  self.finishDialog();
-                  self.sendReports({mode: 0, note: "json"}, [JSON.stringify({message: "Finish", admob: self})], function() {
-                    console.log("Sent finish inventory report");
-                  });
-                  callback();
-                })
-              })
-            })
-          })
-        })
-      })
-    })
-  })
+  // self.getRemoteInventory(function() {
+  //   self.getLocalInventory(function() {
+  //     self.selectStoreIds();
+  //     self.filterHiddenLocalApps();
+  //     self.mapApps(function() {
+  //       self.createMissingApps(function() {
+  //         self.linkApps(function() {
+  //           self.updateFormats(function() {
+  //             self.makeMissingAdunitsLists(function() {
+  //               self.createMissingAdunits(function() {
+  //                 self.finishDialog();
+  //                 self.sendReports({mode: 0, note: "json"}, [JSON.stringify({message: "Finish", admob: self})], function() {
+  //                   console.log("Sent finish inventory report");
+  //                 });
+  //                 callback();
+  //               })
+  //             })
+  //           })
+  //         })
+  //       })
+  //     })
+  //   })
+  // })
 };
 
 // show finish dialog with results info
@@ -75,8 +75,7 @@ Admob.prototype.finishDialog = function() {
     items.push("<h4>" + noAppsMsg + "</h4>");
   }
   items.push("<h4>Admob is synced with Appodeal now.</h4>");
-  self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.<h3>Synchronized inventory</h3>" +
-    self.report.join(""));
+  self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.<h3>Synchronized inventory</h3>" + self.report.join(""),'check-sign.svg');
   // send finish reports
   self.sendReports({mode: 0, timeShift: 1000}, [items.join("")], function() {
     console.log("Sent finish reports");
