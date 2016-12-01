@@ -31,7 +31,7 @@ function getLocalStatus(items) {
 
 function getLogoutText(item, step, id) {
     var button_logout = '<a id="' + id + '" class="button_logout right">Logout</a>';
-    return '<i class="ion"><div class="' + step + ' svgStep"></div></i><a class="not_point">' + kitcut(item['appodeal_email'], length_email) + '</a>' + button_logout;
+    return '<i class="ion"><div class="backgroundRadius"></div><div class="' + step + ' svgStep"></div></i><a class="not_point">' + kitcut(item['appodeal_email'], length_email) + '</a>' + button_logout;
 }
 
 function kitcut(text, limit) {
@@ -46,7 +46,7 @@ function kitcut(text, limit) {
 }
 
 function getLoginText(step, id) {
-    return '<i class="ion"><div class="' + step + ' svgStep"></div></i><a id="' + id + '" class="point">Login to Appodeal</a>';
+    return '<i class="ion"><div class="backgroundRadius"></div><div class="' + step + ' svgStep"></div></i><a id="' + id + '" class="point">Login to Appodeal</a>';
 }
 
 // execute logout in browser
@@ -172,25 +172,25 @@ function setEventListen(items) {
 
 function addDoneLabel(btn, text, step, id) {
     if (btn) {
-        btn.innerHTML = '<i class="ion"><div class="' + step + ' svgStep"></div></i><a id="' + id + '" class="point">' + text + '</a>';
+        btn.innerHTML = '<i class="ion"><div class="backgroundRadius"></div><div class="' + step + ' svgStep"></div></i><a id="' + id + '" class="point">' + text + '</a>';
     }
 }
 
 function addNoApps(btn) {
     if (btn) {
-        btn.innerHTML = '<i class="ion"><div class="stepThree svgStep"></div></i><a id="admob_link" class="point gray">No apps</a>';
+        btn.innerHTML = '<i class="ion"><div class="backgroundRadius"></div><div class="stepThree svgStep"></div></i><a id="admob_link" class="point gray">No apps</a>';
     }
 }
 
 function enableReport(btn) {
     if (btn) {
-        btn.innerHTML = '<i class="ion"><div class="stepTwo svgStep"></div></i><a id="reporting_link" class="point">Enable Admob reporting</a>';
+        btn.innerHTML = '<i class="ion"><div class="backgroundRadius"></div><div class="stepTwo svgStep"></div></i><a id="reporting_link" class="point">Enable Admob reporting</a>';
     }
 }
 
 function countApps(btn, leftNum) {
     if (btn) {
-        btn.innerHTML = '<i class="ion"><div class="stepThree svgStep"></div></i><a id="admob_link" class="point">' + leftNum + ' left</a>';
+        btn.innerHTML = '<i class="ion"><div class="backgroundRadius"></div><div class="stepThree svgStep"></div></i><a id="admob_link" class="point">' + leftNum + ' ads left</a>';
     }
 }
 
@@ -301,12 +301,14 @@ $(document).ready(function () {
                 $(this).find("a.point").addClass("linkWhite");
             } else if(!$(this).find(".userActive.svgStep").length > 0) {
                 $(this).css("background", "#EC3F21");
+                $(this).find(".backgroundRadius").css("background", "#EC3F21");
                 $(this).find(".svgStep").addClass("active");
                 $(this).find("a.point").addClass("linkWhite");
             }
         },
         function () {
             $(this).css("background", "#ffffff");
+            $(this).find(".backgroundRadius").css("background", "#ffffff");
             $(this).find(".svgStep").removeClass("active");
             $(this).find("a.point").removeClass("linkWhite");
         }

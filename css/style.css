@@ -115,38 +115,47 @@ hr.line{
     position: absolute;
     width: 27px;
     height: 27px;
-    border-radius: 15px;
+    border-radius: 100%;
 }
 .stepOne{
-    background: url(../image/1-red.svg) #ffffff no-repeat;
+    background: url(../image/1-red.svg) no-repeat;
 }
 .stepOne.active{
-    background: url(../image/1-white.svg) #EC3F21 no-repeat;
+    background: url(../image/1-white.svg) no-repeat;
 }
 .stepTwo{
-    background: url(../image/2-red.svg) #ffffff no-repeat;
+    background: url(../image/2-red.svg) no-repeat;
 }
 .stepTwo.active{
-    background: url(../image/2-white.svg) #EC3F21 no-repeat;
+    background: url(../image/2-white.svg) no-repeat;
 }
 .stepThree{
-    background: url(../image/3-red.svg) #ffffff no-repeat;
+    background: url(../image/3-red.svg) no-repeat;
 }
 .stepThree.active{
-    background: url(../image/3-white.svg) #EC3F21 no-repeat;
+    background: url(../image/3-white.svg) no-repeat;
 }
 .userActive{
-    background: url(../image/user-red.svg) #ffffff no-repeat;
+    background: url(../image/user-red.svg) no-repeat;
 }
 .userActive.active{
-    background: url(../image/user-white.svg) #EC3F21 no-repeat;
+    background: url(../image/user-white.svg) no-repeat;
 }
 .stepDone{
-    background: url(../image/check-red.svg) #ffffff no-repeat;
+    background: url(../image/check-red.svg) no-repeat;
 }
 .stepDone.active{
-    background: url(../image/check-white.svg) #EC3F21 no-repeat;
+    background: url(../image/check-white.svg) no-repeat;
 }
 ul.menu a:hover{
     color: #EC3F21;
+}
+.backgroundRadius{
+    background-color: #ffffff;
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    position: absolute;
+    margin-top: 5px;
+    margin-left: 5px;
 }
