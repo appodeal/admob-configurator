@@ -190,7 +190,14 @@ function enableReport(btn) {
 
 function countApps(btn, leftNum) {
     if (btn) {
-        btn.innerHTML = '<i class="ion"><div class="backgroundRadius"></div><div class="stepThree svgStep"></div></i><a id="admob_link" class="point">' + leftNum + ' apps left</a>';
+        var message = '';
+        if (leftNum == 1){
+            message = leftNum + ' app left';
+        }
+        if (leftNum >= 2){
+            message = leftNum + ' apps left';
+        }
+        btn.innerHTML = '<i class="ion"><div class="backgroundRadius"></div><div class="stepThree svgStep"></div></i><a id="admob_link" class="point">' + message + '</a>';
     }
 }
 
