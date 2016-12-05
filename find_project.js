@@ -42,7 +42,7 @@ jQuery(function () {
         appendJQuery(function () {
             logConsole('Find Appodeal project. Please wait');
             modal = new Modal();
-            modal.show("Appodeal Chrome Extension", "Find Appodeal project. Please wait");
+            modal.show("Appodeal Chrome Extension", "Find Appodeal project. Please wait 60 seconds");
             var row = '[ng-class=\"{\'p6n-tablerow-selected\': projectListCtrl.selectionState[project.id]}\"]';
             // it finds selector 30 seconds then create Projects
             waitForElement(row, 60 , function (element) {
