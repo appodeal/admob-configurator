@@ -66,6 +66,7 @@
 .popup-scroll {
     overflow-y: auto;
     max-height: 300px;
+    min-height: 100px;
 }
 .popup-title{
     line-height: 0;
