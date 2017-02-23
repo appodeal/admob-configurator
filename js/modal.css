@@ -35,7 +35,7 @@
     transition:ease 0.25s all;
     -webkit-transform:none;
     transform:none;
-    background: url("chrome-extension://__MSG_@@extension_id__/image/close.svg") no-repeat;
+    background: url("chrome-extension://__MSG_@@extension_id__/image/svglib.svg#close") no-repeat;
     font-family:Arial, Sans-Serif;
     font-size:20px;
     text-align:center;
@@ -49,7 +49,7 @@
 .popup-close:hover {
     -webkit-transform:none;
     transform:none;
-    background: url("chrome-extension://__MSG_@@extension_id__/image/close-hover.svg") no-repeat;
+    background: url("chrome-extension://__MSG_@@extension_id__/image/svglib.svg#close-hover") no-repeat;
     text-decoration:none;
     color: #ffffff;
 }
@@ -90,7 +90,7 @@
 }
 .info-sign{
     top: 0;
-    background: url("chrome-extension://__MSG_@@extension_id__/image/info-sign.svg") no-repeat;
+    background: url("chrome-extension://__MSG_@@extension_id__/image/svglib.svg#info-sign") no-repeat;
     background-size: 32px;
     width: 32px;
     height: 32px;

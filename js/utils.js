@@ -47,7 +47,7 @@ function appendJQuery(complete) {
     var head = document.getElementsByTagName("head")[0];
     var jq = document.createElement('script');
     jq.type = 'text/javascript';
-    jq.src = "https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js";
+    jq.src = chrome.extension.getURL('js/vendor/jquery.min.js');
     jq.onload = function () {
         logConsole("Jquery from googleapis appended.");
         complete();
