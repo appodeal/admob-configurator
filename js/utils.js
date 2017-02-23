@@ -1,3 +1,5 @@
+var icon_url = '../img/icon/icon-64.png';
+
 var logs = [];
 // get project name in google console from current url
 function locationProjectName() {
@@ -150,3 +152,18 @@ logConsole = function () {
     }
     console.log(args.toString());
 };
+
+//sendNotification('Title','Hello World!');
+function sendNotification(title, ms) {
+    chrome.notifications.create(
+        'ms',{
+            type: 'basic',
+            iconUrl: icon_url,
+            title: title,
+            message: ms
+        },
+
+        function() {}
+
+    );
+}

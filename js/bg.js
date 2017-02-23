@@ -21,7 +21,7 @@ chrome.webNavigation.onCompleted.addListener(function (details) {
             } else if (details_url.match(/apis\/library/)) {
                 logConsole("calling library.js");
                 chrome.tabs.executeScript(details.tabId, {file: "library.js"});
-            }else if (details.url.toString().match(/iam-admin\/projects\?filter\=name\:Appodeal\*/)) {
+            } else if (details.url.toString().match(/iam-admin\/projects\?filter\=name\:Appodeal\*/)) {
                 logConsole("calling find_project.js");
                 chrome.tabs.executeScript(details.tabId, {file: "find_project.js"});
             }

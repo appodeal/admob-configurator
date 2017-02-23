@@ -9,7 +9,7 @@ jQuery(function () {
     // and run earnings and performance reports.
     function wait_for_adsence_btn() {
         logConsole('waiting for buttons...');
-        var token = document.body.innerHTML.match(/:\"(\S+:\d+)\"/)[1]
+        var token = document.body.innerHTML.match(/:\"(\S+:\d+)\"/)[1];
         var project_name = locationProjectName();
         // one button should be null, other one exists
         var enableApiBtn = $("pan-action-bar-button[icon='start'][action='apiCtrl.toggleApi()']:not(.ng-hide) button");

@@ -5,6 +5,7 @@
 @color2: #f3f3f3; // Appears 2 times
 @svg-size: 0 0 27 27;
 @no-repeat: no-repeat;
+@image_path: '../img';
 @font-face {
   .font-names-KelsonSansBold;
   .font-names-KelsonSansLight;
@@ -15,7 +16,7 @@
 body {
   background: white;
   color: #313844;
-  font-family: "KelsonSansRegular";
+  font-family: 'KelsonSansRegular', sans-serif;
   font-size: 14px;
   margin: 0px;
   min-width: 350px;
@@ -34,7 +35,7 @@ body {
   padding-left: 20px;
 }
 .caption {
-  font-family: "KelsonSansBold";
+  font-family: "KelsonSansBold", sans-serif;
 }
 #main {
   .row {
@@ -144,34 +145,34 @@ hr.line {
 }
 
 .stepOne {
-  background: url('../image/svglib.svg#1-red') @no-repeat;
+  background: url("@{image_path}/svglib.svg#1-red") @no-repeat;
 }
 .stepOne.active {
-  background: url('../image/svglib.svg#1-white') @no-repeat;
+  background: url("@{image_path}/svglib.svg#1-white") @no-repeat;
 }
 .stepTwo {
-  background: url('../image/svglib.svg#2-red') @no-repeat;
+  background: url("@{image_path}/svglib.svg#2-red") @no-repeat;
 }
 .stepTwo.active {
-  background: url('../image/svglib.svg#2-white') @no-repeat;
+  background: url("@{image_path}/svglib.svg#2-white") @no-repeat;
 }
 .stepThree {
-  background: url('../image/svglib.svg#3-red') @no-repeat;
+  background: url("@{image_path}/svglib.svg#3-red") @no-repeat;
 }
 .stepThree.active {
-  background: url('../image/svglib.svg#3-white') @no-repeat;
+  background: url("@{image_path}/svglib.svg#3-white") @no-repeat;
 }
 .userActive {
-  background: url('../image/svglib.svg#user-red') @no-repeat;
+  background: url("@{image_path}/svglib.svg#user-red") @no-repeat;
 }
 .userActive.active {
-  background: url('../image/svglib.svg#user-white') @no-repeat;
+  background: url("@{image_path}/svglib.svg#user-white") @no-repeat;
 }
 .stepDone {
-  background: url('../image/svglib.svg#check-red') @no-repeat;
+  background: url("@{image_path}/svglib.svg#check-red") @no-repeat;
 }
 .stepDone.active {
-  background: url('../image/svglib.svg#check-white') @no-repeat;
+  background: url("@{image_path}/svglib.svg#check-white") @no-repeat;
 }
 
 .backgroundRadius {
