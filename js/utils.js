@@ -1,4 +1,9 @@
 var icon_url = '../img/icon/icon-64.png';
+var APPODEAL_URL = "http://www.appodeal.com";
+var APPODEAL_URL_SSL = "https://www.appodeal.com";
+var APPODEAL_URL_SSL_SIGN = APPODEAL_URL_SSL + "/signin";
+var APPODEAL_STATUS_URL = APPODEAL_URL_SSL + "/api/v2/get_api_key";
+var FAQ_LINK = 'https://github.com/appodeal/admob-configurator/wiki/FAQ';
 
 var logs = [];
 // get project name in google console from current url
@@ -154,7 +159,7 @@ logConsole = function () {
 };
 
 //sendNotification('Title','Hello World!');
-function sendNotification(title, ms) {
+var sendNotification = function(title, ms) {
     chrome.notifications.create(
         'ms',{
             type: 'basic',
@@ -162,8 +167,6 @@ function sendNotification(title, ms) {
             title: title,
             message: ms
         },
-
         function() {}
-
     );
-}
+};
