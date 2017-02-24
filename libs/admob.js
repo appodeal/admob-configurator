@@ -413,7 +413,7 @@ Admob.prototype.getLocalInventory = function(callback) {
 
 // get admob account current xsrf token
 Admob.prototype.getPageToken = function() {
-  xsrf = /\[,"(\S+)","\/logout/.exec(document.documentElement.innerHTML)[1];
+  xsrf = /\[.+,"(.+:.+)","\/logout/.exec(document.documentElement.innerHTML)[1];
   this.token = xsrf;
   return this.token;
 };
