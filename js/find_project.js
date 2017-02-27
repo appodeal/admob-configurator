@@ -41,6 +41,7 @@ jQuery(function () {
     setTimeout(function () {
         appendJQuery(function () {
             console.log('Find Appodeal project. Please wait');
+            debugger;
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", "Find Appodeal project. Please wait 60 seconds");
             var row = '[ng-class=\"{\'p6n-tablerow-selected\': projectListCtrl.selectionState[project.id]}\"]';

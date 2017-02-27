@@ -64,6 +64,19 @@ Admob.prototype.syncInventory = function(callback) {
   })
 };
 
+Admob.prototype.humanReport = function () {
+    var self = this;
+    var report_human = [];
+    self.report.forEach(function (element) {
+      if (element.includes("h4")){
+          report_human.push(element)
+      }else{
+          report_human.push("<p style='margin-left: 10px'>" + element + "</p>");
+      }
+    });
+    return report_human;
+};
+
 // show finish dialog with results info
 Admob.prototype.finishDialog = function() {
   console.log("Show report");
@@ -75,7 +88,7 @@ Admob.prototype.finishDialog = function() {
     items.push("<h4>" + noAppsMsg + "</h4>");
   }
   items.push("<h4>Admob is synced with Appodeal now.</h4>");
-  self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.<h3>Synchronized inventory</h3>" + self.report.join(""),'check-sign.svg');
+  self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.<h3>Synchronized inventory</h3>" + self.humanReport().join(""));
   // send finish reports
   self.sendReports({mode: 0, timeShift: 1000}, [items.join("")], function() {
     console.log("Sent finish reports");
@@ -615,10 +628,10 @@ Admob.prototype.syncWithServer = function(app, callback) {
       var items = [];
       items.push("<h4>" + h.name + "</h4>");
       h.adunits.forEach(function(adunit) {
-        items.push("<p style='margin-left: 10px'>Ad unit:" + adunit.name + "</p>");
+        items.push(adunit.name);
       });
       self.report.push.apply(self.report, items);
-      self.sendReports({mode: 0}, [items.join("")], function() {
+      self.sendReports({mode: 0}, [items], function() {
         console.log("Sent reports from " + app.appName);
       });
       callback(params);

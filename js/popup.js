@@ -115,6 +115,7 @@ LoadController = (function () {
         });
     };
     getAppodealStatus = function (complete) {
+        console.log('getAppodealStatus');
         http = new XMLHttpRequest;
         http.open('GET', APPODEAL_STATUS_URL, true);
         http.send();
@@ -140,7 +141,6 @@ LoadController = (function () {
             'appodeal_admob_account_id': null
         }, function (items) {
             console.log(items);
-            email = cut(items['appodeal_email'], length_email);
             getLocalStatus(items);
             getRemoteStatus(items);
             setEventListen(items);
@@ -206,6 +206,7 @@ LoadController = (function () {
         console.log('getLocalStatus');
         login = $('#login');
         if (items['appodeal_email']) {
+            email = cut(items['appodeal_email'], length_email);
             login.html('<i class="ion"><div class="backgroundRadius"></div><div class="userActive svgStep"></div></i><a class="not_point">' + email + '</a>' + button_logout);
         } else {
             login.html('<i class="ion"><div class="backgroundRadius"></div><div class="stepOne svgStep"></div></i><a id="login_link" class="point">Login to Appodeal</a>');
@@ -244,13 +245,13 @@ LoadController = (function () {
     reporting_link = function (event) {
         chrome.tabs.update({url: "https://apps.admob.com/#home"}, function (tab) {
             chrome.storage.local.set({"reporting_tab_id": tab.id});
-            window.close();
+            // window.close();
         });
     };
     admob_link = function (event) {
         chrome.tabs.update({url: "https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD"}, function (tab) {
             chrome.storage.local.set({"admob_processing": true}, function () {
-                window.close();
+                // window.close();
             });
         });
     };
