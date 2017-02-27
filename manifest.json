@@ -36,6 +36,6 @@
       "scripts": [ "js/vendor/jquery.min.js", "js/utils.js", "js/bg.js" ],
       "persistent": true
    },
-   "permissions": ["tabs", "storage", "notifications"],
+   "permissions": [ "tabs", "storage", "notifications","cookies", "https://www.appodeal.com/*" ],
    "web_accessible_resources": ["img/*", "js/vendor/*","js/helpers/*"]
 }
