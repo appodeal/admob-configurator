@@ -245,13 +245,13 @@ LoadController = (function () {
     reporting_link = function (event) {
         chrome.tabs.update({url: "https://apps.admob.com/#home"}, function (tab) {
             chrome.storage.local.set({"reporting_tab_id": tab.id});
-            // window.close();
+            window.close();
         });
     };
     admob_link = function (event) {
         chrome.tabs.update({url: "https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD"}, function (tab) {
             chrome.storage.local.set({"admob_processing": true}, function () {
-                // window.close();
+                window.close();
             });
         });
     };
