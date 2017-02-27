@@ -8,7 +8,7 @@ jQuery(function () {
     // The AdSense Management API allows publishers to access their inventory
     // and run earnings and performance reports.
     function wait_for_adsence_btn() {
-        logConsole('waiting for buttons...');
+        console.log('waiting for buttons...');
         var token = document.body.innerHTML.match(/:\"(\S+:\d+)\"/)[1];
         var project_name = locationProjectName();
         // one button should be null, other one exists
@@ -25,30 +25,30 @@ jQuery(function () {
         if ((enableApiBtn.length || enableApiBtnOld.length) && !is_working) {
             // Enable API button found
             is_working = true;
-            logConsole('enabling adsence api...');
+            console.log('enabling adsence api...');
             // turn of interval repeating:
             clearInterval(adsence_enabling_interval);
 
             // click to enable adsense api button
             if (enableApiBtn.length) {
-                logConsole('New Adsense Api button click');
+                console.log('New Adsense Api button click');
                 enableApiBtn.click();
             } else {
-                logConsole("Old Adsense Api button click");
+                console.log("Old Adsense Api button click");
                 var code = "angular.element(jQuery(\"[ng-if='!apiCtrl.isServiceEnabled()']\")).controller().toggleApi();";
                 run_script(code);
             }
 
-            logConsole("Wait until API is enabled");
+            console.log("Wait until API is enabled");
             // checkAdBlock();
             waitForElement(disableBtnCode + ", " + disableBtnCodeOld, null, function (element) {
-                logConsole("Api has been enabled successfully.");
+                console.log("Api has been enabled successfully.");
                 document.location.href = projectConsentUrl(project_name);
             })
         } else if ((disableApiBtn.length || disableApiBtnOld.length) && !is_working) {
             // Disable API button found
             is_working = true;
-            logConsole("It seems like Adsence API is enabled already. redirecting...");
+            console.log("It seems like Adsence API is enabled already. redirecting...");
             document.location.href = projectConsentUrl(project_name)
         }
     }

@@ -8,6 +8,7 @@ chrome.storage.local.get("admob_processing", function(result) {
 });
 
 function startInventorySync() {
+  console.log("startInventorySync");
   chrome.storage.local.remove("admob_processing");
   appendJQuery(function() {
     // get api key and user id from storage and sync inventory

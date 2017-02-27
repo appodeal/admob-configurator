@@ -19,39 +19,38 @@
     -webkit-transform:translate(-50%, -50%);
     transform:translate(-50%, -50%);
     box-shadow:0px 2px 6px rgba(0,0,0,1);
+    border-radius:3px;
     background:#fff;
     padding: 20px 30px;
     max-width: 500px;
-    border-radius: 5px;
 }
 
 /* Close Button */
 .popup-close {
+    width:30px;
+    height:26px;
     padding-top:4px;
     display:inline-block;
     position:absolute;
-    top:10px;
-    right:10px;
+    top:0px;
+    right:0px;
     transition:ease 0.25s all;
-    -webkit-transform:none;
-    transform:none;
-    background: url("chrome-extension://__MSG_@@extension_id__/image/svglib.svg#close") no-repeat;
+    -webkit-transform:translate(50%, -50%);
+    transform:translate(50%, -50%);
+    border-radius:1000px;
+    background:rgba(0,0,0,0.8);
     font-family:Arial, Sans-Serif;
     font-size:20px;
     text-align:center;
-    color:#EC3F21;
-    border: none;
-    line-height: 22px;
-    height: 29px;
-    width: 29px;
+    line-height:100%;
+    color:#fff;
 }
 
 .popup-close:hover {
-    -webkit-transform:none;
-    transform:none;
-    background: url("chrome-extension://__MSG_@@extension_id__/image/svglib.svg#close-hover") no-repeat;
+    -webkit-transform:translate(50%, -50%) rotate(180deg);
+    transform:translate(50%, -50%) rotate(180deg);
+    background:rgba(0,0,0,1);
     text-decoration:none;
-    color: #ffffff;
 }
 
 .popup-content h4 {
@@ -66,35 +65,7 @@
 .popup-scroll {
     overflow-y: auto;
     max-height: 300px;
-    max-width: 490px;
 }
-.popup-title{
-    line-height: 0;
-    font-weight: 500;
-    text-align: center;
-    font-size: 18px;
-    margin-top: -47px;
-    padding-bottom: 20px;
-}
-.popup-inner p a{
-    color: #EC3F21;
-    text-decoration: none;
-    cursor: pointer;
-    border: 1px solid #EC3F21;
-    padding: 5px 15px;
-    border-radius: 5px;
-}
-.popup-inner p a:hover{
-    color: #fff;
-    background-color: #EC3F21
-}
-.info-sign{
-    top: 0;
-    background: url("chrome-extension://__MSG_@@extension_id__/image/svglib.svg#info-sign") no-repeat;
-    background-size: 32px;
-    width: 32px;
-    height: 32px;
-    margin-top: 0;
-    margin-left: 90px;
-    position: relative;
+.popup a{
+    color:#EC3F21;
 }

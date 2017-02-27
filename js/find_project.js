@@ -3,16 +3,16 @@ jQuery(function () {
 
     function createProject() {
         // create Appodeal project
-        logConsole("show new project window");
+        console.log("show new project window");
         // show new project window
         modal.show("Appodeal Chrome Extension", "Create Appodeal project. Please wait");
         run_script("jQuery('[ng-click=\"psCtrl.showCreateProjectPage()\"]').click();");
         // set project name (Appodeal)
-        logConsole("Set project name (Appodeal)");
+        console.log("Set project name (Appodeal)");
         waitForElement("#p6ntest-project-create-modal", null, function (element) {
             run_script("jQuery('[ng-model=\"project.name\"]').val('Appodeal');angular.element(jQuery('[ng-model=\"project.name\"]')).triggerHandler('input');");
             // create project after name is set up
-            logConsole("Create project after name is set up");
+            console.log("Create project after name is set up");
             setTimeout(function () {
                 // I agree that my use of any services and related APIs is subject to my compliance with the applicable Terms of Service.
                 var needAcceptTerms = $("#tos-agree");
@@ -20,18 +20,18 @@ jQuery(function () {
                     var message = "You must agree to the Admob <b>Terms of Service</b> and click <b>Create</b> to continue.";
                     sendOut(0, message);
                     modal.show("Appodeal Chrome Extension", message);
-                    logConsole(message);
+                    console.log(message);
                 } else {
                     // submit new project form
                     run_script("angular.element(jQuery('#p6n-project-creation-dialog-ok-button')).controller().submit();");
-                    logConsole("Go to the newly created project");
+                    console.log("Go to the newly created project");
                 }
                 // go to the newly created project
                 waitForElement("a:contains('Appodeal')", null, function (element) {
-                    logConsole("New project is found");
+                    console.log("New project is found");
                     var projectName = locationProjectName();
                     var projectUrl = overviewPageUrl(projectName);
-                    logConsole("Redirect to the new project", projectUrl);
+                    console.log("Redirect to the new project", projectUrl);
                     document.location.href = projectUrl;
                 })
             }, 2000);
@@ -40,7 +40,7 @@ jQuery(function () {
 
     setTimeout(function () {
         appendJQuery(function () {
-            logConsole('Find Appodeal project. Please wait');
+            console.log('Find Appodeal project. Please wait');
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", "Find Appodeal project. Please wait 60 seconds");
             var row = '[ng-class=\"{\'p6n-tablerow-selected\': projectListCtrl.selectionState[project.id]}\"]';
@@ -52,12 +52,12 @@ jQuery(function () {
                     } else {
                         waitForElement("[ng-if=\"projectListCtrl.showAttributeColumnsMap.id\"]", null, function (element) {
                             var projectId = element[1].innerText;
-                            logConsole('Project found. Redirect to ' + overviewPageUrl(projectId));
+                            console.log('Project found. Redirect to ' + overviewPageUrl(projectId));
                             document.location.href = overviewPageUrl(projectId);
                         })
                     }
                 } else {
-                    logConsole('Create Appodeal project. triggerMouseEvent() and createProject()');
+                    console.log('Create Appodeal project. triggerMouseEvent() and createProject()');
                     triggerMouseEvent(targetNode, "mousedown");
                     createProject();
                 }

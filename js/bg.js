@@ -1,29 +1,32 @@
+// $(document).ready(function() {
+//     console.log('FACK');
+// });
 chrome.webNavigation.onCompleted.addListener(function (details) {
-    logConsole("Current tabId: " + details.tabId);
+    console.log("Current tabId: " + details.tabId);
     chrome.storage.local.get("reporting_tab_id", function (result) {
-        logConsole("Working Tab ID: ", result['reporting_tab_id'], " Url: ", details.url.toString());
-        logConsole("Url match: ", details.url.toString().match(/project\/([^\/]+)\/?$/));
+        console.log("Working Tab ID: ", result['reporting_tab_id'], " Url: ", details.url.toString());
+        console.log("Url match: ", details.url.toString().match(/project\/([^\/]+)\/?$/));
         if (result['reporting_tab_id'] && details.tabId.toString() == result['reporting_tab_id'].toString()) {
-            logConsole('second matched');
+            console.log('second matched');
             var details_url = details.url.toString();
             if (details_url.match(/\/apiui\/credential/) || details_url.match(/credentials\?project=/) || details_url.match(/credentials\/oauthclient\?project=/) || details_url.match(/credentials\?highlightClient=/) || details_url.match(/apis\/credentials\/oauthclient\//)) {
-                logConsole("calling reporting_step4.js");
-                chrome.tabs.executeScript(details.tabId, {file: "reporting_step4.js"});
+                console.log("calling reporting_step4.js");
+                chrome.tabs.executeScript(details.tabId, {file: "js/reporting_step4.js"});
             } else if (details_url.match(/\/apiui\/consent/) || details_url.match(/consent\?project=/)) {
-                logConsole("calling reporting_step3.js");
-                chrome.tabs.executeScript(details.tabId, {file: "reporting_step3.js"});
+                console.log("calling reporting_step3.js");
+                chrome.tabs.executeScript(details.tabId, {file: "js/reporting_step3.js"});
             } else if (details_url.match(/apps\.admob\.com\/(\?pli=1)?#home/)) {
-                logConsole("calling get_admob_account.js");
-                chrome.tabs.executeScript(details.tabId, {file: "get_admob_account.js"});
+                console.log("calling get_admob_account.js");
+                chrome.tabs.executeScript(details.tabId, {file: "js/get_admob_account.js"});
             } else if (details_url.match(/adsense\/overview/)) {
-                logConsole("calling reporting_step2.js");
-                chrome.tabs.executeScript(details.tabId, {file: "reporting_step2.js"});
+                console.log("calling reporting_step2.js");
+                chrome.tabs.executeScript(details.tabId, {file: "js/reporting_step2.js"});
             } else if (details_url.match(/apis\/library/)) {
-                logConsole("calling library.js");
-                chrome.tabs.executeScript(details.tabId, {file: "library.js"});
+                console.log("calling library.js");
+                chrome.tabs.executeScript(details.tabId, {file: "js/library.js"});
             } else if (details.url.toString().match(/iam-admin\/projects\?filter\=name\:Appodeal\*/)) {
-                logConsole("calling find_project.js");
-                chrome.tabs.executeScript(details.tabId, {file: "find_project.js"});
+                console.log("calling find_project.js");
+                chrome.tabs.executeScript(details.tabId, {file: "js/find_project.js"});
             }
         }
     });

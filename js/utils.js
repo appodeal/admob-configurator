@@ -5,6 +5,7 @@ var APPODEAL_URL_SSL_SIGN = APPODEAL_URL_SSL + "/signin";
 var APPODEAL_STATUS_URL = APPODEAL_URL_SSL + "/api/v2/get_api_key";
 var FAQ_LINK = 'https://github.com/appodeal/admob-configurator/wiki/FAQ';
 
+
 var logs = [];
 // get project name in google console from current url
 function locationProjectName() {

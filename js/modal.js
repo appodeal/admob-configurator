@@ -1,15 +1,14 @@
-var Modal = function () {
+var Modal = function() {
     if (!$(".popup").length) {
         var popup = [
             '<div class="popup" data-popup="popup-1">',
             '    <div class="popup-inner">',
             '        <div class="popup-scroll">',
-            '          <p class="info-sign"></p>',
             '          <h2 class="popup-title"></h2>',
             '          <p class="popup-content"></p>',
             '        </div>',
             '        <p><a data-popup-close="popup-1" href="#">Close</a></p>',
-            '        <a class="popup-close" data-popup-close="popup-1" href="#"></a>',
+            '        <a class="popup-close" data-popup-close="popup-1" href="#">x</a>',
             '    </div>',
             '</div>'
         ].join('');
@@ -20,11 +19,23 @@ var Modal = function () {
     this.content = $(".popup-content");
     var closeScript = "$('[data-popup-close]').on('click', function(e){$('.popup').fadeOut(350); e.preventDefault();});";
     run_script(closeScript);
-};
+}
 
 // show modal dialog
-Modal.prototype.show = function (title, content) {
+Modal.prototype.show = function(title, content) {
     this.title.html(title);
     this.content.html(content);
     this.popup.fadeIn(350);
-};
+}
+
+// wait while element exists
+function waitForElement(selector, callback) {
+    var checkElement = setInterval(function() {
+        var element = jQuery(selector);
+        if (!element.length) {
+            // element is not found
+            clearInterval(checkElement);
+            callback(element);
+        }
+    }, 500);
+}

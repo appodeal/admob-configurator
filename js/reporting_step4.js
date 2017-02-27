@@ -13,16 +13,16 @@ jQuery(function () {
     function addCredentials() {
         var origins = "['http://www.appodeal.com/', 'http://appodeal.com/', 'https://www.appodeal.com/', 'https://appodeal.com/']";
         var redirectUris = "['http://www.appodeal.com/admin/oauth2callback', 'http://appodeal.com/admin/oauth2callback', 'https://www.appodeal.com/admin/oauth2callback', 'https://appodeal.com/admin/oauth2callback']";
-        logConsole("Redirected to oauthclient creating page.");
+        console.log("Redirected to oauthclient creating page.");
 
         setTimeout(function () {
             // enable default (web) radio button
-            logConsole("Select Web application");
+            console.log("Select Web application");
             run_script("jQuery(\"input[value='WEB']\").click();");
 
             // set options
             setTimeout(function () {
-                logConsole("Insert display name, redirect and origins urls");
+                console.log("Insert display name, redirect and origins urls");
                 name_code = "angular.element(jQuery(\"" + ":input[ng-model='oAuthEditorCtrl.client.displayName']\")).controller().client.displayName = 'Appodeal client';";
                 origins_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.postMessageOrigins']\")).controller().client.postMessageOrigins = " + origins + ";";
                 redirect_uris_code = "angular.element(jQuery(\"ng-form[ng-model='oAuthEditorCtrl.client.redirectUris']\")).controller().client.redirectUris = " + redirectUris + ";";
@@ -35,7 +35,7 @@ jQuery(function () {
 
     function waitUntilClientInfoPresent(complete) {
         window.setInterval(function () {
-            logConsole("Redirect to credentials page");
+            console.log("Redirect to credentials page");
             document.location = credentialPageUrl(locationProjectName());
         }, 5000);
     }
@@ -65,7 +65,7 @@ jQuery(function () {
             "api_key": appodeal_api_key,
             "user_id": appodeal_user_id
         };
-        logConsole(JSON.stringify(json));
+        console.log(JSON.stringify(json));
         modal.show("Appodeal Chrome Extension", "Please grant permission to Appodeal to read your Admob reports.<br>You will be automatically redirected in 5 seconds.");
         setTimeout(function () {
             var http = new XMLHttpRequest();
@@ -73,19 +73,19 @@ jQuery(function () {
             http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
             http.send(JSON.stringify(json));
             http.onreadystatechange = function () {
-                logConsole('State changed');
+                console.log('State changed');
                 // Call a function when the state changes.
                 setTimeout(function () {
                     if (http.readyState == 4 && http.status == 200) {
                         var message = 'Admob account created on Appodeal.';
-                        logConsole(message);
+                        console.log(message);
                         var response = JSON.parse(http.responseText);
                         var local_settings = {
                             reporting_client_creating: true,
                             appodeal_admob_account_id: response['id']
                         };
                         chrome.storage.local.set(local_settings, function () {
-                            logConsole('redirecting to oauth...');
+                            console.log('redirecting to oauth...');
                             var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=" + redirect_uri + "&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + clientId + "&client_id=" + clientId + "&access_type=offline";
                             chrome.storage.local.remove("reporting_tab_id");
                             document.location.href = final_href;
@@ -102,11 +102,11 @@ jQuery(function () {
     }
 
     function fetchCredentials(download_links) {
-        logConsole("fetchCredentials");
+        console.log("fetchCredentials");
 
         var credential = getIdAndSecret(download_links);
-        logConsole("Credentials fetched");
-        logConsole(JSON.stringify(credential));
+        console.log("Credentials fetched");
+        console.log(JSON.stringify(credential));
 
         checkAndSaveClientCredentials(credential["id"], credential["secret"]);
     }
@@ -133,13 +133,13 @@ jQuery(function () {
                 appodeal_user_id = items['appodeal_user_id'];
                 account_id = items['current_account_id'];
 
-                logConsole(JSON.stringify(items));
+                console.log(JSON.stringify(items));
 
                 addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key, appodeal_user_id);
             });
         } else if (clientId) {
-            logConsole("Credential client_id found, but client_secret not found. Try to reset.");
-            logConsole("Go to the Appodeal web client");
+            console.log("Credential client_id found, but client_secret not found. Try to reset.");
+            console.log("Go to the Appodeal web client");
 
             var webClientLink = findAppodealClient().find('a[ng-href]').attr('href');
             document.location = webClientLink;
@@ -161,7 +161,7 @@ jQuery(function () {
             } else {
                 if (jQuery("jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'").length) {
                     // reset secret
-                    logConsole("reset secret");
+                    console.log("reset secret");
                     var promptRegenerateCode = "angular.element($(\"jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'\")).controller().promptRegenerateSecret(); setTimeout(function() { $(\"button[jfk-on-action='confirmCallback($event)']\").click();}, 1500)";
 
                     run_script(promptRegenerateCode);
@@ -172,11 +172,11 @@ jQuery(function () {
                         if (secretSpan.length) {
                             getClientIdAndSecretIdFromDetailsAndRun();
                         } else {
-                            logConsole("secret is still not found");
+                            console.log("secret is still not found");
                         }
                     }, 3000)
                 } else {
-                    logConsole("promptRegenerateSecret button not found.");
+                    console.log("promptRegenerateSecret button not found.");
                 }
             }
         }, 1000)
@@ -190,7 +190,7 @@ jQuery(function () {
     }
 
     function startCredentialsCreating() {
-        logConsole("Start credentials creating");
+        console.log("Start credentials creating");
         document.location = outhclientPageLink();
     }
 
@@ -217,7 +217,7 @@ jQuery(function () {
 
             startCredentialsCreating();
         } else {
-            logConsole("Credential not found!");
+            console.log("Credential not found!");
 
             startCredentialsCreating();
         }
@@ -225,19 +225,19 @@ jQuery(function () {
 
     // start checking and creating client id
     function run() {
-        logConsole("Run reporting step 4");
+        console.log("Run reporting step 4");
 
         appendJQuery(function () {
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", "Preparing credentials.");
             if (isOauthClientPage()) {
-                logConsole("Oauth client page");
+                console.log("Oauth client page");
                 addCredentials();
             } else if (isCredentialClientPage()) {
-                logConsole("Reset Credential Secret");
+                console.log("Reset Credential Secret");
                 resetCredentialSecret();
             } else {
-                logConsole("Run credentials processing");
+                console.log("Run credentials processing");
                 credentials_interval = setInterval(waitForCredentials, 2000);
             }
         });
