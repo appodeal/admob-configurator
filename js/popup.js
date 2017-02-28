@@ -221,7 +221,6 @@ LoadController = (function () {
                     data = result['plugin_status'];
                     console.log(data);
                     leftNum = data['total'] - data['synced'];
-                    console.log(leftNum);
                     if (data['account']) {
                         addDoneLabel($('#reporting'), 'Enabled Admob reporting', 'stepDone', 'reporting_link');
                         addDoneLabel($('#admob'), 'Sync Appodeal and Admob ad units', 'stepDone', 'admob_link');
