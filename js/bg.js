@@ -1,6 +1,3 @@
-// $(document).ready(function() {
-//     console.log('FACK');
-// });
 chrome.webNavigation.onCompleted.addListener(function (details) {
     console.log("Current tabId: " + details.tabId);
     chrome.storage.local.get("reporting_tab_id", function (result) {
