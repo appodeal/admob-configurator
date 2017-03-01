@@ -631,7 +631,7 @@ Admob.prototype.syncWithServer = function(app, callback) {
         items.push(adunit.name);
       });
       self.report.push.apply(self.report, items);
-      self.sendReports({mode: 0}, [items], function() {
+      self.sendReports({mode: 0}, [items.join("/n")], function() {
         console.log("Sent reports from " + app.appName);
       });
       callback(params);

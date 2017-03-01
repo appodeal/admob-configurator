@@ -4,7 +4,8 @@ var APPODEAL_URL_SSL = "https://www.appodeal.com";
 var APPODEAL_URL_SSL_SIGN = APPODEAL_URL_SSL + "/signin";
 var APPODEAL_STATUS_URL = APPODEAL_URL_SSL + "/api/v2/get_api_key";
 var FAQ_LINK = 'https://github.com/appodeal/admob-configurator/wiki/FAQ';
-var ACCOUNTS_GOOGLE = 'https://accounts.google.com/AccountChooser';
+var GOOGLE_CLOUD_CONSOLE = 'https://apps.admob.com/logout?continue=https://apps.admob.com/#home';
+var ADMOB_LINK = "https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD";
 
 
 var logs = [];
