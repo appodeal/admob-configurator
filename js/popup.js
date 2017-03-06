@@ -226,6 +226,7 @@ LoadController = (function () {
                         addDoneLabel($('#admob'), 'Sync Appodeal and Admob ad units', 'stepDone', 'admob_link');
                     } else {
                         addEnableReport($('#reporting'));
+                        $('#reporting_link').click(reporting_link);
                         return null;
                     }
                     if (leftNum) {
