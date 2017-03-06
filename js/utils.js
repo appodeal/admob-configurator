@@ -161,17 +161,18 @@ logConsole = function () {
     console.log(args.toString());
 };
 
-//sendNotification('Title','Hello World!');
-var sendNotification = function(title, ms) {
-    chrome.notifications.create(
-        'ms',{
-            type: 'basic',
-            iconUrl: icon_url,
-            title: title,
-            message: ms
-        },
-        function() {}
-    );
+var sendNotification = function(title, ms, progress) {
+
+    var opt = {
+        priority: 1,
+        type: 'progress',
+        iconUrl: icon_url,
+        title: title,
+        message: ms,
+        progress: progress
+
+    };
+    chrome.runtime.sendMessage({type: "shownotification", opt: opt}, function(id){console.log("Last error:", chrome.runtime.lastError);});
 };
 
 function cut(text, limit) {

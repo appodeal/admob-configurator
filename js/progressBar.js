@@ -1,13 +1,5 @@
 // progress bar init
 var ProgressBar = function(stepsNum) {
-  if (jQuery("#progress").length == 0) {
-    // top progress bar style
-    var progressBarDiv = '<div id="progress" style="position: fixed; top: 0px; width: 0%; height: 8px; z-index: 10000; left: 0px; background: #6d6d6d;"></div>';
-    // create element
-    jQuery("body").append(progressBarDiv);
-  }
-  this.bar = jQuery("#progress");
-  // steps number and current step
   this.stepsNum = stepsNum;
   this.step = 0;
 
@@ -28,8 +20,8 @@ ProgressBar.prototype.update = function() {
   } else {
     this.position = 1.0;
   }
-  var percentage = this.position * 100 + "%";
-  this.bar.css({width: percentage});
+  var percentage = Math.round(this.position * 100);
+  sendNotification('Please allow several minutes to sync your inventory.', 'Loading: ' + percentage + "%", percentage);
 };
 
 ProgressBar.prototype.increase = function() {
