@@ -243,10 +243,6 @@ LoadController = (function () {
         }
     };
     reporting_link = function (event) {
-        // chrome.tabs.update({url: "https://apps.admob.com/#home"}, function (tab) {
-        //     chrome.storage.local.set({"reporting_tab_id": tab.id});
-        //     window.close();
-        // });
         chrome.tabs.update({url: GOOGLE_CLOUD_CONSOLE}, function (tab) {
             chrome.storage.local.set({"reporting_tab_id": tab.id});
             window.close();

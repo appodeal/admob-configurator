@@ -239,9 +239,8 @@ Admob.prototype.getVersion = function() {
 Admob.prototype.isPublisherIdRight = function() {
   var self = this;
   if (self.publisherId != self.accountId) {
-    var info = "<h3>Wrong account.</h3>Please login to your Admob account " + self.accountEmail + " or run step 2 to sync this account.";
-    self.showInfoDialog(info);
-    return false;
+      chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ self.accountEmail + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){console.log("Last error:", chrome.runtime.lastError);});
+      return false;
   }
   return true;
 };

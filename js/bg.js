@@ -32,4 +32,17 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if(request.type === "shownotification"){
         chrome.notifications.create('notify', request.opt, function(){})
     }
+    if(request.type === "wrong_account"){
+        chrome.tabs.update({url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'}, function (tab) {
+            var opt = {
+                priority: 1,
+                type: 'basic',
+                iconUrl: icon_url,
+                title: request.title,
+                message: request.info
+            };
+            chrome.notifications.create('notify', opt, function(){})
+        });
+    }
+
 });
