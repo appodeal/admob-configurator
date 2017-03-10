@@ -80,6 +80,9 @@ jQuery(function () {
                         var message = 'Admob account created on Appodeal.';
                         logConsole(message);
                         var response = JSON.parse(http.responseText);
+                        if(response['id']==null){
+                            return
+                        }
                         var local_settings = {
                             reporting_client_creating: true,
                             appodeal_admob_account_id: response['id']
@@ -129,6 +132,7 @@ jQuery(function () {
                 'appodeal_api_key': null,
                 'appodeal_user_id': null
             }, function (items) {
+                console.log(items);
                 appodeal_api_key = items['appodeal_api_key'];
                 appodeal_user_id = items['appodeal_user_id'];
                 account_id = items['current_account_id'];
