@@ -204,21 +204,18 @@ jQuery(function () {
         var no_clients = jQuery(".p6n-zero-state-widget");
 
         // Download JSON (with credential info) links in credentials table
-        var download_links = findAppodealClient().find("a.jfk-button.jfk-button-flat[download]");
+        var download_links = jQuery('body').find("a.jfk-button.jfk-button-flat[download]");
 
         if (download_links.length) {
             // download links exist
             clearInterval(credentials_interval);
-
             fetchCredentials(download_links);
         } else if (no_clients.length) {
             // no clients widget exists
             clearInterval(credentials_interval);
-
             startCredentialsCreating();
         } else {
             logConsole("Credential not found!");
-
             startCredentialsCreating();
         }
     };
@@ -238,7 +235,7 @@ jQuery(function () {
                 resetCredentialSecret();
             } else {
                 logConsole("Run credentials processing");
-                credentials_interval = setInterval(waitForCredentials, 2000);
+                credentials_interval = setTimeout(waitForCredentials, 5000);
             }
         });
     }
