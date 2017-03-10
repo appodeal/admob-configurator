@@ -56,7 +56,14 @@ jQuery(function () {
 
     function addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key, appodeal_user_id) {
         var url = "https://www.appodeal.com/api/v1/add_admob_account.json";
-        var email = jQuery('span.p6n-profileemail').first().text().toLowerCase();
+        var email = jQuery("[ng-if='::$ctrl.showAccountEmail']").first().text().toLowerCase().trim();
+        if(email=='' || email == null){
+            var message = "Error creating admob account. Not find user email from console";
+            sendOut(1, message);
+            modal.show("Appodeal Chrome Extension", message);
+            chrome.storage.local.remove("reporting_tab_id");
+            return
+        }
         json = {
             "email": email,
             "client_id": clientId,
