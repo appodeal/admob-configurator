@@ -75,12 +75,13 @@ jQuery(function () {
             http.onreadystatechange = function () {
                 logConsole('State changed');
                 // Call a function when the state changes.
-                setTimeout(function () {
+                setInterval(function () {
                     if (http.readyState == 4 && http.status == 200) {
                         var message = 'Admob account created on Appodeal.';
                         logConsole(message);
                         var response = JSON.parse(http.responseText);
                         if(response['id']==null){
+                            console.log("Error creating admob account on appodeal. Field id not null");
                             return
                         }
                         var local_settings = {
@@ -99,7 +100,7 @@ jQuery(function () {
                         modal.show("Appodeal Chrome Extension", message);
                         chrome.storage.local.remove("reporting_tab_id");
                     }
-                }, 2000);
+                }, 5000);
             }
         }, 5000);
     }
