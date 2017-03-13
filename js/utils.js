@@ -172,7 +172,7 @@ var sendNotification = function(title, ms, progress) {
         progress: progress
 
     };
-    chrome.runtime.sendMessage({type: "shownotification", opt: opt}, function(id){console.log("Last error:", chrome.runtime.lastError);});
+    chrome.runtime.sendMessage({type: "shownotification", opt: opt}, function(id){});
 };
 
 function cut(text, limit) {
