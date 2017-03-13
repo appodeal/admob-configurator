@@ -56,7 +56,14 @@ jQuery(function () {
 
     function addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key, appodeal_user_id) {
         var url = "https://www.appodeal.com/api/v1/add_admob_account.json";
-        var email = jQuery('span.p6n-profileemail').first().text().toLowerCase();
+        var email = jQuery("[ng-if='::$ctrl.showAccountEmail']").first().text().toLowerCase().trim();
+        if(email=='' || email == null){
+            var message = "Error creating admob account. Not find user email from console";
+            sendOut(1, message);
+            modal.show("Appodeal Chrome Extension", message);
+            chrome.storage.local.remove("reporting_tab_id");
+            return
+        }
         json = {
             "email": email,
             "client_id": clientId,
@@ -75,11 +82,15 @@ jQuery(function () {
             http.onreadystatechange = function () {
                 console.log('State changed');
                 // Call a function when the state changes.
-                setTimeout(function () {
+                setInterval(function () {
                     if (http.readyState == 4 && http.status == 200) {
                         var message = 'Admob account created on Appodeal.';
                         console.log(message);
                         var response = JSON.parse(http.responseText);
+                        if(response['id']==null){
+                            console.log("Error creating admob account on appodeal. Field id not null");
+                            return
+                        }
                         var local_settings = {
                             reporting_client_creating: true,
                             appodeal_admob_account_id: response['id']
@@ -96,7 +107,7 @@ jQuery(function () {
                         modal.show("Appodeal Chrome Extension", message);
                         chrome.storage.local.remove("reporting_tab_id");
                     }
-                }, 2000);
+                }, 5000);
             }
         }, 5000);
     }
@@ -129,6 +140,7 @@ jQuery(function () {
                 'appodeal_api_key': null,
                 'appodeal_user_id': null
             }, function (items) {
+                console.log(items);
                 appodeal_api_key = items['appodeal_api_key'];
                 appodeal_user_id = items['appodeal_user_id'];
                 account_id = items['current_account_id'];
@@ -204,17 +216,15 @@ jQuery(function () {
         var no_clients = jQuery(".p6n-zero-state-widget");
 
         // Download JSON (with credential info) links in credentials table
-        var download_links = findAppodealClient().find("a.jfk-button.jfk-button-flat[download]");
+        var download_links = jQuery('body').find("a.jfk-button.jfk-button-flat[download]");
 
         if (download_links.length) {
             // download links exist
             clearInterval(credentials_interval);
-
             fetchCredentials(download_links);
         } else if (no_clients.length) {
             // no clients widget exists
             clearInterval(credentials_interval);
-
             startCredentialsCreating();
         } else {
             console.log("Credential not found!");
@@ -238,7 +248,7 @@ jQuery(function () {
                 resetCredentialSecret();
             } else {
                 console.log("Run credentials processing");
-                credentials_interval = setInterval(waitForCredentials, 2000);
+                credentials_interval = setTimeout(waitForCredentials, 5000);
             }
         });
     }
