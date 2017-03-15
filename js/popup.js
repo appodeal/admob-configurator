@@ -118,6 +118,7 @@ LoadController = (function () {
         console.log('getAppodealStatus');
         http = new XMLHttpRequest;
         http.open('GET', APPODEAL_STATUS_URL, true);
+        console.log(http);
         http.send();
         http.onreadystatechange = function () {
             if (http.readyState === 4) {
