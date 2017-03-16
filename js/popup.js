@@ -199,6 +199,11 @@ LoadController = (function () {
         } else {
             chrome.storage.local.remove('mrecBids');
         }
+        if (result['plugin_status_ids']['accounts']) {
+            localCredentials['accounts'] = result['plugin_status_ids']['accounts'];
+        } else {
+            chrome.storage.local.remove('accounts');
+        }
         chrome.storage.local.set(localCredentials, function () {
             callback();
         });
@@ -218,8 +223,9 @@ LoadController = (function () {
         if (items['appodeal_email']) {
             getAppodealStatus(function (result) {
                 updateAppodealCredentials(result, function () {
-                    var data, leftNum;
+                    var data, leftNum, accounts_data;
                     data = result['plugin_status'];
+                    data['many_user_admob_accounts'] = result['plugin_status_ids'];
                     console.log(data);
                     leftNum = data['total'] - data['synced'];
                     if (data['account']) {
