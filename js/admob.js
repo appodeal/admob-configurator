@@ -241,7 +241,7 @@ Admob.prototype.isPublisherIdRight = function() {
   var self = this;
   var ret = false;
   var emails = [];
-    if (self.accounts.length >= 2){
+    if (self.accounts && self.accounts.length >= 2){
         self.accounts.forEach(function(element) {
             emails.push(element.email);
             if(element.publisher_id == self.accountId){

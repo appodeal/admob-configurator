@@ -199,10 +199,12 @@ LoadController = (function () {
         } else {
             chrome.storage.local.remove('mrecBids');
         }
-        if (result['plugin_status_ids']['accounts']) {
-            localCredentials['accounts'] = result['plugin_status_ids']['accounts'];
-        } else {
-            chrome.storage.local.remove('accounts');
+        if(result['plugin_status_ids']){
+            if (result['plugin_status_ids']['accounts']) {
+                localCredentials['accounts'] = result['plugin_status_ids']['accounts'];
+            } else {
+                chrome.storage.local.remove('accounts');
+            }
         }
         chrome.storage.local.set(localCredentials, function () {
             callback();
