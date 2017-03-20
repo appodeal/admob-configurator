@@ -239,17 +239,19 @@ Admob.prototype.getVersion = function() {
 // check if publisher id (remote) is similar to current admob account id
 Admob.prototype.isPublisherIdRight = function() {
   var self = this;
-  var publisher = [];
+  var ret = false;
   var emails = [];
-    if (self.accounts){
+    if (self.accounts.length >= 2){
         self.accounts.forEach(function(element) {
-            publisher.push(element.publisher_id);
-            emails.push(element.email)
+            emails.push(element.email);
+            if(element.publisher_id == self.accountId){
+                self.publisherId = element.publisher_id;
+                self.accountEmail = element.email;
+                ret = true;
+            }
         });
-        if (!publisher.includes(self.accountId)) {
-          chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ emails.join() + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){});
-          return false;
-        }
+        if (!ret) chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ emails.join() + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){});
+        return ret;
     }else{
         if (self.publisherId != self.accountId) {
             chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ self.accountEmail + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){});
@@ -409,7 +411,7 @@ Admob.adunitName = function(app, adName, typeName, bidFloor) {
 Admob.prototype.getRemoteInventory = function(callback) {
   console.log("Get remote inventory");
   var self = this;
-  var json = {user_id: self.userId, api_key: self.apiKey};
+  var json = {user_id: self.userId, api_key: self.apiKey, account: self.publisherId};
   $.get(Admob.remoteInventoryUrl, json)
     .done(function(data) {
       self.inventory = data.applications;
@@ -628,7 +630,7 @@ Admob.prototype.createAdunits = function(app, callback) {
 Admob.prototype.syncWithServer = function(app, callback) {
   var self = this;
   // make an array of new and different adunits
-  var params = {api_key: self.apiKey, user_id: self.userId, apps: []};
+  var params = {account: self.accountId ,api_key: self.apiKey, user_id: self.userId, apps: []};
   var h = {id: app.id, name: app.localApp[2], admob_app_id: app.localApp[1], adunits: self.newAdunitsForServer(app)};
   if (h.admob_app_id != app.admob_app_id || h.adunits.length) {
     params.apps.push(h);
