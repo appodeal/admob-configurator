@@ -17,6 +17,7 @@ function startInventorySync() {
       'appodeal_user_id': null,
       'appodeal_admob_account_publisher_id': null,
       'appodeal_admob_account_email': null,
+      'accounts': null,
       'interstitialBids': null,
       'bannerBids': null,
       'mrecBids': null
@@ -32,6 +33,7 @@ function startInventorySync() {
               items['appodeal_api_key'],
               items['appodeal_admob_account_publisher_id'],
               items['appodeal_admob_account_email'],
+              items['accounts'],
               items['interstitialBids'],
               items['bannerBids'],
               items['mrecBids']

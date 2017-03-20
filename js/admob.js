@@ -1,9 +1,10 @@
-var Admob = function(userId, apiKey, publisherId, accountEmail, interstitialBids, bannerBids, mrecBids) {
+var Admob = function(userId, apiKey, publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids) {
   console.log("Initialize admob" + " (" + userId + ", " + apiKey + ", " + publisherId + ", " + accountEmail + ")");
   this.userId = userId;
   this.apiKey = apiKey;
   this.publisherId = publisherId;
   this.accountEmail = accountEmail;
+  this.accounts = accounts;
   // internal admob request url
   Admob.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
   // get all current user's apps and adunits from server
@@ -238,10 +239,23 @@ Admob.prototype.getVersion = function() {
 // check if publisher id (remote) is similar to current admob account id
 Admob.prototype.isPublisherIdRight = function() {
   var self = this;
-  if (self.publisherId != self.accountId) {
-      chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ self.accountEmail + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){console.log("Last error:", chrome.runtime.lastError);});
-      return false;
-  }
+  var publisher = [];
+  var emails = [];
+    if (self.accounts){
+        self.accounts.forEach(function(element) {
+            publisher.push(element.publisher_id);
+            emails.push(element.email)
+        });
+        if (!publisher.includes(self.accountId)) {
+          chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ emails.join() + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){});
+          return false;
+        }
+    }else{
+        if (self.publisherId != self.accountId) {
+            chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ self.accountEmail + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){});
+            return false;
+        }
+    }
   return true;
 };
 
