@@ -3,55 +3,42 @@
    "name": "Appodeal",
    "short_name": "Appodeal Admob Sync",
    "description": "This extension will create and sync Appodeal adunits in your Admob account.",
-   "version": "13.7",
+   "version": "14.0",
    "browser_action": {
-      "default_icon": "image/icon-16.png",
+      "default_icon": {"16": "img/icon/icon-16.png"},
       "default_popup": "popup.html"
    },
-   "icons": { "16": "image/icon-16.png", "32": "image/icon-32.png", "64": "image/icon-64.png","128": "image/icon-128.png" },
+   "icons": { "16": "img/icon/icon-16.png", "32": "img/icon/icon-32.png", "64": "img/icon/icon-64.png","128": "img/icon/icon-128.png" },
    "content_scripts": [
       {
-         "matches": ["http://www.appodeal.com/*",
-            "https://www.appodeal.com/*",
-            "https://apps.admob.com/*",
-            "https://console.developers.google.com/*"
-         ],
-         "js": ["libs/jquery.min.js", "libs/utils.js", "libs/modal.js"],
-         "css": ["libs/modal.console.css"]
+         "matches": ["http://staging.appodeal.com/profile/*", "https://staging.appodeal.com/profile/*", "http://staging.appodeal.com/dashboard*", "https://staging.appodeal.com/dashboard*", "http://staging.appodeal.com/apps*", "https://staging.appodeal.com/apps*"],
+         "js": ["js/vendor/jquery.min.js", "js/utils.js", "js/login.js"]
       },
       {
-         "matches": ["http://www.appodeal.com/profile/*",
-            "https://www.appodeal.com/profile/*",
-            "http://www.appodeal.com/dashboard*",
-            "https://www.appodeal.com/dashboard*",
-            "http://www.appodeal.com/apps*",
-            "https://www.appodeal.com/apps*"
-         ],
-         "js": ["login.js"]
+         "matches": [ "https://console.developers.google.com/*" ],
+         "js": ["js/vendor/jquery.min.js", "js/utils.js", "js/modal.js"],
+         "css": ["css/modal.console.css"]
       },
       {
-         "matches": ["https://apps.admob.com/*"],
-         "js": ["adunits.js", "libs/progressBar.js", "libs/admob.js", "libs/modal.js"],
-         "css": ["libs/modal.css"]
+         "js": ["js/vendor/jquery.min.js","js/utils.js", "js/adunits.js", "js/admob.js", "js/modal.js", "js/progressBar.js"],
+         "matches": [ "https://apps.admob.com/*" ],
+         "css": ["css/modal.css"]
       }
    ],
    "background": {
-      "scripts": ["libs/utils.js", "libs/bg.js"],
-      "persistent": true
+      "scripts": [ "js/vendor/jquery.min.js", "js/utils.js", "js/bg.js"],
+      "persistent": false
    },
-   "permissions": [
-      "activeTab",
+   "web_accessible_resources": ["img/*", "js/vendor/*","js/helpers/*"],
+    "permissions": [
       "tabs",
       "cookies",
-      "http://www.appodeal.com/*", "https://www.appodeal.com/*",
-      "https://apps.admob.com/*",
-      "https://console.developers.google.com/*",
       "storage",
+      "notifications",
       "webNavigation",
-      "https://chrome.google.com/webstore/detail/appodeal/*",
-      "https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"
-   ],
-   "web_accessible_resources": [
-      "image/*"
-   ]
+      "identity",
+      "*://*.appodeal.com/*",
+      "*://*.admob.com/*",
+      "*://*.google.com/*"
+    ]
 }

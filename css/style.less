@@ -1,0 +1,193 @@
+@import 'font.less';
+// Color variables (appears count calculates by raw css)
+@color0: #ec3f21; // Appears 6 times
+@color1: #ffffff; // Appears 3 times
+@color2: #f3f3f3; // Appears 2 times
+@svg-size: 0 0 27 27;
+@no-repeat: no-repeat;
+@image_path: '../img';
+@font-face {
+  .font-names-KelsonSansBold;
+  .font-names-KelsonSansLight;
+  .font-names-KelsonSansRegular;
+}
+
+
+body {
+  background: white;
+  color: #313844;
+  font-family: 'KelsonSansRegular', sans-serif;
+  font-size: 14px;
+  margin: 0px;
+  min-width: 350px;
+  padding: 0px;
+  width: 100%;
+}
+#header {
+  background: @color0;
+}
+.brand {
+  img {
+    margin-top:5px;
+  }
+}
+.caption h4, #main .row, ul.menu, .brand {
+  padding-left: 20px;
+}
+.caption {
+  font-family: "KelsonSansBold", sans-serif;
+}
+#main {
+  .row {
+    padding-bottom: 13px;
+    padding-top: 13px;
+  }
+  div {
+    a {
+      margin-left: 40px;
+    }
+  }
+}
+.text-center {
+  text-align: center;
+}
+.left {
+  float: left;
+}
+.right {
+  float: right;
+}
+ul.menu {
+  list-style: none;
+  li {
+    display: inline-block;
+    text-align: right;
+  }
+  a {
+    &:hover {
+      color: @color0;
+    }
+  }
+}
+hr.line {
+  background-color:@color2;
+  border:0 none;
+  clear:both;
+  color: @color2;
+  height:1px;
+  margin: 0 20px;
+}
+.footer {
+  height: 30px;
+}
+#squirrel {
+  img {
+    margin-left: 20px;
+    margin-top: -20px;
+  }
+}
+.retreat_20 {
+  margin-left: 20px;
+}
+.gray {
+  color: #c0c5c9;
+  pointer-events:none!important;
+  text-decoration: none!important;
+}
+.ion {
+  color: @color0!important;
+  display: block;
+  font-size: 28px;
+  margin-top: -5px;
+  position: absolute;
+  width: 32px;
+}
+#faq {
+  width: 60px;
+}
+#return {
+  width: 150px;
+  .ion {
+    margin-left: -5px;
+  }
+}
+.point {
+  cursor: pointer;
+}
+.not_point {
+  pointer-events:none;
+}
+.button_logout {
+  border-radius: 5px;
+  border: 1px solid @color0;
+  color: @color0;
+  margin-left: 10px!important;
+  margin-top: -2px;
+  padding: 2px 7px;
+  position: absolute;
+  &:hover {
+    background-color: @color0;
+    color: @color1;
+    cursor: pointer;
+  }
+}
+#return_link {
+  margin-left: 37px!important;
+}
+.linkWhite {
+  color: @color1;
+}
+.svgStep {
+  border-radius: 100%;
+  height: 27px;
+  position: absolute;
+  width: 27px;
+}
+
+.stepOne {
+  background: url("@{image_path}/svglib.svg#1-red") @no-repeat;
+}
+.stepOne.active {
+  background: url("@{image_path}/svglib.svg#1-white") @no-repeat;
+}
+.stepTwo {
+  background: url("@{image_path}/svglib.svg#2-red") @no-repeat;
+}
+.stepTwo.active {
+  background: url("@{image_path}/svglib.svg#2-white") @no-repeat;
+}
+.stepThree {
+  background: url("@{image_path}/svglib.svg#3-red") @no-repeat;
+}
+.stepThree.active {
+  background: url("@{image_path}/svglib.svg#3-white") @no-repeat;
+}
+.userActive {
+  background: url("@{image_path}/svglib.svg#user-red") @no-repeat;
+}
+.userActive.active {
+  background: url("@{image_path}/svglib.svg#user-white") @no-repeat;
+}
+.stepDone {
+  background: url("@{image_path}/svglib.svg#check-red") @no-repeat;
+}
+.stepDone.active {
+  background: url("@{image_path}/svglib.svg#check-white") @no-repeat;
+}
+
+.backgroundRadius {
+  background-color: @color1;
+  border-radius: 100%;
+  height: 20px;
+  margin-left: 5px;
+  margin-top: 5px;
+  position: absolute;
+  width: 20px;
+}
+#reporting_link {
+  ul{
+    margin-bottom: -25px;
+    list-style: none;
+    margin-top: 5px;
+  }
+}
