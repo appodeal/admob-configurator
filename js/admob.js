@@ -419,16 +419,7 @@ Admob.prototype.getRemoteInventory = function(callback) {
   }
   $.get(Admob.remoteInventoryUrl, json)
     .done(function(data) {
-      // self.inventory = data.applications;
-      self.inventory = [];
-      data.applications.forEach(function(item, i, arr) {
-          var os = 4;
-          if(item.os == 4 || item.os == 5){
-              os = 1
-          }
-          item.os = os;
-          self.inventory.push(item);
-      });
+      self.inventory = data.applications;
       if (self.inventory && self.inventory.length) {
         callback();
       } else {
