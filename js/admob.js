@@ -409,9 +409,14 @@ Admob.adunitName = function(app, adName, typeName, bidFloor) {
 
 // get remote appodeal apps with adunits
 Admob.prototype.getRemoteInventory = function(callback) {
+  var json = {};
   console.log("Get remote inventory");
   var self = this;
-  var json = {user_id: self.userId, api_key: self.apiKey, account: self.publisherId};
+  if(self.accounts.length >= 2 ) {
+      json = {user_id: self.userId, api_key: self.apiKey, account: self.publisherId};
+  } else {
+      json = {user_id: self.userId, api_key: self.apiKey};
+  }
   $.get(Admob.remoteInventoryUrl, json)
     .done(function(data) {
       self.inventory = data.applications;
