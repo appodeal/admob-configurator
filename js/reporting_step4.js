@@ -55,61 +55,65 @@ jQuery(function () {
     }
 
     function addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key, appodeal_user_id) {
-        var url = "https://staging.appodeal.com/api/v1/add_admob_account.json";
-        var email = jQuery("[ng-if='::$ctrl.showAccountEmail']").first().text().toLowerCase().trim();
-        if(email=='' || email == null){
-            var message = "Error creating admob account. Not find user email from console";
-            sendOut(1, message);
-            modal.show("Appodeal Chrome Extension", message);
-            chrome.storage.local.remove("reporting_tab_id");
-            return
-        }
-        json = {
-            "email": email,
-            "client_id": clientId,
-            "client_secret": clientSecret,
-            "account_id": account_id,
-            "api_key": appodeal_api_key,
-            "user_id": appodeal_user_id
-        };
-        console.log(JSON.stringify(json));
-        modal.show("Appodeal Chrome Extension", "Please grant permission to Appodeal to read your Admob reports.<br>You will be automatically redirected in 5 seconds.");
-        setTimeout(function () {
-            var http = new XMLHttpRequest();
-            http.open("POST", url, true);
-            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            http.send(JSON.stringify(json));
-            http.onreadystatechange = function () {
-                console.log('State changed');
-                // Call a function when the state changes.
-                setInterval(function () {
-                    if (http.readyState == 4 && http.status == 200) {
-                        var message = 'Admob account created on Appodeal.';
-                        console.log(message);
-                        var response = JSON.parse(http.responseText);
-                        if(response['id']==null){
-                            console.log("Error creating admob account on appodeal. Field id not null");
-                            return
-                        }
-                        var local_settings = {
-                            reporting_client_creating: true,
-                            appodeal_admob_account_id: response['id']
-                        };
-                        chrome.storage.local.set(local_settings, function () {
-                            console.log('redirecting to oauth...');
-                            var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=" + redirect_uri + "&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + clientId + "&client_id=" + clientId + "&access_type=offline";
-                            chrome.storage.local.remove("reporting_tab_id");
-                            document.location.href = final_href;
-                        })
-                    } else {
-                        var message = "Error creating admob account on appodeal";
-                        sendOut(1, message);
-                        modal.show("Appodeal Chrome Extension", message);
-                        chrome.storage.local.remove("reporting_tab_id");
-                    }
-                }, 5000);
+        chrome.storage.local.get({
+            'email_credentials': null
+        }, function (items) {
+            var url = "https://staging.appodeal.com/api/v1/add_admob_account.json";
+            var email = items.email_credentials;
+            if(email=='' || email == null){
+                var message = "Error creating admob account. Not find user email from console";
+                sendOut(1, message);
+                modal.show("Appodeal Chrome Extension", message);
+                chrome.storage.local.remove("reporting_tab_id");
+                return
             }
-        }, 5000);
+            json = {
+                "email": email,
+                "client_id": clientId,
+                "client_secret": clientSecret,
+                "account_id": account_id,
+                "api_key": appodeal_api_key,
+                "user_id": appodeal_user_id
+            };
+            console.log(JSON.stringify(json));
+            modal.show("Appodeal Chrome Extension", "Please grant permission to Appodeal to read your Admob reports.<br>You will be automatically redirected in 5 seconds.");
+            setTimeout(function () {
+                var http = new XMLHttpRequest();
+                http.open("POST", url, true);
+                http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                http.send(JSON.stringify(json));
+                http.onreadystatechange = function () {
+                    console.log('State changed');
+                    // Call a function when the state changes.
+                    setInterval(function () {
+                        if (http.readyState == 4 && http.status == 200) {
+                            var message = 'Admob account created on Appodeal.';
+                            console.log(message);
+                            var response = JSON.parse(http.responseText);
+                            if(response['id']==null){
+                                console.log("Error creating admob account on appodeal. Field id not null");
+                                return
+                            }
+                            var local_settings = {
+                                reporting_client_creating: true,
+                                appodeal_admob_account_id: response['id']
+                            };
+                            chrome.storage.local.set(local_settings, function () {
+                                console.log('redirecting to oauth...');
+                                var final_href = "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=" + redirect_uri + "&response_type=code&approval_prompt=force&state=" + response['id'] + ":" + clientId + "&client_id=" + clientId + "&access_type=offline";
+                                chrome.storage.local.remove("reporting_tab_id");
+                                document.location.href = final_href;
+                            })
+                        } else {
+                            var message = "Error creating admob account on appodeal";
+                            sendOut(1, message);
+                            modal.show("Appodeal Chrome Extension", message);
+                            chrome.storage.local.remove("reporting_tab_id");
+                        }
+                    }, 5000);
+                }
+            }, 5000);
+        });
     }
 
     function fetchCredentials(download_links) {
@@ -171,7 +175,7 @@ jQuery(function () {
             if (secretSpan.length) {
                 getClientIdAndSecretIdFromDetailsAndRun();
             } else {
-                if (jQuery("jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'").length) {
+                if (jQuery("jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()']").length) {
                     // reset secret
                     console.log("reset secret");
                     var promptRegenerateCode = "angular.element($(\"jfk-button[jfk-on-action='ctrl.promptRegenerateSecret()'\")).controller().promptRegenerateSecret(); setTimeout(function() { $(\"button[jfk-on-action='confirmCallback($event)']\").click();}, 1500)";

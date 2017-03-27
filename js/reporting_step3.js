@@ -2,6 +2,7 @@ var modal;
 jQuery(function(){
   var is_working = false;
   var consents_interval = null;
+  var email_credentials = null;
 
   function wait_for_consents() {
     console.log('Wait for save button.');
@@ -28,6 +29,14 @@ jQuery(function(){
         script.appendChild(document.createTextNode(code));
         document.getElementsByTagName('head')[0].appendChild(script);
         console.log("Save button clicked");
+        //Add email
+        try {
+            email_credentials = jQuery("[ng-model='consentScreenCtrl.data.supportEmail']").first()[0].innerText.toLowerCase().trim();
+        }
+        catch(err) {
+            email_credentials = null
+        }
+        chrome.storage.local.set({"email_credentials": email_credentials});
         window.setInterval(function() {
           if (project_name) {
             console.log("Find name",project_name);
