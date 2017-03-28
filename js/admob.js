@@ -1,4 +1,4 @@
-var Admob = function(userId, apiKey, publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids) {
+var Admob = function(userId, apiKey, publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
   console.log("Initialize admob" + " (" + userId + ", " + apiKey + ", " + publisherId + ", " + accountEmail + ")");
   this.userId = userId;
   this.apiKey = apiKey;
@@ -19,6 +19,7 @@ var Admob = function(userId, apiKey, publisherId, accountEmail, accounts, inters
   Admob.interstitialBids = interstitialBids;
   Admob.bannerBids = bannerBids;
   Admob.mrecBids = mrecBids;
+  Admob.rewarded_videoBids = rewarded_videoBids;
   // initialize modal window
   this.modal = new Modal();
 };
@@ -375,6 +376,11 @@ Admob.adunitsScheme = function(app) {
   Admob.mrecBids.forEach(function(bid) {
     var name = Admob.adunitName(app, "mrec", "image", bid);
     scheme.push({app: app.localApp[1], name: name, adType: 0, formats: [0, 1], bid: admobBidFloor(bid)})
+  });
+  //rewarded_video adunits
+  Admob.rewarded_videoBids.forEach(function(bid) {
+      var name = Admob.adunitName(app, "rewarded_video", "image", bid);
+      scheme.push({app: app.localApp[1], name: name, adType: 1, formats: [2], bid: admobBidFloor(bid), reward_settings: {"1": 1, "2": "reward", "3": 0}});
   });
   return (scheme);
 };
@@ -775,10 +781,23 @@ Admob.prototype.addStoreId = function(storeId) {
 Admob.prototype.createLocalAdunit = function(s, callback) {
   console.log("Create adunit " + s.name);
   var self = this;
+  var reward_settings = '';
+
   params = {
     "method": "insertInventory",
-    "params": {"3": {"2": s.app, "3": s.name, "14": s.adType, "16": s.formats}}, "xsrf": self.token
+    "params": {"3": {
+      "2": s.app,
+      "3": s.name,
+      "14": s.adType,
+      "16": s.formats
+      }
+    }, "xsrf": self.token
   };
+  if(s.reward_settings){
+      params.params[3][17] = 1;
+      params.params[3][18] = s.reward_settings;
+  }
+
   self.inventoryPost(params, function(data) {
     try {
       var localAdunit = data.result[1][2][0];

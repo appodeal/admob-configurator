@@ -20,7 +20,8 @@ function startInventorySync() {
       'accounts': null,
       'interstitialBids': null,
       'bannerBids': null,
-      'mrecBids': null
+      'mrecBids': null,
+      'rewarded_videoBids': null
     }, function(items) {
       if (items['appodeal_api_key'] && items['appodeal_user_id'] && items['appodeal_admob_account_publisher_id']) {
         criticalUpdates(function(updates) {
@@ -36,7 +37,8 @@ function startInventorySync() {
               items['accounts'],
               items['interstitialBids'],
               items['bannerBids'],
-              items['mrecBids']
+              items['mrecBids'],
+              items['rewarded_videoBids']
               );
             admob.syncInventory(function() {
               console.log("Apps and adunits have been synced successfully.");

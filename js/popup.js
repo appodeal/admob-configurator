@@ -199,6 +199,11 @@ LoadController = (function () {
         } else {
             chrome.storage.local.remove('mrecBids');
         }
+        if (result['plugin_status']['rewarded_videoBids']) {
+            localCredentials['rewarded_videoBids'] = result['plugin_status']['rewarded_videoBids'];
+        } else {
+            chrome.storage.local.remove('rewarded_videoBids');
+        }
         if(result['plugin_status_ids']){
             if (result['plugin_status_ids']['accounts']) {
                 localCredentials['accounts'] = result['plugin_status_ids']['accounts'];
