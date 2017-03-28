@@ -285,7 +285,7 @@ LoadController = (function () {
     };
     checking_plugin_version = function (items) {
         if (extensionVersion() < items.plugin_critical_version ) {
-            chrome.runtime.sendMessage({type: "update_plugin", info: 'Please update Chrome extension from version '+ items.plugin_critical_version, title: 'Update Chrome extension Appodeal'}, function(id){});
+            chrome.runtime.sendMessage({type: "update_plugin", info: 'Please update Chrome extension to version '+ items.plugin_critical_version, title: 'Update Chrome extension Appodeal'}, function(id){});
             return false
         }
         return true;
