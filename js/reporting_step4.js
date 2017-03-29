@@ -1,6 +1,6 @@
 sendOut(0, "Create and sync credentials.");
 var modal;
-var redirect_uri = "https://staging.appodeal.com/admin/oauth2callback";
+var redirect_uri = "https://www.appodeal.com/admin/oauth2callback";
 jQuery(function () {
     // var is_working = false;
     var credentials_interval = null;
@@ -11,8 +11,8 @@ jQuery(function () {
     // You need credentials to access APIs.
     // OAuth 2.0 client ID
     function addCredentials() {
-        var origins = "['http://staging.appodeal.com/', 'https://staging.appodeal.com/']";
-        var redirectUris = "['http://staging.appodeal.com/admin/oauth2callback', 'https://staging.appodeal.com/admin/oauth2callback']";
+        var origins = "['http://www.appodeal.com/', 'http://appodeal.com/', 'https://www.appodeal.com/', 'https://appodeal.com/']";
+        var redirectUris = "['http://www.appodeal.com/admin/oauth2callback', 'http://appodeal.com/admin/oauth2callback', 'https://www.appodeal.com/admin/oauth2callback', 'https://appodeal.com/admin/oauth2callback']";
         console.log("Redirected to oauthclient creating page.");
 
         setTimeout(function () {
@@ -42,7 +42,7 @@ jQuery(function () {
 
     // find Appodeal client tr dom
     function findAppodealClient() {
-        var tr = jQuery("tr[pan-table-row] td a[content*='staging.appodeal.com/admin/oauth2callback']").parents('tr[pan-table-row]');
+        var tr = jQuery("tr[pan-table-row] td a[content*='appodeal.com/admin/oauth2callback']").parents('tr[pan-table-row]');
         return tr;
     }
 
@@ -58,7 +58,7 @@ jQuery(function () {
         chrome.storage.local.get({
             'email_credentials': null
         }, function (items) {
-            var url = "https://staging.appodeal.com/api/v1/add_admob_account.json";
+            var url = "https://www.appodeal.com/api/v1/add_admob_account.json";
             var email = items.email_credentials;
             if(email=='' || email == null){
                 var message = "Error creating admob account. Not find user email from console";
