@@ -11,7 +11,7 @@
    "icons": { "16": "img/icon/icon-16.png", "32": "img/icon/icon-32.png", "64": "img/icon/icon-64.png","128": "img/icon/icon-128.png" },
    "content_scripts": [
       {
-         "matches": ["http://staging.appodeal.com/profile/*", "https://staging.appodeal.com/profile/*", "http://staging.appodeal.com/dashboard*", "https://staging.appodeal.com/dashboard*", "http://staging.appodeal.com/apps*", "https://staging.appodeal.com/apps*"],
+         "matches": ["http://www.appodeal.com/profile/*", "https://www.appodeal.com/profile/*", "http://www.appodeal.com/dashboard*", "https://www.appodeal.com/dashboard*", "http://www.appodeal.com/apps*", "https://www.appodeal.com/apps*"],
          "js": ["js/vendor/jquery.min.js", "js/utils.js", "js/login.js"]
       },
       {
