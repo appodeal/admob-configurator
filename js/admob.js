@@ -8,9 +8,9 @@ var Admob = function(userId, apiKey, publisherId, accountEmail, accounts, inters
   // internal admob request url
   Admob.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
   // get all current user's apps and adunits from server
-  Admob.remoteInventoryUrl = "https://www.appodeal.com/api/v2/apps_with_ad_units";
+  Admob.remoteInventoryUrl = "https://staging.appodeal.com/api/v2/apps_with_ad_units";
   // sync local adunits with the server
-  Admob.syncUrl = "https://www.appodeal.com/api/v2/sync_inventory";
+  Admob.syncUrl = "https://staging.appodeal.com/api/v2/sync_inventory";
   // internal admob params
   Admob.types = {text: 0, image: 1, video: 2};
   // appodeal ad unit params
@@ -305,6 +305,8 @@ Admob.adunitBid = function(adunit) {
       return "text";
   } else if (adunit[16].length == 1 && adunit[16][0] == 1) {
       return "image";
+  } else if (adunit[16].length == 1 && adunit[16][0] == 2) {
+      return "rewarded";
   }
 };
 
@@ -326,21 +328,32 @@ Admob.localAdunitsToScheme = function(app) {
       // text format name only for text adunits without bid floors
       if (!adunit[10] && formats.length == 1 && formats[0] == 0) {
         adFormatName = "text";
+      } else if(adunit[18] && formats.length == 1 && formats[0] == 2){
+          adFormatName = "rewarded";
       } else {
         adFormatName = "image";
       }
       var bid;
       var name;
       var hash;
+      var floatBid;
       if (adunit[10]) {
         bid = adunit[10][0][5][1][1];
-        var floatBid = Admob.adunitBid(adunit);
+        floatBid = Admob.adunitBid(adunit);
         name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
         hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid};
       } else {
         name = Admob.adunitName(app, adTypeName, adFormatName);
         hash = {app: admobAppId, name: name, adType: adType, formats: formats};
       }
+
+      if(adFormatName == "rewarded"){
+          bid = adunit[10][0][5][1][1];
+          floatBid = Admob.adunitBid(adunit);
+          name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
+          hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid, reward_settings: {"1": 1, "2": "reward", "3": 0}};
+      }
+
       scheme.push(hash); 
     }
   });
@@ -380,7 +393,7 @@ Admob.adunitsScheme = function(app) {
   //rewarded_video adunits
     if(Admob.rewarded_videoBids){
         Admob.rewarded_videoBids.forEach(function(bid) {
-            var name = Admob.adunitName(app, "rewarded_video", "image", bid);
+            var name = Admob.adunitName(app, "rewarded_video", "rewarded", bid);
             scheme.push({app: app.localApp[1], name: name, adType: 1, formats: [2], bid: admobBidFloor(bid), reward_settings: {"1": 1, "2": "reward", "3": 0}});
         });
     }
