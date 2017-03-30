@@ -6,7 +6,14 @@ jQuery(function () {
         console.log("show new project window");
         // show new project window
         modal.show("Appodeal Chrome Extension", "Create Appodeal project. Please wait");
-        run_script("jQuery('[ng-click=\"psCtrl.showCreateProjectPage()\"]').click();");
+
+        try {
+            triggerMouseEvent(targetNode, "mousedown");
+            run_script("jQuery('[ng-click=\"psCtrl.showCreateProjectPage()\"]').click();");
+        }
+        catch(err) {
+            run_script("jQuery('[action=\"projectListCtrl.showCreateProjectPage()\"]').find('[ng-class=\"buttonCtrl.getButtonClasses()\"]').click()");
+        }
         // set project name (Appodeal)
         console.log("Set project name (Appodeal)");
         waitForElement("#p6ntest-project-create-modal", null, function (element) {
@@ -58,7 +65,6 @@ jQuery(function () {
                     }
                 } else {
                     console.log('Create Appodeal project. triggerMouseEvent() and createProject()');
-                    triggerMouseEvent(targetNode, "mousedown");
                     createProject();
                 }
             });
