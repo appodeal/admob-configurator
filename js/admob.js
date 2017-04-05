@@ -243,12 +243,14 @@ Admob.prototype.isPublisherIdRight = function() {
   var emails = [];
     if (self.accounts && self.accounts.length >= 2){
         self.accounts.forEach(function(element) {
-            emails.push(element.email);
-            if(element.publisher_id == self.accountId){
-                self.publisherId = element.publisher_id;
-                self.accountEmail = element.email;
-                ret = true;
-            }
+          if( element != undefined) {
+              emails.push(element.email);
+              if(element.publisher_id == self.accountId){
+                  self.publisherId = element.publisher_id;
+                  self.accountEmail = element.email;
+                  ret = true;
+              }
+          }
         });
         if (!ret) chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ emails.join() + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){});
         return ret;
