@@ -181,3 +181,11 @@ function cut(text, limit) {
     text = text.slice(0, limit);
     return text + "...";
 }
+
+function close_notifications(){
+    chrome.storage.local.set({'close_notifications': true});
+}
+
+function open_notifications(){
+    chrome.storage.local.set({'close_notifications': false});
+}

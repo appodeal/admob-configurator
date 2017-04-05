@@ -28,9 +28,16 @@ chrome.webNavigation.onCompleted.addListener(function (details) {
         }
     });
 });
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if(request.type === "shownotification"){
-        chrome.notifications.create('notify', request.opt, function(){})
+        chrome.storage.local.get({
+            'close_notifications': false
+        }, function (items) {
+            if( !items.close_notifications ){
+                chrome.notifications.create('notify', request.opt, function(){});
+            }
+        });
     }
     if(request.type === "wrong_account"){
         chrome.tabs.update({url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'}, function (tab) {
@@ -44,5 +51,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             chrome.notifications.create('notify', opt, function(){})
         });
     }
+});
 
+chrome.notifications.onClosed.addListener(function() {
+    close_notifications();
 });

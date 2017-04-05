@@ -233,10 +233,14 @@ LoadController = (function () {
                     if (data['account']) {
                         if(data['many_user_admob_accounts'] && data['many_user_admob_accounts']['accounts']){
                             acc_name = '<ul>';
-                            accounts_data = data['many_user_admob_accounts']['accounts'].map(function(a) {return a.email;});
-                            $.each( data['many_user_admob_accounts']['accounts'], function( key, value ) {
-                                acc_name = acc_name + '<li class="account">' + cut('Synced '+ (value['synced'] >= 2 ? 'apps' : 'app') + ': ' + value['synced'] + ' ' + value['email'], 40) + '</li>';
+                            accounts_data = [];
+                            data['many_user_admob_accounts']['accounts'].forEach(function (item, key, mapObj) {
+                                if( item != undefined) {
+                                    accounts_data[key] = item.email;
+                                    acc_name = acc_name + '<li class="account">' + cut('Synced '+ (item['synced'] >= 2 ? 'apps' : 'app') + ': ' + item['synced'] + ' ' + item['email'], 40) + '</li>';
+                                }
                             });
+                            debugger;
                             acc_name = acc_name = acc_name + '</ul>';
                             addDoneLabel($('#reporting'), 'Enabled Admob reporting ' + acc_name, 'stepDone', 'reporting_link')
                         }else{
@@ -263,12 +267,14 @@ LoadController = (function () {
     };
     reporting_link = function (event) {
         chrome.tabs.update({url: GOOGLE_CLOUD_CONSOLE}, function (tab) {
+            open_notifications();
             chrome.storage.local.set({"reporting_tab_id": tab.id});
             window.close();
         });
     };
     admob_link = function (event) {
         chrome.tabs.update({url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'}, function (tab) {
+            open_notifications();
             chrome.storage.local.set({"admob_processing": true}, function () {
                 window.close();
             });
