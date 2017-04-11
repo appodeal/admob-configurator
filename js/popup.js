@@ -239,9 +239,10 @@ LoadController = (function () {
                         if (data['account']) {
                             if(data['many_user_admob_accounts'] && data['many_user_admob_accounts']['accounts']){
                                 acc_name = '<ul>';
-                                accounts_data = data['many_user_admob_accounts']['accounts'].map(function(a) {return a.email;});
                                 $.each( data['many_user_admob_accounts']['accounts'], function( key, value ) {
-                                    acc_name = acc_name + '<li class="account">' + cut('Synced '+ (value['synced'] >= 2 ? 'apps' : 'app') + ': ' + value['synced'] + ' ' + value['email'], 40) + '</li>';
+                                    if(value != undefined){
+                                        acc_name = acc_name + '<li class="account">' + cut('Synced '+ (value['synced'] >= 2 ? 'apps' : 'app') + ': ' + value['synced'] + ' ' + value['email'], 40) + '</li>';
+                                    }
                                 });
                                 acc_name = acc_name = acc_name + '</ul>';
                                 addDoneLabel($('#reporting'), 'Enabled Admob reporting ' + acc_name, 'stepDone', 'reporting_link')
