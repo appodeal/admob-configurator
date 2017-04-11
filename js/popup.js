@@ -7,7 +7,7 @@ button_logout = '<a id="logout_link" class="button_logout right">Logout</a>';
 email = null;
 
 LoadController = (function () {
-    var addCountApps, addDoneLabel, addEnableReport, addNoApps, clearStorageAndCookies, faq_link, getAppodealStatus, getLocalStatus, getRemoteStatus, load_hover, login_link, logout_link, return_link, setEventListen, storage_local_get, updateAppodealCredentials, login, http, result, localCredentials, reporting_link, admob_link;
+    var addCountApps, addDoneLabel, addEnableReport, addNoApps, clearStorageAndCookies, faq_link, getAppodealStatus, getLocalStatus, getRemoteStatus, load_hover, login_link, logout_link, return_link, setEventListen, storage_local_get, updateAppodealCredentials, login, http, result, localCredentials, reporting_link, admob_link, checking_plugin_version;
     return_link = function (event) {
         console.log('return_link');
         chrome.tabs.update({
@@ -199,6 +199,11 @@ LoadController = (function () {
         } else {
             chrome.storage.local.remove('mrecBids');
         }
+        if (result['plugin_status']['rewarded_videoBids']) {
+            localCredentials['rewarded_videoBids'] = result['plugin_status']['rewarded_videoBids'];
+        } else {
+            chrome.storage.local.remove('rewarded_videoBids');
+        }
         if(result['plugin_status_ids']){
             if (result['plugin_status_ids']['accounts']) {
                 localCredentials['accounts'] = result['plugin_status_ids']['accounts'];
@@ -224,40 +229,43 @@ LoadController = (function () {
         console.log('getRemoteStatus');
         if (items['appodeal_email']) {
             getAppodealStatus(function (result) {
-                updateAppodealCredentials(result, function () {
-                    var data, leftNum, accounts_data, acc_name;
-                    data = result['plugin_status'];
-                    data['many_user_admob_accounts'] = result['plugin_status_ids'];
-                    console.log(data);
-                    leftNum = data['total'] - data['synced'];
-                    if (data['account']) {
-                        if(data['many_user_admob_accounts'] && data['many_user_admob_accounts']['accounts']){
-                            acc_name = '<ul>';
-                            accounts_data = data['many_user_admob_accounts']['accounts'].map(function(a) {return a.email;});
-                            $.each( data['many_user_admob_accounts']['accounts'], function( key, value ) {
-                                acc_name = acc_name + '<li class="account">' + cut('Synced '+ (value['synced'] >= 2 ? 'apps' : 'app') + ': ' + value['synced'] + ' ' + value['email'], 40) + '</li>';
-                            });
-                            acc_name = acc_name = acc_name + '</ul>';
-                            addDoneLabel($('#reporting'), 'Enabled Admob reporting ' + acc_name, 'stepDone', 'reporting_link')
-                        }else{
-                            addDoneLabel($('#reporting'), 'Enabled Admob reporting', 'stepDone', 'reporting_link');
+                if(checking_plugin_version(result)){
+                    updateAppodealCredentials(result, function () {
+                        var data, leftNum, accounts_data, acc_name;
+                        data = result['plugin_status'];
+                        data['many_user_admob_accounts'] = result['plugin_status_ids'];
+                        console.log(data);
+                        leftNum = data['total'] - data['synced'];
+                        if (data['account']) {
+                            if(data['many_user_admob_accounts'] && data['many_user_admob_accounts']['accounts']){
+                                acc_name = '<ul>';
+                                $.each( data['many_user_admob_accounts']['accounts'], function( key, value ) {
+                                    if(value != undefined){
+                                        acc_name = acc_name + '<li class="account">' + cut('Synced '+ (value['synced'] >= 2 ? 'apps' : 'app') + ': ' + value['synced'] + ' ' + value['email'], 40) + '</li>';
+                                    }
+                                });
+                                acc_name = acc_name = acc_name + '</ul>';
+                                addDoneLabel($('#reporting'), 'Enabled Admob reporting ' + acc_name, 'stepDone', 'reporting_link')
+                            }else{
+                                addDoneLabel($('#reporting'), 'Enabled Admob reporting', 'stepDone', 'reporting_link');
+                            }
+                            addDoneLabel($('#admob'), 'Sync Appodeal and Admob ad units', 'stepDone', 'admob_link');
+                        } else {
+                            addEnableReport($('#reporting'));
+                            $('#reporting_link').click(reporting_link);
+                            return null;
                         }
-                        addDoneLabel($('#admob'), 'Sync Appodeal and Admob ad units', 'stepDone', 'admob_link');
-                    } else {
-                        addEnableReport($('#reporting'));
+                        if (leftNum) {
+                            addCountApps($('#admob'), leftNum);
+                        } else if (data['total']) {
+                            addDoneLabel($('#admob'), 'Synced Appodeal and Admob ad units', 'stepDone', 'admob_link');
+                        } else {
+                            addNoApps($('#admob'));
+                        }
                         $('#reporting_link').click(reporting_link);
-                        return null;
-                    }
-                    if (leftNum) {
-                        addCountApps($('#admob'), leftNum);
-                    } else if (data['total']) {
-                        addDoneLabel($('#admob'), 'Synced Appodeal and Admob ad units', 'stepDone', 'admob_link');
-                    } else {
-                        addNoApps($('#admob'));
-                    }
-                    $('#reporting_link').click(reporting_link);
-                    $('#admob_link').click(admob_link);
-                });
+                        $('#admob_link').click(admob_link);
+                    });
+                }
             });
         }
     };
@@ -280,6 +288,13 @@ LoadController = (function () {
 
         $('#return_link').click(return_link);
         $('#faq_link').click(faq_link);
+    };
+    checking_plugin_version = function (items) {
+        if (extensionVersion() < items.plugin_critical_version ) {
+            chrome.runtime.sendMessage({type: "update_plugin", info: 'Please update Chrome extension to version '+ items.plugin_critical_version, title: 'Update Chrome extension Appodeal'}, function(id){});
+            return false
+        }
+        return true;
     };
     return {
         init: function () {
