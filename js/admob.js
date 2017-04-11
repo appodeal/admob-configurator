@@ -373,7 +373,9 @@ Admob.adunitsScheme = function(app) {
   scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "banner", "text"), adType: 0, formats: [0]});
   scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "mrec", "image"), adType: 0, formats: [1]});
   scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "mrec", "text"), adType: 0, formats: [0]});
-  scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "rewarded_video", "rewarded"), adType: 1, formats: [2], reward_settings: {"1": 1, "2": "reward", "3": 0}});
+  if(Admob.rewarded_videoBids){
+    scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "rewarded_video", "rewarded"), adType: 1, formats: [2], reward_settings: {"1": 1, "2": "reward", "3": 0}});
+  }
   // adunit bid floor in admob format
   function admobBidFloor(bid) {
     return (bid * 1000000).toString();
