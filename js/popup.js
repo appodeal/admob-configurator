@@ -281,7 +281,7 @@ LoadController = (function () {
     admob_link = function (event) {
         chrome.tabs.update({url: ADMOB_LOGOUT}, function (tab) {
             open_notifications();
-            chrome.storage.local.set({"admob_processing": true}, function () {
+            chrome.storage.local.set({"admob_processing": true, 'admob_processing_tab_id': tab.id}, function () {
                 window.close();
             });
         });

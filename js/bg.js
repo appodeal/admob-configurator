@@ -52,8 +52,18 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         });
     }
     if(request.type === "reload_finish_admob_page"){
-        chrome.tabs.update({url: ADMOB_LINK}, function (tab) {});
+        chrome.storage.local.get({
+            'admob_processing_tab_id': null
+        }, function (items) {
+            if( items.admob_processing_tab_id ){
+                chrome.tabs.update(items.admob_processing_tab_id, {url: ADMOB_LINK}, function (tab) {});
+            }
+        });
     }
+});
+
+chrome.notifications.onClosed.addListener(function() {
+    chrome.storage.local.set({"close_notifications": true});
 });
 
 function notifications_params(type, request){
