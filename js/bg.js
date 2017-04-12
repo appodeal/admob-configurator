@@ -41,18 +41,25 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
     if(request.type === "wrong_account"){
         chrome.tabs.update({url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'}, function (tab) {
-            var opt = {
-                priority: 1,
-                type: 'basic',
-                iconUrl: icon_url,
-                title: request.title,
-                message: request.info
-            };
-            chrome.notifications.create('notify', opt, function(){})
+            var opt = notifications_params('basic', request);
+            chrome.notifications.create(opt, function(){})
         });
     }
+    if(request.type === "update_plugin"){
+        chrome.tabs.update({url: 'https://chrome.google.com/webstore/detail/appodeal/cnlfcihkilpkgdlnhjonhkfjjmbpbpbj'}, function (tab) {
+            var opt = notifications_params('basic', request);
+            chrome.notifications.create(opt, function(){})
+        });
+    }
+
 });
 
-chrome.notifications.onClosed.addListener(function() {
-    close_notifications();
-});
+function notifications_params(type, request){
+    return {
+        priority: 1,
+        type: type,
+        iconUrl: icon_url,
+        title: request.title,
+        message: request.info
+    };
+}
