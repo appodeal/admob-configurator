@@ -40,7 +40,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         });
     }
     if(request.type === "wrong_account"){
-        chrome.tabs.update({url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'}, function (tab) {
+        chrome.tabs.update({url: ADMOB_LOGOUT}, function (tab) {
             var opt = notifications_params('basic', request);
             chrome.notifications.create(opt, function(){})
         });
@@ -51,7 +51,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             chrome.notifications.create(opt, function(){})
         });
     }
-
+    if(request.type === "reload_finish_admob_page"){
+        chrome.tabs.update({url: ADMOB_LINK}, function (tab) {});
+    }
 });
 
 function notifications_params(type, request){

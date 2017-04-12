@@ -279,7 +279,7 @@ LoadController = (function () {
         });
     };
     admob_link = function (event) {
-        chrome.tabs.update({url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'}, function (tab) {
+        chrome.tabs.update({url: ADMOB_LOGOUT}, function (tab) {
             open_notifications();
             chrome.storage.local.set({"admob_processing": true}, function () {
                 window.close();

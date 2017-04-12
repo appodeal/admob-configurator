@@ -53,8 +53,11 @@ Admob.prototype.syncInventory = function(callback) {
                 self.createMissingAdunits(function() {
                   self.finishDialog();
                   self.sendReports({mode: 0, note: "json"}, [JSON.stringify({message: "Finish", admob: self})], function() {
-                    console.log("Sent finish inventory report");
+                      console.log("Sent finish inventory report");
                   });
+                  setTimeout(function() {
+                      chrome.runtime.sendMessage({type: "reload_finish_admob_page"}, function(id){});
+                  }, 5000);
                   callback();
                 })
               })
