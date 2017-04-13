@@ -57,6 +57,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         }, function (items) {
             if( items.admob_processing_tab_id ){
                 chrome.tabs.update(items.admob_processing_tab_id, {url: ADMOB_LINK}, function (tab) {});
+                chrome.storage.local.remove('admob_processing_tab_id');
             }
         });
     }
