@@ -3,14 +3,14 @@ var LibraryController, modal;
 
 LibraryController = function () {
     return {
-        findProject: function () {
+        find_project: function () {
             debugger;
         }
     }
 }();
 
-
-
-$(document).ready(function(){
-    LibraryController.findProject();
+$(document).ready(function () {
+    setTimeout(function () {
+        LibraryController.find_project();
+    }, 500);
 });
