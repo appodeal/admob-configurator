@@ -5,6 +5,11 @@ var p6n_dropdown_menu = 'pan-platform-bar-project-switcher p6n-dropdown-menu';
 
 LibraryController = function () {
     return {
+        injectScript: function (script) {
+            var scriptTag = document.createElement('script');
+            scriptTag.appendChild(document.createTextNode("!function() { " + script + "}();"));
+            document.getElementsByTagName('head')[0].appendChild(scriptTag);
+        },
         find: function () {
             var dropdown_menu = $(p6n_dropdown_menu);
             if (!dropdown_menu.length){
@@ -13,7 +18,7 @@ LibraryController = function () {
             }
         },
         create: function () {
-            run_script("angular.element('pan-platform-bar-project-switcher').triggerHandler('click');")
+            LibraryController.injectScript("angular.element('pan-platform-bar-project-switcher').triggerHandler('click');")
         }
     }
 }();
