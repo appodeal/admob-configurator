@@ -24,10 +24,27 @@ jQuery(function () {
                 // I agree that my use of any services and related APIs is subject to my compliance with the applicable Terms of Service.
                 var needAcceptTerms = $("#tos-agree");
                 if (needAcceptTerms.length) {
-                    var message = "You must agree to the Admob <b>Terms of Service</b> and click <b>Create</b> to continue.";
-                    sendOut(0, message);
-                    modal.show("Appodeal Chrome Extension", message);
-                    console.log(message);
+                    var btnMarketing = $('input[name="marketing"][value=\"false\"]');
+                    var btnTos = $('input[name="tos"][value=\"true\"]');
+                    if (btnMarketing.length > 0) {
+                        run_script(" \
+						var btnMarketing = document.querySelector('input[name=\"marketing\"][value=\"false\"]'); \
+						btnMarketing.checked = true; \
+						angular.element(btnMarketing).triggerHandler('click'); \
+					");
+                    }
+
+                    if (btnTos.length > 0) {
+                        run_script(" \
+						var btnTos = document.querySelector('input[name=\"tos\"][value=\"true\"]'); \
+						btnTos.checked = true; \
+						angular.element(btnTos).triggerHandler('click'); \
+					");
+                    }
+
+                    run_script(" \
+						angular.element(document.getElementById('p6n-project-creation-dialog-ok-button')).controller().submit(); \
+                    ");
                 } else {
                     // submit new project form
                     run_script("angular.element(jQuery('#p6n-project-creation-dialog-ok-button')).controller().submit();");
