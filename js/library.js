@@ -44,11 +44,31 @@ LibraryController = function () {
             req.send(null);
         },
         create: function () {
-            triggerMouseEvent(document.querySelector("[on-menu-open='psCtrl.handleMenuOpen()']"), "mousedown");
-            Utils.injectScript(" \
+            try{
+                triggerMouseEvent(document.querySelector("[on-menu-open='psCtrl.handleMenuOpen()']"), "mousedown");
+                Utils.injectScript(" \
 						var platform = document.querySelector('div[ng-click=\"psCtrl.showCreateProjectPage()\"]'); \
 						angular.element(platform).triggerHandler('click'); \
 					");
+                LibraryController.insert_data();
+            }catch(e){
+                Utils.injectScript(" \
+						var button = document.querySelector('a[ng-click=\"ctrl.showPurviewPickerModal()\"]'); \
+						angular.element(button).triggerHandler('click'); \
+					");
+                Utils.injectScript(" \
+						var button_create = document.querySelector('jfk-button[jfk-on-action=\"ctrl.goToCreateProject()\"]'); \
+						angular.element(button_create).triggerHandler('click'); \
+					");
+                debugger;
+            }
+        },
+        url_project: function (projectName) {
+            var page_url = overviewPageUrl(projectName);
+            console.log("Redirect to the new project", page_url);
+            return page_url;
+        },
+        insert_data: function () {
             waitForElement("#p6ntest-project-create-modal", null, function (element) {
 
                 var btnMarketing = $('input[name="marketing"][value="false"]');
@@ -76,10 +96,10 @@ LibraryController = function () {
 				");
 
                 setTimeout(function () {
-                    Utils.injectScript(" \
-						var btnSubmit = document.getElementById('p6n-project-creation-dialog-ok-button'); \
-						angular.element(btnSubmit).controller().submit(); \
-                    ");
+                    // Utils.injectScript(" \
+                    // var btnSubmit = document.getElementById('p6n-project-creation-dialog-ok-button'); \
+                    // angular.element(btnSubmit).controller().submit(); \
+                    // ");
                     waitForElement("a:contains('" + projectName + "')", null, function (element) {
                         console.log("New project is found");
                         var projectName = locationProjectName();
@@ -87,11 +107,6 @@ LibraryController = function () {
                     })
                 }, 500);
             })
-        },
-        url_project: function (projectName) {
-            var page_url = overviewPageUrl(projectName);
-            console.log("Redirect to the new project", page_url);
-            return page_url;
         }
     }
 }();
