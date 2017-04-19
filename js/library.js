@@ -50,18 +50,18 @@ LibraryController = function () {
 						var platform = document.querySelector('div[ng-click=\"psCtrl.showCreateProjectPage()\"]'); \
 						angular.element(platform).triggerHandler('click'); \
 					");
-                LibraryController.insert_data();
             }catch(e){
                 Utils.injectScript(" \
 						var button = document.querySelector('a[ng-click=\"ctrl.showPurviewPickerModal()\"]'); \
 						angular.element(button).triggerHandler('click'); \
+						try{\
+                            angular.element(document.querySelector('#p6ntest-purview-create-button')).scope().ctrl.goToCreateProject();\
+                        }catch(err) {\
+                            angular.reloadWithDebugInfo();\
+                        }\
 					");
-                Utils.injectScript(" \
-						var button_create = document.querySelector('jfk-button[jfk-on-action=\"ctrl.goToCreateProject()\"]'); \
-						angular.element(button_create).triggerHandler('click'); \
-					");
-                debugger;
             }
+            LibraryController.insert_data();
         },
         url_project: function (projectName) {
             var page_url = overviewPageUrl(projectName);
@@ -96,10 +96,10 @@ LibraryController = function () {
 				");
 
                 setTimeout(function () {
-                    // Utils.injectScript(" \
-                    // var btnSubmit = document.getElementById('p6n-project-creation-dialog-ok-button'); \
-                    // angular.element(btnSubmit).controller().submit(); \
-                    // ");
+                    Utils.injectScript(" \
+                    var btnSubmit = document.getElementById('p6n-project-creation-dialog-ok-button'); \
+                    angular.element(btnSubmit).controller().submit(); \
+                    ");
                     waitForElement("a:contains('" + projectName + "')", null, function (element) {
                         console.log("New project is found");
                         var projectName = locationProjectName();
