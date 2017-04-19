@@ -181,3 +181,13 @@ function cut(text, limit) {
     text = text.slice(0, limit);
     return text + "...";
 }
+
+var Utils = function () {
+    return self = {
+        injectScript: function (script) {
+            var scriptTag = document.createElement('script');
+            scriptTag.appendChild(document.createTextNode("!function() { " + script + "}();"));
+            document.getElementsByTagName('head')[0].appendChild(scriptTag);
+        }
+    };
+}();

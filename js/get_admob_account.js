@@ -15,7 +15,7 @@ criticalUpdates(function(updates) {
           chrome.storage.local.set({"current_account_id": admob_account_id[0]});
           console.log('Done! redirecting back.');
           setTimeout(function() {
-            document.location.href = "https://console.developers.google.com/apis/library";
+            document.location.href = "https://console.developers.google.com/projectselector/apis/credentials?authuser=0&pli=1";
           }, 2000);
         } else {
           sendOut(0, "Can't proceed to enabling AdSense Reporting API (not logged in?)");

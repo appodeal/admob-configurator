@@ -1,34 +1,35 @@
 sendOut(0, "Create new project from the library page (new accounts)");
 var LibraryController, modal;
+var button_find = $('div[ng-if="ctrl.showSelectButton()"]'), button_create = $('gs-zero-state-button[link-click="ctrl.onCreateClick()"]');
 //element DOM
-var p6n_dropdown_menu = 'pan-platform-bar-project-switcher p6n-dropdown-menu';
-
 LibraryController = function () {
     return {
-        injectScript: function (script) {
-            var scriptTag = document.createElement('script');
-            scriptTag.appendChild(document.createTextNode("!function() { " + script + "}();"));
-            document.getElementsByTagName('head')[0].appendChild(scriptTag);
-        },
-        find: function () {
-            var dropdown_menu = $(p6n_dropdown_menu);
-            if (!dropdown_menu.length){
-                //Create project
+        init: function () {
+            if (button_find.length > 0){
+                LibraryController.find();
+            }else{
                 LibraryController.create();
             }
         },
+        find: function () {
+            debugger;
+        },
         create: function () {
-            LibraryController.injectScript("angular.element('pan-platform-bar-project-switcher').triggerHandler('click');")
+            triggerMouseEvent(document.querySelector("[on-menu-open='psCtrl.handleMenuOpen()']"), "mousedown");
+            Utils.injectScript(" \
+						var platform = document.querySelector('div[ng-click=\"psCtrl.showCreateProjectPage()\"]'); \
+						angular.element(platform).triggerHandler('click'); \
+					");
         }
     }
 }();
 
 $(document).ready(function () {
     setTimeout(function () {
-        appendJQuery(function () {
-            modal = new Modal();
-            modal.show("Appodeal Chrome Extension", "Find Appodeal project. Please wait");
-        });
-        LibraryController.find();
+        // appendJQuery(function () {
+        //     modal = new Modal();
+        //     modal.show("Appodeal Chrome Extension", "Find Appodeal project. Please wait");
+        // });
+        LibraryController.init();
     }, 500);
 });
