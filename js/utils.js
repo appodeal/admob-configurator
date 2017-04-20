@@ -48,7 +48,7 @@ function isCredentialClientPage() {
 
 // get current chrome extension version
 function extensionVersion() {
-    return chrome.runtime.getManifest().version;
+    return parseFloat(chrome.runtime.getManifest().version);
 }
 
 // async jQuery load
