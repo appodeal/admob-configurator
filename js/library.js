@@ -44,6 +44,7 @@ LibraryController = function () {
                                 document.location.href = LibraryController.url_project(value.id);
                             }
                         });
+                        LibraryController.create();
                     }else{
                         LibraryController.find();
                     }
