@@ -1,12 +1,11 @@
 sendOut(0, "Create new project from the library page (new accounts)");
 var LibraryController, modal;
-//element DOM
-var button_find_one = $('div[ng-if="ctrl.showSelectButton()"]'), button_create = $('gs-zero-state-button[link-click="ctrl.onCreateClick()"]');
 var projectName = 'Appodeal';
 
 LibraryController = function () {
     return {
         readBody: function (xhr) {
+            console.log('LibraryController.readBody');
             var data;
             if (!xhr.responseType || xhr.responseType === "text") {
                 data = xhr.responseText;
@@ -18,13 +17,19 @@ LibraryController = function () {
             return data;
         },
         init: function () {
-            if (button_find_one.length > 0 || $('gs-zero-state-button[link-click="ctrl.onSelectClick()"]').length > 0){
+            console.log('LibraryController.init');
+            var button_find_one = $('div[ng-if="ctrl.showSelectButton()"]');
+            var button_find_two = $('gs-zero-state-button[link-click="ctrl.onSelectClick()"]');
+            var button_create = $('gs-zero-state-button[link-click="ctrl.onCreateClick()"]');
+            sendOut(0, 'button_find_one.length: ' + button_find_one.length + ' button_find_two: ' + button_find_two.length + ' button_create: ' + button_create.length);
+            if (button_find_one.length > 0 || button_find_two.length > 0){
                 LibraryController.find();
             }else if(button_create.length > 0){
                 LibraryController.create();
             }
         },
         find: function () {
+            console.log('LibraryController.find');
             //https://console.developers.google.com/m/crmresources/recent?authuser=0&maxResources=50
             //find project from api
             var req = new XMLHttpRequest();
@@ -33,11 +38,14 @@ LibraryController = function () {
                 if (req.readyState == 4) {
                     var data = JSON.parse(LibraryController.readBody(req).replace(")]}'", ""));
                     if (data){
+                        sendOut(0, LibraryController.readBody(req).replace(")]}'", ""));
                         $.each(data.default.resource, function(index, value) {
                             if(value.display_name === projectName){
                                 document.location.href = LibraryController.url_project(value.id);
                             }
                         });
+                    }else{
+                        LibraryController.find();
                     }
                 }
             };
@@ -45,12 +53,14 @@ LibraryController = function () {
         },
         create: function () {
             try{
+                console.log('LibraryController.create_v1');
                 triggerMouseEvent(document.querySelector("[on-menu-open='psCtrl.handleMenuOpen()']"), "mousedown");
                 Utils.injectScript(" \
 						var platform = document.querySelector('div[ng-click=\"psCtrl.showCreateProjectPage()\"]'); \
 						angular.element(platform).triggerHandler('click'); \
 					");
             }catch(e){
+                console.log('LibraryController.create_v2');
                 Utils.injectScript(" \
 						var button = document.querySelector('a[ng-click=\"ctrl.showPurviewPickerModal()\"]'); \
 						angular.element(button).triggerHandler('click'); \
@@ -64,11 +74,14 @@ LibraryController = function () {
             LibraryController.insert_data();
         },
         url_project: function (projectName) {
+            sendOut(0, 'projectName: ' + projectName);
+            console.log('LibraryController.url_project');
             var page_url = overviewPageUrl(projectName);
             console.log("Redirect to the new project", page_url);
             return page_url;
         },
         insert_data: function () {
+            console.log('LibraryController.insert_data');
             waitForElement("#p6ntest-project-create-modal", null, function (element) {
 
                 var btnMarketing = $('input[name="marketing"][value="false"]');
@@ -117,6 +130,7 @@ $(document).ready(function () {
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", "Find Appodeal project. Please wait");
         });
+        console.log('Find Appodeal project. Please wait');
         LibraryController.init();
     }, 500);
 });
