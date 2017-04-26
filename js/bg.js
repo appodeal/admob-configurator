@@ -18,12 +18,9 @@ chrome.webNavigation.onCompleted.addListener(function (details) {
             } else if (details_url.match(/adsense\/overview/)) {
                 console.log("calling reporting_step2.js");
                 chrome.tabs.executeScript(details.tabId, {file: "js/reporting_step2.js"});
-            } else if (details_url.match(/apis\/library/)) {
+            } else if (details_url.match(/projectselector\/apis\/credentials/)) {
                 console.log("calling library.js");
                 chrome.tabs.executeScript(details.tabId, {file: "js/library.js"});
-            } else if (details.url.toString().match(/iam-admin\/projects\?filter\=name\:Appodeal\*/)) {
-                console.log("calling find_project.js");
-                chrome.tabs.executeScript(details.tabId, {file: "js/find_project.js"});
             }
         }
     });
