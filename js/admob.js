@@ -53,8 +53,11 @@ Admob.prototype.syncInventory = function(callback) {
                 self.createMissingAdunits(function() {
                   self.finishDialog();
                   self.sendReports({mode: 0, note: "json"}, [JSON.stringify({message: "Finish", admob: self})], function() {
-                    console.log("Sent finish inventory report");
+                      console.log("Sent finish inventory report");
                   });
+                  setTimeout(function() {
+                      chrome.runtime.sendMessage({type: "reload_finish_admob_page"}, function(id){});
+                  }, 5000);
                   callback();
                 })
               })
@@ -244,12 +247,14 @@ Admob.prototype.isPublisherIdRight = function() {
   var emails = [];
     if (self.accounts && self.accounts.length >= 2){
         self.accounts.forEach(function(element) {
-            emails.push(element.email);
-            if(element.publisher_id == self.accountId){
-                self.publisherId = element.publisher_id;
-                self.accountEmail = element.email;
-                ret = true;
-            }
+          if( element != undefined) {
+              emails.push(element.email);
+              if(element.publisher_id == self.accountId){
+                  self.publisherId = element.publisher_id;
+                  self.accountEmail = element.email;
+                  ret = true;
+              }
+          }
         });
         if (!ret) chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ emails.join() + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){});
         return ret;

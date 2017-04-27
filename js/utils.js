@@ -6,6 +6,7 @@ var APPODEAL_STATUS_URL = APPODEAL_URL_SSL + "/api/v2/get_api_key";
 var FAQ_LINK = 'https://github.com/appodeal/admob-configurator/wiki/FAQ';
 var GOOGLE_CLOUD_CONSOLE = 'https://apps.admob.com/logout?continue=https://apps.admob.com/#home';
 var ADMOB_LINK = "https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD";
+var ADMOB_LOGOUT = 'https://apps.admob.com/logout?continue=' + ADMOB_LINK;
 
 
 var logs = [];
@@ -180,6 +181,14 @@ function cut(text, limit) {
     if (text.length <= limit) return text;
     text = text.slice(0, limit);
     return text + "...";
+}
+
+function close_notifications(){
+    chrome.storage.local.set({'close_notifications': true});
+}
+
+function open_notifications(){
+    chrome.storage.local.set({'close_notifications': false});
 }
 
 var Utils = function () {

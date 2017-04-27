@@ -25,12 +25,19 @@ chrome.webNavigation.onCompleted.addListener(function (details) {
         }
     });
 });
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if(request.type === "shownotification"){
-        chrome.notifications.create('notify', request.opt, function(){})
+        chrome.storage.local.get({
+            'close_notifications': false
+        }, function (items) {
+            if( !items.close_notifications ){
+                chrome.notifications.create('notify', request.opt, function(){});
+            }
+        });
     }
     if(request.type === "wrong_account"){
-        chrome.tabs.update({url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'}, function (tab) {
+        chrome.tabs.update({url: ADMOB_LOGOUT}, function (tab) {
             var opt = notifications_params('basic', request);
             chrome.notifications.create(opt, function(){})
         });
@@ -41,7 +48,20 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             chrome.notifications.create(opt, function(){})
         });
     }
+    if(request.type === "reload_finish_admob_page"){
+        chrome.storage.local.get({
+            'admob_processing_tab_id': null
+        }, function (items) {
+            if( items.admob_processing_tab_id ){
+                chrome.tabs.update(items.admob_processing_tab_id, {url: ADMOB_LINK}, function (tab) {});
+                chrome.storage.local.remove('admob_processing_tab_id');
+            }
+        });
+    }
+});
 
+chrome.notifications.onClosed.addListener(function() {
+    chrome.storage.local.set({"close_notifications": true});
 });
 
 function notifications_params(type, request){

@@ -7,7 +7,7 @@ button_logout = '<a id="logout_link" class="button_logout right">Logout</a>';
 email = null;
 
 LoadController = (function () {
-    var addCountApps, addDoneLabel, addEnableReport, addNoApps, clearStorageAndCookies, faq_link, getAppodealStatus, getLocalStatus, getRemoteStatus, load_hover, login_link, logout_link, return_link, setEventListen, storage_local_get, updateAppodealCredentials, login, http, result, localCredentials, reporting_link, admob_link, checking_plugin_version;
+    var addCountApps, addDoneLabel, addLoader, addEnableReport, addNoApps, clearStorageAndCookies, faq_link, getAppodealStatus, getLocalStatus, getRemoteStatus, load_hover, login_link, logout_link, return_link, setEventListen, storage_local_get, updateAppodealCredentials, login, http, result, localCredentials, reporting_link, admob_link, checking_plugin_version;
     return_link = function (event) {
         console.log('return_link');
         chrome.tabs.update({
@@ -59,6 +59,11 @@ LoadController = (function () {
     addDoneLabel = function (btn, text, step, id) {
         if (btn.length) {
             btn.html('<i class="ion"><div class="backgroundRadius"></div><div class="' + step + ' svgStep"></div></i><a id="' + id + '" class="point">' + text + '</a>');
+        }
+    };
+    addLoader = function (add) {
+        if (add.length) {
+            add.html('<div class="loader">Loading...</div>');
         }
     };
     addEnableReport = function (btn) {
@@ -204,7 +209,7 @@ LoadController = (function () {
         } else {
             chrome.storage.local.remove('rewarded_videoBids');
         }
-        if(result['plugin_status_ids']){
+        if (result['plugin_status_ids']) {
             if (result['plugin_status_ids']['accounts']) {
                 localCredentials['accounts'] = result['plugin_status_ids']['accounts'];
             } else {
@@ -229,39 +234,52 @@ LoadController = (function () {
         console.log('getRemoteStatus');
         if (items['appodeal_email']) {
             getAppodealStatus(function (result) {
-                if(checking_plugin_version(result)){
+                if (checking_plugin_version(result)) {
                     updateAppodealCredentials(result, function () {
-                        var data, leftNum, accounts_data, acc_name;
+                        var data, leftNum, accounts_data, acc_name, id_admob, id_reporting;
+                        id_admob = $('#admob');
+                        id_reporting = $('#reporting');
                         data = result['plugin_status'];
                         data['many_user_admob_accounts'] = result['plugin_status_ids'];
                         console.log(data);
                         leftNum = data['total'] - data['synced'];
                         if (data['account']) {
-                            if(data['many_user_admob_accounts'] && data['many_user_admob_accounts']['accounts']){
+                            if (data['many_user_admob_accounts'] && data['many_user_admob_accounts']['accounts']) {
                                 acc_name = '<ul>';
-                                $.each( data['many_user_admob_accounts']['accounts'], function( key, value ) {
-                                    if(value != undefined){
-                                        acc_name = acc_name + '<li class="account">' + cut('Synced '+ (value['synced'] >= 2 ? 'apps' : 'app') + ': ' + value['synced'] + ' ' + value['email'], 40) + '</li>';
+                                accounts_data = [];
+                                data['many_user_admob_accounts']['accounts'].forEach(function (item, key, mapObj) {
+                                    if (item != undefined) {
+                                        accounts_data[key] = item.email;
+                                        acc_name = acc_name + '<li class="account">' + cut('Synced ' + (item['synced'] >= 2 ? 'apps' : 'app') + ': ' + item['synced'] + ' ' + item['email'], 40) + '</li>';
                                     }
                                 });
-                                acc_name = acc_name = acc_name + '</ul>';
-                                addDoneLabel($('#reporting'), 'Enabled Admob reporting ' + acc_name, 'stepDone', 'reporting_link')
-                            }else{
-                                addDoneLabel($('#reporting'), 'Enabled Admob reporting', 'stepDone', 'reporting_link');
+                                acc_name = acc_name + '</ul>';
+                                addDoneLabel(id_reporting, 'Enabled Admob reporting ' + acc_name, 'stepDone', 'reporting_link')
+                            } else {
+                                addDoneLabel(id_reporting, 'Enabled Admob reporting', 'stepDone', 'reporting_link');
                             }
-                            addDoneLabel($('#admob'), 'Sync Appodeal and Admob ad units', 'stepDone', 'admob_link');
+                            addDoneLabel(id_admob, 'Sync Appodeal and Admob ad units', 'stepDone', 'admob_link');
                         } else {
-                            addEnableReport($('#reporting'));
+                            addEnableReport(id_reporting);
                             $('#reporting_link').click(reporting_link);
                             return null;
                         }
                         if (leftNum) {
-                            addCountApps($('#admob'), leftNum);
+                            addCountApps(id_admob, leftNum);
                         } else if (data['total']) {
-                            addDoneLabel($('#admob'), 'Synced Appodeal and Admob ad units', 'stepDone', 'admob_link');
+                            addDoneLabel(id_admob, 'Synced Appodeal and Admob ad units', 'stepDone', 'admob_link');
                         } else {
-                            addNoApps($('#admob'));
+                            addNoApps(id_admob);
                         }
+                        //Add loading if close notification
+                        chrome.storage.local.get({
+                            'admob_processing_tab_id': null
+                        }, function (items) {
+                            if( items.admob_processing_tab_id ){
+                                addLoader(id_admob.find('.svgStep'));
+                            }
+                        });
+
                         $('#reporting_link').click(reporting_link);
                         $('#admob_link').click(admob_link);
                     });
@@ -271,13 +289,15 @@ LoadController = (function () {
     };
     reporting_link = function (event) {
         chrome.tabs.update({url: GOOGLE_CLOUD_CONSOLE}, function (tab) {
+            open_notifications();
             chrome.storage.local.set({"reporting_tab_id": tab.id});
             window.close();
         });
     };
     admob_link = function (event) {
-        chrome.tabs.update({url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'}, function (tab) {
-            chrome.storage.local.set({"admob_processing": true}, function () {
+        chrome.tabs.update({url: ADMOB_LOGOUT}, function (tab) {
+            open_notifications();
+            chrome.storage.local.set({"admob_processing": true, 'admob_processing_tab_id': tab.id}, function () {
                 window.close();
             });
         });
@@ -290,8 +310,13 @@ LoadController = (function () {
         $('#faq_link').click(faq_link);
     };
     checking_plugin_version = function (items) {
-        if (extensionVersion() < items.plugin_critical_version ) {
-            chrome.runtime.sendMessage({type: "update_plugin", info: 'Please update Chrome extension to version '+ items.plugin_critical_version, title: 'Update Chrome extension Appodeal'}, function(id){});
+        if (extensionVersion() < items.plugin_critical_version) {
+            chrome.runtime.sendMessage({
+                type: "update_plugin",
+                info: 'Please update Chrome extension to version ' + items.plugin_critical_version,
+                title: 'Update Chrome extension Appodeal'
+            }, function (id) {
+            });
             return false
         }
         return true;
@@ -305,6 +330,6 @@ LoadController = (function () {
     };
 })();
 
-$(document).ready(function(){
+$(document).ready(function () {
     LoadController.init();
 });
