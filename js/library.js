@@ -71,8 +71,9 @@ LibraryController = function () {
                             angular.reloadWithDebugInfo();\
                         }\
 					");
+            }finally{
+                LibraryController.insert_data();
             }
-            LibraryController.insert_data();
         },
         url_project: function (projectName) {
             sendOut(0, 'projectName: ' + projectName);
@@ -83,7 +84,7 @@ LibraryController = function () {
         },
         insert_data: function () {
             console.log('LibraryController.insert_data');
-            waitForElement("#p6ntest-project-create-modal", null, function (element) {
+            waitForElement('.p6n-form-row', null, function (element) {
 
                 var btnMarketing = $('input[name="marketing"][value="false"]');
                 var btnTos = $('input[name="tos"][value="true"]');
