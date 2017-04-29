@@ -16,14 +16,33 @@ LibraryController = function () {
             }
             return data;
         },
+        random_string: function (length) {
+            return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+        },
+        projectidsuggestion: function (callback) {
+            var refreshIntervalId = setInterval(function() {
+                var random = LibraryController.random_string(10);
+                console.log(random);
+                var req = new XMLHttpRequest();
+                req.open("GET", 'https://console.developers.google.com/m/projectidsuggestion?authuser=0&pidAvailable=' + random, true);
+                req.onload = function (event) {
+                    if (req.readyState == 4) {
+                        var data = JSON.parse(LibraryController.readBody(req).replace(")]}'", ""));
+                        if (data.available){
+                            clearInterval(refreshIntervalId);
+                            callback(data);
+                        }
+                    }
+                };
+                req.send(null);
+            }, 1000);
+        },
         init: function () {
             console.log('LibraryController.init');
             LibraryController.find();
         },
         find: function () {
             console.log('LibraryController.find');
-            //https://console.developers.google.com/m/crmresources/recent?authuser=0&maxResources=50
-            //find project from api
             var req = new XMLHttpRequest();
             req.open("GET", 'https://console.developers.google.com/m/crmresources/recent?authuser=0&maxResources=50', true);
             req.onload = function (event) {
@@ -44,8 +63,50 @@ LibraryController = function () {
             };
             req.send(null);
         },
+        object_to_params: function (obj) {
+            var p = [];
+            for (var key in obj) {
+                p.push(key + '=' + encodeURIComponent(obj[key]));
+            }
+            return p.join('&');
+        },
         create: function () {
+            modal.show("Appodeal Chrome Extension", "Create Appodeal project. Please wait");
+            LibraryController.projectidsuggestion( function (data) {
+                var json = JSON.stringify({
+                    "name": projectName,
+                    "isAe4B":"false",
+                    "assignedIdForDisplay":data.id,
+                    "generateProjectId":"false",
+                    "billingAccountId":null,
+                    "projectCreationInterface":"create-project",
+                    "noCloudProject":"false",
+                    "userAgent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",
+                    "parent":null,
+                    "marketingUtmCode":{"operation":"createProject","value":data.id},
+                    "descriptionLocalizationKey":"panCreateProject",
+                    "descriptionLocalizationArgs":{
+                        "name": projectName,
+                        "isAe4B":"false",
+                        "assignedIdForDisplay":data.id,
+                        "generateProjectId":"false",
+                        "billingAccountId":null,
+                        "projectCreationInterface":"create-project",
+                        "noCloudProject":"false",
+                        "userAgent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",
+                        "parent":null
+                    },
+                    "phantomData":{"displayName": projectName,"type":"PROJECT","lifecycleState":"ACTIVE","id":data.id,"name":"projects/" + data.id}});
 
+
+
+                $http({
+                    method: 'POST',
+                    url: 'https://console.developers.google.com/m/operations?authuser=0&operationType=cloud-console.project.createProject',
+                    data:  LibraryController.object_to_params(json),
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                });
+            });
         },
         url_project: function (projectName) {
             sendOut(0, 'projectName: ' + projectName);
