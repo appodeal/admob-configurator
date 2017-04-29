@@ -6,6 +6,8 @@ var APPODEAL_STATUS_URL = APPODEAL_URL_SSL + "/api/v2/get_api_key";
 var FAQ_LINK = 'https://github.com/appodeal/admob-configurator/wiki/FAQ';
 var GOOGLE_CLOUD_CONSOLE = 'https://apps.admob.com/logout?continue=https://apps.admob.com/#home';
 var ADMOB_LINK = "https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD";
+var ADMOB_LOGOUT = 'https://apps.admob.com/logout?continue='+ADMOB_LINK;
+var GOOGLE_CLOUD_CONSOLE_CREDENTIAL = 'https://console.developers.google.com/projectselector/apis/credentials?authuser=0&pli=1';
 
 
 var logs = [];

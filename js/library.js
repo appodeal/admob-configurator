@@ -18,15 +18,7 @@ LibraryController = function () {
         },
         init: function () {
             console.log('LibraryController.init');
-            var button_find_one = $('div[ng-if="ctrl.showSelectButton()"]');
-            var button_find_two = $('gs-zero-state-button[link-click="ctrl.onSelectClick()"]');
-            var button_create = $('gs-zero-state-button[link-click="ctrl.onCreateClick()"]');
-            sendOut(0, 'button_find_one.length: ' + button_find_one.length + ' button_find_two: ' + button_find_two.length + ' button_create: ' + button_create.length);
-            if (button_find_one.length > 0 || button_find_two.length > 0){
-                LibraryController.find();
-            }else if(button_create.length > 0){
-                LibraryController.create();
-            }
+            LibraryController.find();
         },
         find: function () {
             console.log('LibraryController.find');
@@ -53,27 +45,7 @@ LibraryController = function () {
             req.send(null);
         },
         create: function () {
-            try{
-                console.log('LibraryController.create_v1');
-                triggerMouseEvent(document.querySelector("[on-menu-open='psCtrl.handleMenuOpen()']"), "mousedown");
-                Utils.injectScript(" \
-						var platform = document.querySelector('div[ng-click=\"psCtrl.showCreateProjectPage()\"]'); \
-						angular.element(platform).triggerHandler('click'); \
-					");
-            }catch(e){
-                console.log('LibraryController.create_v2');
-                Utils.injectScript(" \
-						var button = document.querySelector('a[ng-click=\"ctrl.showPurviewPickerModal()\"]'); \
-						angular.element(button).triggerHandler('click'); \
-						try{\
-                            angular.element(document.querySelector('#p6ntest-purview-create-button')).scope().ctrl.goToCreateProject();\
-                        }catch(err) {\
-                            angular.reloadWithDebugInfo();\
-                        }\
-					");
-            }finally{
-                LibraryController.insert_data();
-            }
+
         },
         url_project: function (projectName) {
             sendOut(0, 'projectName: ' + projectName);
