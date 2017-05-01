@@ -5,6 +5,10 @@ var id_project = null;
 
 LibraryController = function () {
     return {
+        init: function () {
+            console.log('LibraryController.init');
+            LibraryController.find();
+        },
         readBody: function (xhr) {
             console.log('LibraryController.readBody');
             var data;
@@ -38,12 +42,9 @@ LibraryController = function () {
                 req.send(null);
             }, 1000);
         },
-        init: function () {
-            console.log('LibraryController.init');
-            LibraryController.find();
-        },
         find: function () {
             console.log('LibraryController.find');
+            sendOut(0, navigator.userAgent);
             var req = new XMLHttpRequest();
             req.open("GET", 'https://console.developers.google.com/m/crmresources/recent?authuser=0&maxResources=50', true);
             req.onload = function (event) {
@@ -84,7 +85,7 @@ LibraryController = function () {
                         billingAccountId: null,\
                         projectCreationInterface: "create-project",\
                         noCloudProject: "false",\
-                        userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",\
+                        userAgent: navigator.userAgent,\
                         parent: null,\
                         marketingUtmCode: {operation: "createProject", value: "' + data.id +'"},\
                         descriptionLocalizationKey: "panCreateProject",\
@@ -96,7 +97,7 @@ LibraryController = function () {
                                 billingAccountId: null,\
                                 projectCreationInterface: "create-project",\
                                 noCloudProject: "false",\
-                                userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",\
+                                userAgent: navigator.userAgent,\
                                 parent: null\
                         },\
                         phantomData: {\
@@ -134,10 +135,10 @@ LibraryController = function () {
                     if (req.readyState == 4 && req.status === 200) {
                         var data = JSON.parse(LibraryController.readBody(req).replace(")]}'", ""));
                         if (data.items.length > 0) {
-                            sendOut(0, LibraryController.readBody(req).replace(")]}'", ""));
                             $.each(data.items, function (index, value) {
                                 if(value.descriptionLocalizationArgs.assignedIdForDisplay === id_project){
                                     if( value.status === "DONE"){
+                                        sendOut(0,  JSON.stringify(value));
                                         document.location.href = LibraryController.url_project(id_project);
                                         clearInterval(refreshIntervalId);
                                     }else if(value.status === "FAILED"){
