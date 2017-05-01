@@ -1,6 +1,7 @@
 sendOut(0, "Create new project from the library page (new accounts)");
 var LibraryController, modal;
 var projectName = 'Appodeal';
+var id_project = null;
 
 LibraryController = function () {
     return {
@@ -26,7 +27,7 @@ LibraryController = function () {
                 var req = new XMLHttpRequest();
                 req.open("GET", 'https://console.developers.google.com/m/projectidsuggestion?authuser=0&pidAvailable=' + random, true);
                 req.onload = function (event) {
-                    if (req.readyState == 4) {
+                    if (req.readyState == 4 && req.status === 200) {
                         var data = JSON.parse(LibraryController.readBody(req).replace(")]}'", ""));
                         if (data.available) {
                             clearInterval(refreshIntervalId);
@@ -46,7 +47,7 @@ LibraryController = function () {
             var req = new XMLHttpRequest();
             req.open("GET", 'https://console.developers.google.com/m/crmresources/recent?authuser=0&maxResources=50', true);
             req.onload = function (event) {
-                if (req.readyState == 4) {
+                if (req.readyState === 4 && req.status === 200) {
                     var data = JSON.parse(LibraryController.readBody(req).replace(")]}'", ""));
                     if (data) {
                         sendOut(0, LibraryController.readBody(req).replace(")]}'", ""));
@@ -73,52 +74,85 @@ LibraryController = function () {
         create: function () {
             modal.show("Appodeal Chrome Extension", "Create Appodeal project. Please wait");
             LibraryController.projectidsuggestion(function (data) {
-                var params = {
-                    name: projectName,
-                    isAe4B: false,
-                    assignedIdForDisplay: data.id,
-                    generateProjectId: false,
-                    billingAccountId: null,
-                    projectCreationInterface: "create-project",
-                    noCloudProject: false,
-                    userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",
-                    parent: null,
-                    marketingUtmCode: {operation: "createProject", value: data.id},
-                    descriptionLocalizationKey: "panCreateProject",
-                    descriptionLocalizationArgs: {
-                        name: projectName,
-                        isAe4B: false,
-                        assignedIdForDisplay: data.id,
-                        generateProjectId: false,
-                        billingAccountId: null,
-                        projectCreationInterface: "create-project",
-                        noCloudProject: false,
-                        userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",
-                        parent: null
-                    },
-                    phantomData: {
-                        displayName: projectName,
-                        type: "PROJECT",
-                        lifecycleState: "ACTIVE",
-                        id: data.id,
-                        name: "projects/" + data.id
+                id_project = data.id;
+                Utils.injectScript('\
+                    var params = {\
+                        name: "' + projectName +'",\
+                        isAe4B: "false",\
+                        assignedIdForDisplay: "' + data.id +'",\
+                        generateProjectId: "false",\
+                        billingAccountId: null,\
+                        projectCreationInterface: "create-project",\
+                        noCloudProject: "false",\
+                        userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",\
+                        parent: null,\
+                        marketingUtmCode: {operation: "createProject", value: "' + data.id +'"},\
+                        descriptionLocalizationKey: "panCreateProject",\
+                            descriptionLocalizationArgs: {\
+                            name: "' + projectName +'",\
+                                isAe4B: "false",\
+                                assignedIdForDisplay: "' + data.id +'",\
+                                generateProjectId: "false",\
+                                billingAccountId: null,\
+                                projectCreationInterface: "create-project",\
+                                noCloudProject: "false",\
+                                userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36",\
+                                parent: null\
+                        },\
+                        phantomData: {\
+                            displayName: "' + projectName +'",\
+                                type: "PROJECT",\
+                                lifecycleState: "ACTIVE",\
+                                id: "' + data.id +'",\
+                                name: "projects/" + "' + data.id +'"\
+                        }\
+                    };\
+                    console.log(pantheon_main_init_args[1]._);\
+                    \
+                     $.ajax\
+                    ({\
+                        type: "POST",\
+                        url: "https://console.developers.google.com/m/operations?authuser=0&organizationId=0&operationType=cloud-console.project.createProject",\
+                        contentType: "application/json; charset=UTF-8",\
+                        dataType: "json",\
+                        async: false,\
+                        data: JSON.stringify(params),\
+                        headers: {"x-framework-xsrf-token": pantheon_main_init_args[1]._},\
+                        success: function (response, textStatus, jqXHR) { console.log(response);},\
+                        error: function(response, textStatus, jqXHR) {console.log(response)},\
+                        complete: function(response, textStatus, jqXHR) {console.log(response)},\
+                    });');
+                LibraryController.find_from_create(data.id);
+            });
+
+        },
+        find_from_create: function (id) {
+            var refreshIntervalId = setInterval(function () {
+                var req = new XMLHttpRequest();
+                req.open("GET", 'https://console.developers.google.com/m/operations?authuser=0&maxResults=100', true);
+                req.onload = function (event) {
+                    if (req.readyState == 4 && req.status === 200) {
+                        var data = JSON.parse(LibraryController.readBody(req).replace(")]}'", ""));
+                        if (data.items.length > 0) {
+                            sendOut(0, LibraryController.readBody(req).replace(")]}'", ""));
+                            $.each(data.items, function (index, value) {
+                                if(value.descriptionLocalizationArgs.assignedIdForDisplay === id_project){
+                                    if( value.status === "DONE"){
+                                        document.location.href = LibraryController.url_project(id_project);
+                                        clearInterval(refreshIntervalId);
+                                    }else if(value.status === "FAILED"){
+                                        sendOut(0, value.error.causeErrorMessage);
+                                        var message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
+                                        modal.show("Appodeal Chrome Extension", message);
+                                        clearInterval(refreshIntervalId);
+                                    }
+                                }
+                            });
+                        }
                     }
                 };
-                debugger;
-                // $.ajax
-                // ({
-                //     type: "POST",
-                //     url: 'https://console.developers.google.com/m/operations?authuser=0&operationType=cloud-console.project.createProject',
-                //     contentType: "application/javascript; charset=UTF-8",
-                //     dataType: 'json',
-                //     async: false,
-                //     data: JSON.stringify(params),
-                //     // headers: {"x-framework-xsrf-token": "AFE_nuOwyEQgvc5Lch7WCyWdggHjXLPKzA:1493461542414"},
-                //     done: function () {
-                //         debugger
-                //     }
-                // });
-            });
+                req.send(null);
+            }, 1000);
         },
         url_project: function (projectName) {
             sendOut(0, 'projectName: ' + projectName);
