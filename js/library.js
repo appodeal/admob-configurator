@@ -26,7 +26,7 @@ LibraryController = function () {
         },
         projectidsuggestion: function (callback) {
             var refreshIntervalId = setInterval(function () {
-                var random = LibraryController.random_string(10);
+                var random = 'appodeal-' + LibraryController.random_string(10);
                 console.log(random);
                 var req = new XMLHttpRequest();
                 req.open("GET", 'https://console.developers.google.com/m/projectidsuggestion?authuser=0&pidAvailable=' + random, true);
@@ -80,19 +80,19 @@ LibraryController = function () {
                     var params = {\
                         name: "' + projectName +'",\
                         isAe4B: "false",\
-                        assignedIdForDisplay: "' + data.id +'",\
+                        assignedIdForDisplay: "' + id_project +'",\
                         generateProjectId: "false",\
                         billingAccountId: null,\
                         projectCreationInterface: "create-project",\
                         noCloudProject: "false",\
                         userAgent: navigator.userAgent,\
                         parent: null,\
-                        marketingUtmCode: {operation: "createProject", value: "' + data.id +'"},\
+                        marketingUtmCode: {operation: "createProject", value: "' + id_project +'"},\
                         descriptionLocalizationKey: "panCreateProject",\
                             descriptionLocalizationArgs: {\
                             name: "' + projectName +'",\
                                 isAe4B: "false",\
-                                assignedIdForDisplay: "' + data.id +'",\
+                                assignedIdForDisplay: "' + id_project +'",\
                                 generateProjectId: "false",\
                                 billingAccountId: null,\
                                 projectCreationInterface: "create-project",\
@@ -104,8 +104,8 @@ LibraryController = function () {
                             displayName: "' + projectName +'",\
                                 type: "PROJECT",\
                                 lifecycleState: "ACTIVE",\
-                                id: "' + data.id +'",\
-                                name: "projects/" + "' + data.id +'"\
+                                id: "' + id_project +'",\
+                                name: "projects/" + "' + id_project +'"\
                         }\
                     };\
                     console.log(pantheon_main_init_args[1]._);\
@@ -165,7 +165,7 @@ LibraryController = function () {
                         complete: function(response, textStatus, jqXHR) {console.log("complete",response)},\
                     });\
                     ');
-                LibraryController.find_from_create(data.id);
+                LibraryController.find_from_create(id_project);
             });
 
         },
@@ -179,13 +179,21 @@ LibraryController = function () {
                         if (data.items.length > 0) {
                             $.each(data.items, function (index, value) {
                                 if(value.descriptionLocalizationArgs.assignedIdForDisplay === id_project){
+                                    var message = '';
                                     if( value.status === "DONE"){
                                         sendOut(0,  JSON.stringify(value));
                                         document.location.href = LibraryController.url_project(id_project);
                                         clearInterval(refreshIntervalId);
-                                    }else if(value.status === "FAILED"){
+                                    }else if(value.status === "FAILED" && value.error.causeErrorMessage.indexOf('ALREADY_EXISTS') != -1){
                                         sendOut(0, value.error.causeErrorMessage);
-                                        var message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
+                                        message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
+                                        modal.show("Appodeal Chrome Extension", message);
+                                        clearInterval(refreshIntervalId);
+
+                                        LibraryController.create();
+                                    } else if(value.status === "FAILED" && value.error.causeErrorMessage.indexOf('RESOURCE_EXHAUSTED') != -1){
+                                        sendOut(0, value.error.causeErrorMessage);
+                                        message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
                                         modal.show("Appodeal Chrome Extension", message);
                                         clearInterval(refreshIntervalId);
                                     }
