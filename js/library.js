@@ -119,10 +119,52 @@ LibraryController = function () {
                         async: false,\
                         data: JSON.stringify(params),\
                         headers: {"x-framework-xsrf-token": pantheon_main_init_args[1]._},\
-                        success: function (response, textStatus, jqXHR) { console.log(response);},\
-                        error: function(response, textStatus, jqXHR) {console.log(response)},\
-                        complete: function(response, textStatus, jqXHR) {console.log(response)},\
-                    });');
+                        success: function (response, textStatus, jqXHR) { console.log(textStatus);},\
+                        error: function(response, textStatus, jqXHR) {\
+                        if (response.readyState === 4 && response.status === 403) {\
+                            var data = JSON.parse(response.responseText.replace(")]}\'", ""));\
+                            console.log("error", data);\
+                            if (data.message === "The user must accept the Terms of Service before performing this operation."){\
+                                $.ajax\
+                                ({\
+                                    type: "POST",\
+                                    url: "https://console.developers.google.com/m/preferences?tos=true&tos_id=pantheon&authuser=0",\
+                                    contentType: "application/json; charset=UTF-8",\
+                                    dataType: "json",\
+                                    async: false,\
+                                    headers: {"x-framework-xsrf-token": pantheon_main_init_args[1]._},\
+                                    success: function (response, textStatus, jqXHR) { console.log(response);},\
+                                });\
+                                 \
+                                 $.ajax\
+                                ({\
+                                    type: "POST",\
+                                    url: "https://console.developers.google.com/m/accountsettings?authuser=0",\
+                                    contentType: "application/json; charset=UTF-8",\
+                                    dataType: "json",\
+                                    data: JSON.stringify({"emailSettings":{"performance":true,"feature":true,"offer":true,"feedback":true}}),\
+                                    async: false,\
+                                    headers: {"x-framework-xsrf-token": pantheon_main_init_args[1]._},\
+                                    success: function (response, textStatus, jqXHR) { console.log(response);},\
+                                });\
+                            }\
+                        }\
+                        \
+                        $.ajax\
+                        ({\
+                            type: "POST",\
+                            url: "https://console.developers.google.com/m/operations?authuser=0&organizationId=0&operationType=cloud-console.project.createProject",\
+                            contentType: "application/json; charset=UTF-8",\
+                            dataType: "json",\
+                            async: false,\
+                            data: JSON.stringify(params),\
+                            headers: {"x-framework-xsrf-token": pantheon_main_init_args[1]._},\
+                            success: function (response, textStatus, jqXHR) { console.log(textStatus);},\
+                        });\
+                        },\
+                        complete: function(response, textStatus, jqXHR) {console.log("complete",response)},\
+                    });\
+                    ');
                 LibraryController.find_from_create(data.id);
             });
 
