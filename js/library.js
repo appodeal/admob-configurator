@@ -81,6 +81,7 @@ LibraryController = function () {
             modal.show("Appodeal Chrome Extension", "Create Appodeal project. Please wait");
             LibraryController.projectidsuggestion(function (data) {
                 id_project = data.id;
+                //\{\"\_\"\:\"([A-Za-z0-9\:\_]+)
                 Utils.injectScript('\
                     var params = {\
                         name: "' + projectName + '",\
@@ -113,7 +114,11 @@ LibraryController = function () {
                                 name: "projects/" + "' + id_project + '"\
                         }\
                     };\
-                    console.log(pantheon_main_init_args[1]._);\
+                    var xsrf_token = pantheon_main_init_args[1]._; debugger;\
+                    if (xsrf_token === undefined || xsrf_token === null) {\
+                        xsrf_token = pantheon_main_init_args[0]._;\
+                    }\
+                    console.log("xsrf-token",xsrf_token);\
                     setTimeout(function () {\
                         $.ajax\
                         ({\
@@ -123,7 +128,7 @@ LibraryController = function () {
                             dataType: "json",\
                             async: false,\
                             data: JSON.stringify(params),\
-                            headers: {"x-framework-xsrf-token": pantheon_main_init_args[1]._},\
+                            headers: {"x-framework-xsrf-token": xsrf_token},\
                             error: function(response, textStatus, jqXHR) {\
                                 if (response.readyState === 4 && response.status === 403) {\
                                     var data = JSON.parse(response.responseText.replace(")]}\'", ""));\
@@ -137,7 +142,7 @@ LibraryController = function () {
                                                 contentType: "application/json; charset=UTF-8",\
                                                 dataType: "json",\
                                                 async: false,\
-                                                headers: {"x-framework-xsrf-token": pantheon_main_init_args[1]._},\
+                                                headers: {"x-framework-xsrf-token": xsrf_token},\
                                                 complete: function (response, textStatus, jqXHR) { console.log(response);},\
                                             });\
                                         }, ' + timeout + ');\
@@ -150,7 +155,7 @@ LibraryController = function () {
                                                 dataType: "json",\
                                                 data: JSON.stringify({"emailSettings":{"performance":true,"feature":true,"offer":true,"feedback":true}}),\
                                                 async: false,\
-                                                headers: {"x-framework-xsrf-token": pantheon_main_init_args[1]._},\
+                                                headers: {"x-framework-xsrf-token": xsrf_token},\
                                                 complete: function (response, textStatus, jqXHR) { location.reload();},\
                                             });\
                                         }, ' + timeout + ');\
