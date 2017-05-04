@@ -114,7 +114,8 @@ LibraryController = function () {
                                 name: "projects/" + "' + id_project + '"\
                         }\
                     };\
-                    var xsrf_token = pantheon_main_init_args[1]._; debugger;\
+                    console.log(pantheon_main_init_args);\
+                    var xsrf_token = pantheon_main_init_args[1]._;\
                     if (xsrf_token === undefined || xsrf_token === null) {\
                         xsrf_token = pantheon_main_init_args[0]._;\
                     }\
