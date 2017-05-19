@@ -237,7 +237,7 @@ AdmobV2.prototype.newAdunitsForServer = function (app) {
     app.localAdunits.forEach(function (l) {
         // process adunits with correct appodeal app id only if exists
         var name = l[2];
-        if (l[16].length == 1 || l[18]) name = l[3];
+        if ((l[16] && l[16].length == 1) || l[18]) name = l[3];
         var adAppId = AdmobV2.adUnitRegex(name).appId;
         if (!adAppId || adAppId == app.id) {
             var code = self.adunitServerId(l[1]);
@@ -449,18 +449,19 @@ AdmobV2.prototype.createLocalAdunit = function (s, callback) {
         try {
             var localAdunit = data.result[1][2][0];
             // insert mediation
-            if (s.bid) {
+            var type = 0;
+            var adTypeName = AdmobV2.adUnitRegex(localAdunit[3]).adType;
+            if (adTypeName === 'banner') type = 0;
+            if (adTypeName === 'interstitial') type = 1;
+            if (adTypeName === 'rewarded_video') type = 5;
+            var adunitId = localAdunit[1];
 
-                var type = 0;
-                var adTypeName = AdmobV2.adUnitRegex(localAdunit[3]).adType;
-                if (adTypeName === 'banner') type = 0;
-                if (adTypeName === 'interstitial') type = 1;
-                if (adTypeName === 'rewarded_video') type = 5;
-                var adunitId = localAdunit[1];
+            //Bidflor
+            if (s.bid) {
                 $.ajax({
                     type: 'POST',
                     url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Create?rpcTrackingId=MediationGroupService.Create:1',
-                    data: {__ar: '{"1":"' + s.name + '","2": 1,"3": {"1": 4, "2": ' + type + ', "3": ["' + localAdunit[1] + '"]},"4": [{"2": 1, "3": 1, "4": 1, "5": {"1": "' + s.bid + '", "2": "USD"}, "6": true}]}'},
+                    data: {__ar: '{"1":"' + s.name + '","2": 1,"3": {"1": 4, "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 1, "5": {"1": "' + s.bid + '", "2": "USD"}, "6": true}]}'},
                     async: false,
                     contentType: 'application/x-www-form-urlencoded',
                     headers: {
@@ -481,12 +482,35 @@ AdmobV2.prototype.createLocalAdunit = function (s, callback) {
                         errorEvent("No result in an internal inventory request.", data);
                     }
                 });
-
             } else {
-                callback(localAdunit);
+                //No bidflor
+                $.ajax({
+                    type: 'POST',
+                    url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Create?rpcTrackingId=MediationGroupService.Create:1',
+                    data: {__ar: '{"1":"' + s.name + '","2": 1, "3": {"1": 4, "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 1, "5": {"1": "10000", "2": "USD"}, "6": false}]}'},
+                    async: false,
+                    contentType: 'application/x-www-form-urlencoded',
+                    headers: {
+                        "x-framework-xsrf-token": self.token
+                    },
+                    complete: function (response) {
+                        try {
+                            if (response.readyState === 4 && response.status === 200) {
+                                var data = JSON.parse(response.responseText);
+                                if (data[1]) localAdunit = data[1];
+                                callback(localAdunit);
+                            }
+                        } catch (e) {
+                            self.showErrorDialog("Insert bid floor: " + e.message);
+                        }
+                    },
+                    error: function (data) {
+                        errorEvent("No result in an internal inventory request.", data);
+                    }
+                });
             }
         } catch (e) {
-            self.showErrorDialog("Create local adunit: " + e.message);
+            self.showErrorDialog("Create local adunit: " + e.stack);
         }
     })
 };
@@ -495,26 +519,13 @@ AdmobV2.prototype.createLocalAdunit = function (s, callback) {
 AdmobV2.adunitsScheme = function (app) {
     var scheme = [];
     // default adunits
-    scheme.push({
-        app: app.localApp[1],
-        name: AdmobV2.adunitName(app, "interstitial", "image"),
-        adType: 1,
-        formats: [1]
-    });
+    scheme.push({app: app.localApp[1], name: AdmobV2.adunitName(app, "interstitial", "image"), adType: 1, formats: [1]});
     scheme.push({app: app.localApp[1], name: AdmobV2.adunitName(app, "interstitial", "text"), adType: 1, formats: [0]});
     scheme.push({app: app.localApp[1], name: AdmobV2.adunitName(app, "banner", "image"), adType: 0, formats: [1]});
     scheme.push({app: app.localApp[1], name: AdmobV2.adunitName(app, "banner", "text"), adType: 0, formats: [0]});
     scheme.push({app: app.localApp[1], name: AdmobV2.adunitName(app, "mrec", "image"), adType: 0, formats: [1]});
     scheme.push({app: app.localApp[1], name: AdmobV2.adunitName(app, "mrec", "text"), adType: 0, formats: [0]});
-    if (AdmobV2.rewarded_videoBids.length > 0) {
-        scheme.push({
-            app: app.localApp[1],
-            name: AdmobV2.adunitName(app, "rewarded_video", "rewarded"),
-            adType: 1,
-            formats: [2],
-            reward_settings: {"1": 1, "2": "reward", "3": 0}
-        });
-    }
+    if (AdmobV2.rewarded_videoBids.length > 0) {scheme.push({app: app.localApp[1], name: AdmobV2.adunitName(app, "rewarded_video", "rewarded"), adType: 1, formats: [2], reward_settings: {"1": 1, "2": "reward", "3": 0}});}
     // adunit bid floor in admob format
     function admobBidFloor(bid) {
         return (bid * 1000000).toString();
@@ -539,15 +550,10 @@ AdmobV2.adunitsScheme = function (app) {
     //rewarded_video adunits
     if (AdmobV2.rewarded_videoBids.length > 0) {
         AdmobV2.rewarded_videoBids.forEach(function (bid) {
-            var name = AdmobV2.adunitName(app, "rewarded_video", "rewarded", bid);
-            scheme.push({
-                app: app.localApp[1],
-                name: name,
-                adType: 1,
-                formats: [2],
-                bid: admobBidFloor(bid),
-                reward_settings: {"1": 1, "2": "reward", "3": 0}
-            });
+            if (bid != 0){
+                var name = AdmobV2.adunitName(app, "rewarded_video", "rewarded", bid);
+                scheme.push({app: app.localApp[1], name: name, adType: 1, formats: [2], bid: admobBidFloor(bid), reward_settings: {"1": 1, "2": "reward", "3": 0}});
+            }
         });
     }
     return (scheme);
