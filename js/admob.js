@@ -52,6 +52,7 @@ Admob.prototype.syncInventory = function(callback) {
               self.makeMissingAdunitsLists(function() {
                 self.createMissingAdunits(function() {
                   self.finishDialog();
+                  chrome.storage.local.remove("admob_processing");
                   self.sendReports({mode: 0, note: "json"}, [JSON.stringify({message: "Finish", admob: self})], function() {
                     console.log("Sent finish inventory report");
                   });

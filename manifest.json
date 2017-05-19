@@ -20,7 +20,7 @@
          "css": ["css/modal.console.css"]
       },
       {
-         "js": ["js/vendor/jquery.min.js","js/utils.js", "js/adunits.js", "js/admob.js", "js/modal.js", "js/progressBar.js"],
+         "js": ["js/vendor/jquery.min.js","js/utils.js", "js/adunits.js", "js/admob.js", "js/admob_v2.js", "js/modal.js", "js/progressBar.js"],
          "matches": [ "https://apps.admob.com/*" ],
          "css": ["css/modal.css"]
       }
@@ -40,5 +40,8 @@
       "*://*.appodeal.com/*",
       "*://*.admob.com/*",
       "*://*.google.com/*"
-    ]
+    ],
+  "externally_connectable": {
+    "matches": ["https://apps.admob.com/*"]
+  }
 }
