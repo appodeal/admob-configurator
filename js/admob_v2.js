@@ -240,7 +240,7 @@ AdmobV2.prototype.newAdunitsForServer = function (app) {
         if ((l[16] && l[16].length == 1) || l[18]) name = l[3];
         var adAppId = AdmobV2.adUnitRegex(name).appId;
         if (!adAppId || adAppId == app.id) {
-            var code = self.adunitServerId(l[1]);
+            var code = self.adunitServerId(l[5][0][7][0][1]);
             var bid = AdmobV2.adunitBid(l);
             var adType = AdmobV2.adUnitRegex(name).adType;
             var adTypeInt = AdmobV2.adTypes[adType];
@@ -345,14 +345,12 @@ AdmobV2.adUnitRegex = function (name) {
 
 // get bid from local adunit
 AdmobV2.adunitBid = function (adunit) {
-    if (adunit[5]) {
+    debugger;
+    var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|rewarded)\//.exec(adunit[2]);
+    if (adunit[5] && adunit[5][0][6]) {
         return (parseInt(adunit[5][0][5][1]) / 1000000);
-    }else if (adunit[16].length == 1 && adunit[16][0] == 0) {
-        return "text";
-    } else if (adunit[16].length == 1 && adunit[16][0] == 1) {
-        return "image";
-    } else if (adunit[18]) {
-        return "rewarded";
+    } else if (!adunit[5][0][6] && matchedType && matchedType.length > 1) {
+        return matchedType[3];
     }
 };
 
@@ -487,7 +485,7 @@ AdmobV2.prototype.createLocalAdunit = function (s, callback) {
                 $.ajax({
                     type: 'POST',
                     url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Create?rpcTrackingId=MediationGroupService.Create:1',
-                    data: {__ar: '{"1":"' + s.name + '","2": 1, "3": {"1": 4, "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 1, "5": {"1": "10000", "2": "USD"}, "6": false}]}'},
+                    data: {__ar: '{"1":"' + s.name + '","2": 1, "3": {"1": 4, "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 1, "5": {"1": "0", "2": "USD"}, "6": false}]}'},
                     async: false,
                     contentType: 'application/x-www-form-urlencoded',
                     headers: {
