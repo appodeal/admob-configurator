@@ -345,7 +345,6 @@ AdmobV2.adUnitRegex = function (name) {
 
 // get bid from local adunit
 AdmobV2.adunitBid = function (adunit) {
-    debugger;
     var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|rewarded)\//.exec(adunit[2]);
     if (adunit[5] && adunit[5][0][6]) {
         return (parseInt(adunit[5][0][5][1]) / 1000000);
@@ -361,40 +360,39 @@ AdmobV2.localAdunitsToScheme = function (app) {
         return scheme;
     }
     app.localAdunits.forEach(function (adunit) {
+        console.log(adunit[3]);
         var adAppId = AdmobV2.adUnitRegex(adunit[3]).appId;
+        var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
         // check if adunit has correct appodeal app id (for new name formats)
         if (!adAppId || adAppId == app.id) {
-            var adTypeName = AdmobV2.adUnitRegex(adunit[3]).adType;
-            var admobAppId = app.localApp[1];
-            var adType = adunit[14];
-            var formats = adunit[16];
-            var adFormatName;
-            // text format name only for text adunits without bid floors
-            if (!adunit[10] && formats.length == 1 && formats[0] == 0) {
-                adFormatName = "text";
-            } else if (adunit[18] && formats.length == 1 && formats[0] == 2) {
-                adFormatName = "rewarded";
-            } else {
-                adFormatName = "image";
-            }
             var bid;
             var name;
             var hash;
             var floatBid;
-            if (adunit[10]) {
-                bid = adunit[10][0][5][1][1];
-                floatBid = AdmobV2.adunitBid(adunit);
-                name = AdmobV2.adunitName(app, adTypeName, adFormatName, floatBid);
+            var adTypeName = AdmobV2.adUnitRegex(adunit[3]).adType;
+            var admobAppId = adunit[2];
+            var adType = adunit[14];
+            var formats = adunit[16];
+            var adFormatName;
+            // text format name only for text adunits without bid floors
+            if (matchedType && matchedType.length > 1) {
+                adFormatName = matchedType[3];
+            }else{
+                matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|rewarded)\//.exec(adunit[3]);
+                adFormatName = matchedType[3];
+            }
+            if (matchedType[4]) {
+                bid = (parseFloat(matchedType[4]) * 1000000).toString();
+                name = adunit[3];
                 hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid};
             } else {
-                name = AdmobV2.adunitName(app, adTypeName, adFormatName);
+                name = adunit[3];
                 hash = {app: admobAppId, name: name, adType: adType, formats: formats};
             }
 
-            if (adunit[10] && adFormatName === "rewarded") {
-                bid = adunit[10][0][5][1][1];
-                floatBid = AdmobV2.adunitBid(adunit);
-                name = AdmobV2.adunitName(app, adTypeName, adFormatName, floatBid);
+            if (matchedType[4] && adFormatName === "rewarded") {
+                bid = (parseFloat(matchedType[4]) * 1000000).toString();
+                name = adunit[3];
                 hash = {
                     app: admobAppId,
                     name: name,
@@ -403,8 +401,8 @@ AdmobV2.localAdunitsToScheme = function (app) {
                     bid: bid,
                     reward_settings: {"1": 1, "2": "reward", "3": 0}
                 };
-            } else if (!adunit[10] && adFormatName === "rewarded") {
-                name = AdmobV2.adunitName(app, adTypeName, adFormatName);
+            } else if (!matchedType[4] && adFormatName === "rewarded") {
+                name = adunit[3];
                 hash = {
                     app: admobAppId,
                     name: name,
@@ -775,6 +773,9 @@ AdmobV2.prototype.createMissingAdunits = function (callback) {
     });
     self.progressBar = new ProgressBar(missingAdunitsNum);
     // create missing local adunits
+    if(missingAdunitsNum === 0){
+        return callback();
+    }
     AdmobV2.synchronousEach(self.inventory.slice(), function (app, next) {
         self.createAdunits(app, function () {
             next();
