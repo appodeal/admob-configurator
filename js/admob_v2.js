@@ -237,6 +237,7 @@ AdmobV2.prototype.newAdunitsForServer = function (app) {
     app.localAdunits.forEach(function (l) {
         // process adunits with correct appodeal app id only if exists
         var name = l[2];
+        if (l[16].length == 1 || l[18]) name = l[3];
         var adAppId = AdmobV2.adUnitRegex(name).appId;
         if (!adAppId || adAppId == app.id) {
             var code = self.adunitServerId(l[1]);
@@ -344,17 +345,15 @@ AdmobV2.adUnitRegex = function (name) {
 
 // get bid from local adunit
 AdmobV2.adunitBid = function (adunit) {
-    console.log(adunit[2]);
     if (adunit[5]) {
         return (parseInt(adunit[5][0][5][1]) / 1000000);
+    }else if (adunit[16].length == 1 && adunit[16][0] == 0) {
+        return "text";
+    } else if (adunit[16].length == 1 && adunit[16][0] == 1) {
+        return "image";
+    } else if (adunit[18]) {
+        return "rewarded";
     }
-    // if (adunit[4][2] == 0) {
-    //     return "text";
-    // } else if (adunit[4][2] == 1) {
-    //     return "image";
-    // } else if (adunit[4][2] == 2) {
-    //     return "rewarded";
-    // }
 };
 
 // make scheme array from existing local adunits to compare it with the full scheme and find missing
@@ -364,7 +363,6 @@ AdmobV2.localAdunitsToScheme = function (app) {
         return scheme;
     }
     app.localAdunits.forEach(function (adunit) {
-        debugger;
         var adAppId = AdmobV2.adUnitRegex(adunit[3]).appId;
         // check if adunit has correct appodeal app id (for new name formats)
         if (!adAppId || adAppId == app.id) {
@@ -472,7 +470,6 @@ AdmobV2.prototype.createLocalAdunit = function (s, callback) {
                         try {
                             if (response.readyState === 4 && response.status === 200) {
                                 var data = JSON.parse(response.responseText);
-                                var localAdunit = null;
                                 if (data[1]) localAdunit = data[1];
                                 callback(localAdunit);
                             }
@@ -805,7 +802,16 @@ AdmobV2.prototype.syncWithServer = function (app, callback) {
     var self = this;
     // make an array of new and different adunits
     var params = {account: self.accountId, api_key: self.apiKey, user_id: self.userId, apps: []};
-    var h = {id: app.id, name: app.localApp[2], admob_app_id: app.localApp[1], adunits: self.newAdunitsForServer(app)};
+    var id = app.id;
+    var name = app.localApp[2];
+    var admob_app_id = app.localApp[1];
+    var adunits = self.newAdunitsForServer(app);
+    var h = {
+        id: id,
+        name: name,
+        admob_app_id: admob_app_id,
+        adunits: adunits
+    };
     if (h.admob_app_id != app.admob_app_id || h.adunits.length) {
         params.apps.push(h);
     }
