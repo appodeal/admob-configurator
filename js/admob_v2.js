@@ -240,11 +240,16 @@ AdmobV2.prototype.newAdunitsForServer = function (app) {
         if ((l[16] && l[16].length == 1) || l[18]) name = l[3];
         var adAppId = AdmobV2.adUnitRegex(name).appId;
         if (!adAppId || adAppId == app.id) {
-            var code = self.adunitServerId(l[5][0][7][0][1]);
-            var bid = AdmobV2.adunitBid(l);
-            var adType = AdmobV2.adUnitRegex(name).adType;
-            var adTypeInt = AdmobV2.adTypes[adType];
-            var f = app.ad_units.findByProperty(function (r) {
+            var code, bid, adType, adTypeInt, f;
+            try {
+                code = self.adunitServerId(l[5][0][7][0][1]);
+            } catch (e) {
+                code = self.adunitServerId(l[1]);
+            }
+            bid = AdmobV2.adunitBid(l);
+            adType = AdmobV2.adUnitRegex(name).adType;
+            adTypeInt = AdmobV2.adTypes[adType];
+            f = app.ad_units.findByProperty(function (r) {
                 return (r.code == code && r.ad_type == adType && r.bid_floor == bid && r.account_key == self.accountId);
             }).element;
             // remote adunit not found
@@ -345,10 +350,14 @@ AdmobV2.adUnitRegex = function (name) {
 
 // get bid from local adunit
 AdmobV2.adunitBid = function (adunit) {
-    var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|rewarded)\//.exec(adunit[2]);
-    if (adunit[5] && adunit[5][0][6]) {
+    var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|rewarded)\/(\d+|\d.+)\//.exec(adunit[2]);
+    debugger;
+    if (!matchedType) {
+        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|rewarded)\//.exec(adunit[2]);
+    }
+    if (matchedType[4]) {
         return (parseInt(adunit[5][0][5][1]) / 1000000);
-    } else if (!adunit[5][0][6] && matchedType && matchedType.length > 1) {
+    } else {
         return matchedType[3];
     }
 };
@@ -411,7 +420,6 @@ AdmobV2.localAdunitsToScheme = function (app) {
                     reward_settings: {"1": 1, "2": "reward", "3": 0}
                 };
             }
-
             scheme.push(hash);
         }
     });
@@ -457,7 +465,7 @@ AdmobV2.prototype.createLocalAdunit = function (s, callback) {
                 $.ajax({
                     type: 'POST',
                     url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Create?rpcTrackingId=MediationGroupService.Create:1',
-                    data: {__ar: '{"1":"' + s.name + '","2": 1,"3": {"1": 4, "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 1, "5": {"1": "' + s.bid + '", "2": "USD"}, "6": true}]}'},
+                    data: {__ar: '{"1":"' + s.name + '","2": 1,"3": {"1": 4, "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 2, "5": {"1": "' + s.bid + '", "2": "USD"}, "6": true}]}'},
                     async: false,
                     contentType: 'application/x-www-form-urlencoded',
                     headers: {
@@ -483,7 +491,7 @@ AdmobV2.prototype.createLocalAdunit = function (s, callback) {
                 $.ajax({
                     type: 'POST',
                     url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Create?rpcTrackingId=MediationGroupService.Create:1',
-                    data: {__ar: '{"1":"' + s.name + '","2": 1, "3": {"1": 4, "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 1, "5": {"1": "0", "2": "USD"}, "6": false}]}'},
+                    data: {__ar: '{"1":"' + s.name + '","2": 1, "3": {"1": 4, "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 2, "5": {"1": "10000", "2": "USD"}, "6": true}]}'},
                     async: false,
                     contentType: 'application/x-www-form-urlencoded',
                     headers: {
@@ -497,7 +505,7 @@ AdmobV2.prototype.createLocalAdunit = function (s, callback) {
                                 callback(localAdunit);
                             }
                         } catch (e) {
-                            self.showErrorDialog("Insert bid floor: " + e.message);
+                            self.showErrorDialog("Insert bid floor: " + e.stack);
                         }
                     },
                     error: function (data) {
@@ -804,6 +812,7 @@ AdmobV2.prototype.createAdunits = function (app, callback) {
 
 // send information about local apps and adunits to the server
 AdmobV2.prototype.syncWithServer = function (app, callback) {
+    console.log('syncWithServer');
     var self = this;
     // make an array of new and different adunits
     var params = {account: self.accountId, api_key: self.apiKey, user_id: self.userId, apps: []};
