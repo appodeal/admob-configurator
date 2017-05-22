@@ -5,6 +5,7 @@ var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, int
     this.publisherId = publisherId;
     this.accountEmail = accountEmail;
     this.accounts = accounts;
+    this.operation_system = null;
     // internal admob request url
     AdmobV2.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
     // get all current user's apps and adunits from server
@@ -351,14 +352,17 @@ AdmobV2.adUnitRegex = function (name) {
 // get bid from local adunit
 AdmobV2.adunitBid = function (adunit) {
     var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|rewarded)\/(\d+|\d.+)\//.exec(adunit[2]);
-    debugger;
     if (!matchedType) {
         matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|rewarded)\//.exec(adunit[2]);
     }
-    if (matchedType[4]) {
-        return (parseInt(adunit[5][0][5][1]) / 1000000);
-    } else {
-        return matchedType[3];
+    if (matchedType){
+        if (matchedType[4]) {
+            return (parseInt(adunit[5][0][5][1]) / 1000000);
+        } else {
+            return matchedType[3];
+        }
+    }else{
+        return null;
     }
 };
 
@@ -429,9 +433,10 @@ AdmobV2.localAdunitsToScheme = function (app) {
 
 // create local adunit from scheme and insert bid floor if required
 // scheme is a handy hash with params for creating new adunit
-AdmobV2.prototype.createLocalAdunit = function (s, callback) {
+AdmobV2.prototype.createLocalAdunit = function (s, os, callback) {
     console.log("Create adunit " + s.name);
     var self = this;
+    self.operation_system = os;
 
     params = {
         "method": "insertInventory",
@@ -459,13 +464,13 @@ AdmobV2.prototype.createLocalAdunit = function (s, callback) {
             if (adTypeName === 'interstitial') type = 1;
             if (adTypeName === 'rewarded_video') type = 5;
             var adunitId = localAdunit[1];
-
             //Bidflor
             if (s.bid) {
                 $.ajax({
+                    //{"1":"ssss","2":1,"3":{"1":1,"2":5,"3":["1552617032"]},"4":[{"2":"1","3":1,"4":2,"5":{"1":"100000","2":"USD"},"6":true}]}
                     type: 'POST',
                     url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Create?rpcTrackingId=MediationGroupService.Create:1',
-                    data: {__ar: '{"1":"' + s.name + '","2": 1,"3": {"1": 4, "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 2, "5": {"1": "' + s.bid + '", "2": "USD"}, "6": true}]}'},
+                    data: {__ar: '{"1":"' + s.name + '","2": 1,"3": {"1": ' + self.operation_system + ', "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 2, "5": {"1": "' + s.bid + '", "2": "USD"}, "6": true}]}'},
                     async: false,
                     contentType: 'application/x-www-form-urlencoded',
                     headers: {
@@ -491,7 +496,7 @@ AdmobV2.prototype.createLocalAdunit = function (s, callback) {
                 $.ajax({
                     type: 'POST',
                     url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Create?rpcTrackingId=MediationGroupService.Create:1',
-                    data: {__ar: '{"1":"' + s.name + '","2": 1, "3": {"1": 4, "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 2, "5": {"1": "10000", "2": "USD"}, "6": true}]}'},
+                    data: {__ar: '{"1":"' + s.name + '","2": 1, "3": {"1": ' + self.operation_system + ', "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 2, "5": {"1": "10000", "2": "USD"}, "6": true}]}'},
                     async: false,
                     contentType: 'application/x-www-form-urlencoded',
                     headers: {
@@ -798,7 +803,7 @@ AdmobV2.prototype.createMissingAdunits = function (callback) {
 AdmobV2.prototype.createAdunits = function (app, callback) {
     var self = this;
     AdmobV2.synchronousEach(app.missingAdunits, function (s, next) {
-        self.createLocalAdunit(s, function (adunit) {
+        self.createLocalAdunit(s, app.os, function (adunit) {
             self.addLocalAdunitToInventory(app, adunit);
             self.progressBar.increase();
             next();
