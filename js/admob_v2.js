@@ -146,7 +146,7 @@ AdmobV2.prototype.showInfoDialog = function (content) {
 // make a request to admob inventory and retry in case of error
 AdmobV2.prototype.inventoryPost = function (json, callback, options) {
     var self = this;
-    if (typeof(options) === 'undefined') {
+    if (options === undefined || options.url === undefined ) {
         options = {
             url: AdmobV2.inventoryUrl
         }
@@ -467,7 +467,6 @@ AdmobV2.prototype.createLocalAdunit = function (s, os, callback) {
             //Bidflor
             if (s.bid) {
                 $.ajax({
-                    //{"1":"ssss","2":1,"3":{"1":1,"2":5,"3":["1552617032"]},"4":[{"2":"1","3":1,"4":2,"5":{"1":"100000","2":"USD"},"6":true}]}
                     type: 'POST',
                     url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Create?rpcTrackingId=MediationGroupService.Create:1',
                     data: {__ar: '{"1":"' + s.name + '","2": 1,"3": {"1": ' + self.operation_system + ', "2": ' + type + ', "3": ["' + adunitId + '"]},"4": [{"2": 1, "3": 1, "4": 2, "5": {"1": "' + s.bid + '", "2": "USD"}, "6": true}]}'},
@@ -878,7 +877,7 @@ AdmobV2.prototype.linkLocalApp = function (app, callback) {
     // check if there is no linked local app with a current package name
     // include hidden and not appodeal apps
     // admob allow only one app with unique package name to be linked to store
-    if ($.inArray(app.package_name, self.storeIds) < 0) {
+    if (self.storeIds.indexOf(app.package_name) === -1) {
         self.searchAppInStores(app, function (storeApp) {
             if (storeApp) {
                 self.updateAppStoreHash(app, storeApp, function (localApp) {
@@ -904,9 +903,10 @@ AdmobV2.prototype.searchAppInStores = function (app, callback) {
     console.log("Search app #" + app.id + " in stores");
     var self = this;
     var searchString = app.package_name;
+    //{method: "searchMobileApplication", params: {"2":"com.hero.young.free.slasher.game","3":0,"4":10}, xsrf: "ALwxsBHbMycdywD0eZS1C_Qc9wMKIddC2Q:1496130122312"}
     params = {
         "method": "searchMobileApplication",
-        "params": {"2": searchString, "3": 0, "4": 1000, "5": app.os}, "xsrf": self.token
+        "params": {"2": searchString, "3": 0, "4": 10}, "xsrf": self.token
     };
     self.inventoryPost(params, function (data) {
         try {
