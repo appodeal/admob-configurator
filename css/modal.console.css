@@ -1,5 +1,5 @@
 /* Outer */
-.popup {
+.appodeal_popup {
     width:100%;
     height:100%;
     display:none;
@@ -11,7 +11,7 @@
 }
 
 /* Inner */
-.popup-inner {
+.appodeal_popup-inner {
     width:90%;
     position:absolute;
     top:50%;
@@ -26,7 +26,7 @@
 }
 
 /* Close Button */
-.popup-close {
+.appodeal_popup-close {
     width:30px;
     height:30px;
     padding-top:4px;
@@ -46,26 +46,26 @@
     color:#fff;
 }
 
-.popup-close:hover {
+.appodeal_popup-close:hover {
     -webkit-transform:translate(50%, -50%) rotate(180deg);
     transform:translate(50%, -50%) rotate(180deg);
     background:rgba(0,0,0,1);
     text-decoration:none;
 }
 
-.popup-content h4 {
+.appodeal_popup-content h4 {
     margin-bottom: 5px;
 }
 
-.popup-content p {
+.appodeal_popup-content p {
     margin-top: 6px;
     margin-bottom: 0px;
 }
 
-.popup-scroll {
+.appodeal_popup-scroll {
     overflow-y: auto;
     min-height: 70px;
 }
-.popup a{
+.appodeal_popup a{
     color:#EC3F21;
 }
