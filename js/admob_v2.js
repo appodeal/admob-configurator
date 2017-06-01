@@ -483,11 +483,11 @@ AdmobV2.prototype.createLocalAdunit = function (s, os, callback) {
                                 callback(localAdunit);
                             }
                         } catch (e) {
-                            self.showErrorDialog("Insert bid floor: " + e.message);
+                            self.showErrorDialog("Insert bid floor: " + e.stack);
                         }
                     },
-                    error: function (data) {
-                        errorEvent("No result in an internal inventory request.", data);
+                    error: function (response) {
+                        self.showErrorDialog("No result in an internal inventory request." + response.responseText);
                     }
                 });
             } else {
@@ -512,8 +512,8 @@ AdmobV2.prototype.createLocalAdunit = function (s, os, callback) {
                             self.showErrorDialog("Insert bid floor: " + e.stack);
                         }
                     },
-                    error: function (data) {
-                        errorEvent("No result in an internal inventory request.", data);
+                    error: function (response) {
+                        self.showErrorDialog("No result in an internal inventory request." + response.responseText);
                     }
                 });
             }

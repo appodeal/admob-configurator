@@ -58,6 +58,14 @@ chrome.runtime.onMessageExternal.addListener(function (request, sender, sendResp
             });
         });
     }
+    if (request.type === "console_email_notification") {
+        console.log(request.pantheon_account_chooser_data[1]);
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, {type: 'to_console', data: request}, function(response) {
+                console.log(response);
+            });
+        });
+    }
 });
 
 function notifications_params(type, request) {
