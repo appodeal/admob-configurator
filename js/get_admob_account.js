@@ -12,7 +12,9 @@ criticalUpdates(function(updates) {
         console.log('Get admob account id.');
         admob_account_id = /pub-\d+/.exec(document.documentElement.innerHTML);
         if (admob_account_id) {
-          chrome.storage.local.set({"current_account_id": admob_account_id[0]});
+          chrome.storage.local.set({
+            "current_account_id": admob_account_id[0]
+          });
           console.log('Done! redirecting back.');
           setTimeout(function() {
             document.location.href = GOOGLE_CLOUD_CONSOLE_CREDENTIAL;

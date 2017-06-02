@@ -12,9 +12,20 @@ var Admob = function(userId, apiKey, publisherId, accountEmail, accounts, inters
   // sync local adunits with the server
   Admob.syncUrl = "https://www.appodeal.com/api/v2/sync_inventory";
   // internal admob params
-  Admob.types = {text: 0, image: 1, video: 2};
+  Admob.types = {
+    text: 0,
+    image: 1,
+    video: 2
+  };
   // appodeal ad unit params
-  Admob.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
+  Admob.adTypes = {
+    interstitial: 0,
+    banner: 1,
+    video: 2,
+    native: 3,
+    mrec: 4,
+    rewarded_video: 5
+  };
   // adunits bids
   Admob.interstitialBids = interstitialBids;
   Admob.bannerBids = bannerBids;
@@ -35,7 +46,9 @@ Admob.prototype.syncInventory = function(callback) {
   var self = this;
   self.getVersion();
   self.modal.show("Appodeal Chrome Extension", "Please allow several minutes to sync your inventory.");
-  self.sendReports({mode: 0}, ["<h4>Sync inventory</h4>"], function() {
+  self.sendReports({
+    mode: 0
+  }, ["<h4>Sync inventory</h4>"], function() {
     console.log("Sent start reports");
   });
   if (!self.getAccountId() || !self.isPublisherIdRight()) {
@@ -53,7 +66,13 @@ Admob.prototype.syncInventory = function(callback) {
                 self.createMissingAdunits(function() {
                   self.finishDialog();
                   chrome.storage.local.remove("admob_processing");
-                  self.sendReports({mode: 0, note: "json"}, [JSON.stringify({message: "Finish", admob: self})], function() {
+                  self.sendReports({
+                    mode: 0,
+                    note: "json"
+                  }, [JSON.stringify({
+                    message: "Finish",
+                    admob: self
+                  })], function() {
                     console.log("Sent finish inventory report");
                   });
                   callback();
@@ -67,17 +86,17 @@ Admob.prototype.syncInventory = function(callback) {
   })
 };
 
-Admob.prototype.humanReport = function () {
-    var self = this;
-    var report_human = [];
-    self.report.forEach(function (element) {
-      if (element.includes("h4")){
-          report_human.push(element)
-      }else{
-          report_human.push("<p style='margin-left: 10px'>" + element + "</p>");
-      }
-    });
-    return report_human;
+Admob.prototype.humanReport = function() {
+  var self = this;
+  var report_human = [];
+  self.report.forEach(function(element) {
+    if (element.includes("h4")) {
+      report_human.push(element)
+    } else {
+      report_human.push("<p style='margin-left: 10px'>" + element + "</p>");
+    }
+  });
+  return report_human;
 };
 
 // show finish dialog with results info
@@ -93,7 +112,10 @@ Admob.prototype.finishDialog = function() {
   items.push("<h4>Admob is synced with Appodeal now.</h4>");
   self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps.<h3>Synchronized inventory</h3>" + self.humanReport().join(""));
   // send finish reports
-  self.sendReports({mode: 0, timeShift: 1000}, [items.join("")], function() {
+  self.sendReports({
+    mode: 0,
+    timeShift: 1000
+  }, [items.join("")], function() {
     console.log("Sent finish reports");
   });
 };
@@ -104,16 +126,24 @@ Admob.prototype.showErrorDialog = function(content) {
   var message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support.<h4>" + content + "</h4>";
   self.modal.show("Appodeal Chrome Extension", message);
   // send json with current admob object state
-  var serializedAdmob = JSON.stringify({message: message, admob: self});
+  var serializedAdmob = JSON.stringify({
+    message: message,
+    admob: self
+  });
   console.log(serializedAdmob);
-  self.sendReports({mode: 1, note: "json"}, [serializedAdmob], function() {});
+  self.sendReports({
+    mode: 1,
+    note: "json"
+  }, [serializedAdmob], function() {});
 };
 
 // show information modal window
 Admob.prototype.showInfoDialog = function(content) {
   var self = this;
   console.log(content);
-  self.sendReports({mode: 0}, [content], function() {
+  self.sendReports({
+    mode: 0
+  }, [content], function() {
     console.log("Sent information report");
   });
   self.modal.show("Appodeal Chrome Extension", content);
@@ -122,7 +152,9 @@ Admob.prototype.showInfoDialog = function(content) {
 // make a request to admob inventory and retry in case of error
 Admob.prototype.inventoryPost = function(json, callback, options) {
   var self = this;
-  if (typeof(options) === 'undefined') { options = {} }
+  if (typeof(options) === 'undefined') {
+    options = {}
+  }
   var params = JSON.stringify(json);
   // result with error or something
   function errorEvent(content, data) {
@@ -142,11 +174,13 @@ Admob.prototype.inventoryPost = function(json, callback, options) {
       }, 5000)
     }
   }
-  $.ajax({method: "POST",
-    url: Admob.inventoryUrl,
-    contentType: "application/javascript; charset=UTF-8",
-    dataType: "json",
-    data: params})
+  $.ajax({
+      method: "POST",
+      url: Admob.inventoryUrl,
+      contentType: "application/javascript; charset=UTF-8",
+      dataType: "json",
+      data: params
+    })
     .done(function(data) {
       if (data.result) {
         callback(data);
@@ -163,19 +197,28 @@ Admob.prototype.inventoryPost = function(json, callback, options) {
 Admob.prototype.jsonReport = function(mode, content, json, data) {
   var self = this;
   console.log(content + " " + JSON.stringify(json) + " -> " + JSON.stringify(data));
-  var r = {message: content, request: json, response: data};
-  self.sendReports({mode: mode, note: "json"}, [JSON.stringify(r)], function() {});
+  var r = {
+    message: content,
+    request: json,
+    response: data
+  };
+  self.sendReports({
+    mode: mode,
+    note: "json"
+  }, [JSON.stringify(r)], function() {});
 };
 
 // make a request to admob inventory url
 Admob.prototype.syncPost = function(json, callback) {
   var self = this;
   var params = JSON.stringify(json);
-  $.ajax({method: "POST",
-    url: Admob.syncUrl,
-    contentType: "application/json",
-    dataType: "json",
-    data: params})
+  $.ajax({
+      method: "POST",
+      url: Admob.syncUrl,
+      contentType: "application/json",
+      dataType: "json",
+      data: params
+    })
     .done(function(data) {
       // success and updated apps exists
       if (data.code == 0 && data.result) {
@@ -214,9 +257,14 @@ Admob.prototype.newAdunitsForServer = function(app) {
       }).element;
       // remote adunit not found
       if (!f) {
-        var serverAdunitFormat = {code: code, ad_type: adTypeInt, bid_floor: bid, name: l[3]};
+        var serverAdunitFormat = {
+          code: code,
+          ad_type: adTypeInt,
+          bid_floor: bid,
+          name: l[3]
+        };
         adunits.push(serverAdunitFormat);
-      }      
+      }
     }
   });
   return (adunits);
@@ -243,25 +291,33 @@ Admob.prototype.isPublisherIdRight = function() {
   var self = this;
   var ret = false;
   var emails = [];
-    if (self.accounts && self.accounts.length >= 2){
-        self.accounts.forEach(function(element) {
-            if(element){
-                emails.push(element.email);
-                if(element.publisher_id == self.accountId){
-                    self.publisherId = element.publisher_id;
-                    self.accountEmail = element.email;
-                    ret = true;
-                }
-            }
-        });
-        if (!ret) chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ emails.join() + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){});
-        return ret;
-    }else{
-        if (self.publisherId != self.accountId) {
-            chrome.runtime.sendMessage({type: "wrong_account", info: 'Please login to your Admob account '+ self.accountEmail + ' or run step 2 to sync this account.', title: 'Wrong account'}, function(id){});
-            return false;
+  if (self.accounts && self.accounts.length >= 2) {
+    self.accounts.forEach(function(element) {
+      if (element) {
+        emails.push(element.email);
+        if (element.publisher_id == self.accountId) {
+          self.publisherId = element.publisher_id;
+          self.accountEmail = element.email;
+          ret = true;
         }
+      }
+    });
+    if (!ret) chrome.runtime.sendMessage({
+      type: "wrong_account",
+      info: 'Please login to your Admob account ' + emails.join() + ' or run step 2 to sync this account.',
+      title: 'Wrong account'
+    }, function(id) {});
+    return ret;
+  } else {
+    if (self.publisherId != self.accountId) {
+      chrome.runtime.sendMessage({
+        type: "wrong_account",
+        info: 'Please login to your Admob account ' + self.accountEmail + ' or run step 2 to sync this account.',
+        title: 'Wrong account'
+      }, function(id) {});
+      return false;
     }
+  }
   return true;
 };
 
@@ -305,11 +361,11 @@ Admob.adunitBid = function(adunit) {
     var f = parseInt(bid) / 1000000;
     return (f);
   } else if (adunit[16].length == 1 && adunit[16][0] == 0) {
-      return "text";
+    return "text";
   } else if (adunit[16].length == 1 && adunit[16][0] == 1) {
-      return "image";
+    return "image";
   } else if (adunit[16].length == 1 && adunit[16][0] == 2) {
-      return "rewarded";
+    return "rewarded";
   }
 };
 
@@ -331,8 +387,8 @@ Admob.localAdunitsToScheme = function(app) {
       // text format name only for text adunits without bid floors
       if (!adunit[10] && formats.length == 1 && formats[0] == 0) {
         adFormatName = "text";
-      } else if(adunit[18] && formats.length == 1 && formats[0] == 2){
-          adFormatName = "rewarded";
+      } else if (adunit[18] && formats.length == 1 && formats[0] == 2) {
+        adFormatName = "rewarded";
       } else {
         adFormatName = "image";
       }
@@ -344,40 +400,112 @@ Admob.localAdunitsToScheme = function(app) {
         bid = adunit[10][0][5][1][1];
         floatBid = Admob.adunitBid(adunit);
         name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
-        hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid};
+        hash = {
+          app: admobAppId,
+          name: name,
+          adType: adType,
+          formats: formats,
+          bid: bid
+        };
       } else {
         name = Admob.adunitName(app, adTypeName, adFormatName);
-        hash = {app: admobAppId, name: name, adType: adType, formats: formats};
+        hash = {
+          app: admobAppId,
+          name: name,
+          adType: adType,
+          formats: formats
+        };
       }
 
-      if(adunit[10] && adFormatName === "rewarded"){
-          bid = adunit[10][0][5][1][1];
-          floatBid = Admob.adunitBid(adunit);
-          name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
-          hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid, reward_settings: {"1": 1, "2": "reward", "3": 0}};
-      }else if(!adunit[10] && adFormatName === "rewarded"){
-          name = Admob.adunitName(app, adTypeName, adFormatName);
-          hash = {app: admobAppId, name: name, adType: adType, formats: formats, reward_settings: {"1": 1, "2": "reward", "3": 0}};
+      if (adunit[10] && adFormatName === "rewarded") {
+        bid = adunit[10][0][5][1][1];
+        floatBid = Admob.adunitBid(adunit);
+        name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
+        hash = {
+          app: admobAppId,
+          name: name,
+          adType: adType,
+          formats: formats,
+          bid: bid,
+          reward_settings: {
+            "1": 1,
+            "2": "reward",
+            "3": 0
+          }
+        };
+      } else if (!adunit[10] && adFormatName === "rewarded") {
+        name = Admob.adunitName(app, adTypeName, adFormatName);
+        hash = {
+          app: admobAppId,
+          name: name,
+          adType: adType,
+          formats: formats,
+          reward_settings: {
+            "1": 1,
+            "2": "reward",
+            "3": 0
+          }
+        };
       }
 
       scheme.push(hash);
     }
   });
-  return(scheme);
+  return (scheme);
 };
 
 // Find all missing adunits for app in inventory
 Admob.adunitsScheme = function(app) {
   var scheme = [];
   // default adunits
-  scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "interstitial", "image"), adType: 1, formats: [1]});
-  scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "interstitial", "text"), adType: 1, formats: [0]});
-  scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "banner", "image"), adType: 0, formats: [1]});
-  scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "banner", "text"), adType: 0, formats: [0]});
-  scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "mrec", "image"), adType: 0, formats: [1]});
-  scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "mrec", "text"), adType: 0, formats: [0]});
-  if(Admob.rewarded_videoBids.length > 0){
-    scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "rewarded_video", "rewarded"), adType: 1, formats: [2], reward_settings: {"1": 1, "2": "reward", "3": 0}});
+  scheme.push({
+    app: app.localApp[1],
+    name: Admob.adunitName(app, "interstitial", "image"),
+    adType: 1,
+    formats: [1]
+  });
+  scheme.push({
+    app: app.localApp[1],
+    name: Admob.adunitName(app, "interstitial", "text"),
+    adType: 1,
+    formats: [0]
+  });
+  scheme.push({
+    app: app.localApp[1],
+    name: Admob.adunitName(app, "banner", "image"),
+    adType: 0,
+    formats: [1]
+  });
+  scheme.push({
+    app: app.localApp[1],
+    name: Admob.adunitName(app, "banner", "text"),
+    adType: 0,
+    formats: [0]
+  });
+  scheme.push({
+    app: app.localApp[1],
+    name: Admob.adunitName(app, "mrec", "image"),
+    adType: 0,
+    formats: [1]
+  });
+  scheme.push({
+    app: app.localApp[1],
+    name: Admob.adunitName(app, "mrec", "text"),
+    adType: 0,
+    formats: [0]
+  });
+  if (Admob.rewarded_videoBids.length > 0) {
+    scheme.push({
+      app: app.localApp[1],
+      name: Admob.adunitName(app, "rewarded_video", "rewarded"),
+      adType: 1,
+      formats: [2],
+      reward_settings: {
+        "1": 1,
+        "2": "reward",
+        "3": 0
+      }
+    });
   }
   // adunit bid floor in admob format
   function admobBidFloor(bid) {
@@ -387,25 +515,54 @@ Admob.adunitsScheme = function(app) {
   // interstitial adunits
   Admob.interstitialBids.forEach(function(bid) {
     var name = Admob.adunitName(app, "interstitial", "image", bid);
-    scheme.push({app: app.localApp[1], name: name, adType: 1, formats: [0, 1, 2], bid: admobBidFloor(bid)})
+    scheme.push({
+      app: app.localApp[1],
+      name: name,
+      adType: 1,
+      formats: [0, 1, 2],
+      bid: admobBidFloor(bid)
+    })
   });
   // banner adunits
   Admob.bannerBids.forEach(function(bid) {
     var name = Admob.adunitName(app, "banner", "image", bid);
-    scheme.push({app: app.localApp[1], name: name, adType: 0, formats: [0, 1], bid: admobBidFloor(bid)})
+    scheme.push({
+      app: app.localApp[1],
+      name: name,
+      adType: 0,
+      formats: [0, 1],
+      bid: admobBidFloor(bid)
+    })
   });
   // mrec adunits
   Admob.mrecBids.forEach(function(bid) {
     var name = Admob.adunitName(app, "mrec", "image", bid);
-    scheme.push({app: app.localApp[1], name: name, adType: 0, formats: [0, 1], bid: admobBidFloor(bid)})
+    scheme.push({
+      app: app.localApp[1],
+      name: name,
+      adType: 0,
+      formats: [0, 1],
+      bid: admobBidFloor(bid)
+    })
   });
   //rewarded_video adunits
-    if(Admob.rewarded_videoBids.length > 0){
-        Admob.rewarded_videoBids.forEach(function(bid) {
-            var name = Admob.adunitName(app, "rewarded_video", "rewarded", bid);
-            scheme.push({app: app.localApp[1], name: name, adType: 1, formats: [2], bid: admobBidFloor(bid), reward_settings: {"1": 1, "2": "reward", "3": 0}});
-        });
-    }
+  if (Admob.rewarded_videoBids.length > 0) {
+    Admob.rewarded_videoBids.forEach(function(bid) {
+      var name = Admob.adunitName(app, "rewarded_video", "rewarded", bid);
+      scheme.push({
+        app: app.localApp[1],
+        name: name,
+        adType: 1,
+        formats: [2],
+        bid: admobBidFloor(bid),
+        reward_settings: {
+          "1": 1,
+          "2": "reward",
+          "3": 0
+        }
+      });
+    });
+  }
   return (scheme);
 };
 
@@ -442,10 +599,17 @@ Admob.prototype.getRemoteInventory = function(callback) {
   var json = {};
   console.log("Get remote inventory");
   var self = this;
-  if(self.accounts.length >= 2 ) {
-      json = {user_id: self.userId, api_key: self.apiKey, account: self.publisherId};
+  if (self.accounts.length >= 2) {
+    json = {
+      user_id: self.userId,
+      api_key: self.apiKey,
+      account: self.publisherId
+    };
   } else {
-      json = {user_id: self.userId, api_key: self.apiKey};
+    json = {
+      user_id: self.userId,
+      api_key: self.apiKey
+    };
   }
   $.get(Admob.remoteInventoryUrl, json)
     .done(function(data) {
@@ -467,7 +631,11 @@ Admob.prototype.getLocalInventory = function(callback) {
   console.log("Get local inventory");
   var self = this;
   self.getPageToken();
-  self.inventoryPost({method: "initialize", params: {}, xsrf: self.token}, function(data) {
+  self.inventoryPost({
+    method: "initialize",
+    params: {},
+    xsrf: self.token
+  }, function(data) {
     self.localApps = data.result[1][1];
     self.localAdunits = data.result[1][2];
     callback(data.result);
@@ -524,7 +692,7 @@ Admob.prototype.mapApps = function(callback) {
     delete self.localAdunits;
     delete self.localApps;
     callback();
-  } catch(e) {
+  } catch (e) {
     self.showErrorDialog("Map apps: " + e.message);
   }
 };
@@ -563,8 +731,8 @@ Admob.prototype.selectLocalAdunits = function(admobAppId) {
       }
       // check adunit type
       var t = Admob.adUnitRegex(adunit[3]).adType;
-      return (adunit[14] == 1 && (t == 'interstitial' || t == 'rewarded_video'))
-        || (adunit[14] == 0 && (t == 'banner' || t == 'mrec'));
+      return (adunit[14] == 1 && (t == 'interstitial' || t == 'rewarded_video')) ||
+        (adunit[14] == 0 && (t == 'banner' || t == 'mrec'));
     })
   }
   return (selectedAdunits);
@@ -617,7 +785,7 @@ Admob.prototype.makeMissingAdunitsLists = function(callback) {
       app.missingAdunits = Admob.missingAdunits(app);
     });
     callback();
-  } catch(e) {
+  } catch (e) {
     self.showErrorDialog("Missing adunits list: " + e.message);
   }
 };
@@ -665,8 +833,18 @@ Admob.prototype.createAdunits = function(app, callback) {
 Admob.prototype.syncWithServer = function(app, callback) {
   var self = this;
   // make an array of new and different adunits
-  var params = {account: self.accountId ,api_key: self.apiKey, user_id: self.userId, apps: []};
-  var h = {id: app.id, name: app.localApp[2], admob_app_id: app.localApp[1], adunits: self.newAdunitsForServer(app)};
+  var params = {
+    account: self.accountId,
+    api_key: self.apiKey,
+    user_id: self.userId,
+    apps: []
+  };
+  var h = {
+    id: app.id,
+    name: app.localApp[2],
+    admob_app_id: app.localApp[1],
+    adunits: self.newAdunitsForServer(app)
+  };
   if (h.admob_app_id != app.admob_app_id || h.adunits.length) {
     params.apps.push(h);
   }
@@ -681,7 +859,9 @@ Admob.prototype.syncWithServer = function(app, callback) {
         items.push(adunit.name);
       });
       self.report.push.apply(self.report, items);
-      self.sendReports({mode: 0}, [items.join("/n")], function() {
+      self.sendReports({
+        mode: 0
+      }, [items.join("/n")], function() {
         console.log("Sent reports from " + app.appName);
       });
       callback(params);
@@ -696,12 +876,21 @@ Admob.prototype.createLocalApp = function(app, callback) {
   var self = this;
   var name = Admob.defaultAppName(app);
   console.log("Create app " + name);
-  var params = {method: "insertInventory", params: {2: {2: name, 3: app.os}}, xsrf: self.token};
+  var params = {
+    method: "insertInventory",
+    params: {
+      2: {
+        2: name,
+        3: app.os
+      }
+    },
+    xsrf: self.token
+  };
   self.inventoryPost(params, function(data) {
     try {
       var localApp = data.result[1][1][0];
       callback(localApp);
-    } catch(e) {
+    } catch (e) {
       self.showErrorDialog("Create local app: " + e.message);
     }
   })
@@ -742,7 +931,13 @@ Admob.prototype.searchAppInStores = function(app, callback) {
   var searchString = app.package_name;
   params = {
     "method": "searchMobileApplication",
-    "params": {"2": searchString, "3": 0, "4": 1000, "5": app.os}, "xsrf": self.token
+    "params": {
+      "2": searchString,
+      "3": 0,
+      "4": 1000,
+      "5": app.os
+    },
+    "xsrf": self.token
   };
   self.inventoryPost(params, function(data) {
     try {
@@ -754,11 +949,13 @@ Admob.prototype.searchAppInStores = function(app, callback) {
         }).element;
       }
       callback(storeApp);
-    } catch(e) {
+    } catch (e) {
       self.jsonReport(0, "Search app in stores: " + e.message, params, data);
       callback();
     }
-  }, {skip: true})
+  }, {
+    skip: true
+  })
 };
 
 // update local app with market hash (data from search in stores)
@@ -770,8 +967,16 @@ Admob.prototype.updateAppStoreHash = function(app, storeApp, callback) {
     "method": "updateMobileApplication",
     "params": {
       "2": {
-        "1": app.localApp[1], "2": storeApp[2], "3": storeApp[3], "4": storeApp[4], "6": storeApp[6],
-        "19": 0, "21": {"1": 0, "5": 0}
+        "1": app.localApp[1],
+        "2": storeApp[2],
+        "3": storeApp[3],
+        "4": storeApp[4],
+        "6": storeApp[6],
+        "19": 0,
+        "21": {
+          "1": 0,
+          "5": 0
+        }
       }
     },
     "xsrf": self.token
@@ -783,11 +988,13 @@ Admob.prototype.updateAppStoreHash = function(app, storeApp, callback) {
         self.addStoreId(app.package_name);
         callback(localApp);
       }
-    } catch(e) {
+    } catch (e) {
       self.jsonReport(0, "Link app to store: " + e.message, params, data);
       callback();
     }
-  }, {skip: true})
+  }, {
+    skip: true
+  })
 };
 
 // add new store id to store ids array
@@ -809,17 +1016,19 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
 
   params = {
     "method": "insertInventory",
-    "params": {"3": {
-      "2": s.app,
-      "3": s.name,
-      "14": s.adType,
-      "16": s.formats
+    "params": {
+      "3": {
+        "2": s.app,
+        "3": s.name,
+        "14": s.adType,
+        "16": s.formats
       }
-    }, "xsrf": self.token
+    },
+    "xsrf": self.token
   };
-  if(s.reward_settings){
-      params.params[3][17] = 1;
-      params.params[3][18] = s.reward_settings;
+  if (s.reward_settings) {
+    params.params[3][17] = 1;
+    params.params[3][18] = s.reward_settings;
   }
 
   self.inventoryPost(params, function(data) {
@@ -830,8 +1039,21 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
         var mediationParams = {
           "method": "updateMediation",
           "params": {
-            "2": s.app, "3": localAdunit[1],
-            "4": [{"2": 1, "3": "1", "5": {"1": {"1": s.bid, "2": "USD"}}, "7": 0, "9": 1}], "5": 0
+            "2": s.app,
+            "3": localAdunit[1],
+            "4": [{
+              "2": 1,
+              "3": "1",
+              "5": {
+                "1": {
+                  "1": s.bid,
+                  "2": "USD"
+                }
+              },
+              "7": 0,
+              "9": 1
+            }],
+            "5": 0
           },
           "xsrf": self.token
         };
@@ -839,14 +1061,14 @@ Admob.prototype.createLocalAdunit = function(s, callback) {
           try {
             var localAdunit = data.result[1][2][0];
             callback(localAdunit);
-          } catch(e) {
+          } catch (e) {
             self.showErrorDialog("Insert bid floor: " + e.message);
           }
         })
       } else {
         callback(localAdunit);
       }
-    } catch(e) {
+    } catch (e) {
       self.showErrorDialog("Create local adunit: " + e.message);
     }
   })
@@ -857,7 +1079,10 @@ Array.prototype.findByProperty = function(condition) {
   var self = this;
   for (var i = 0, len = self.length; i < len; i++) {
     if (condition(self[i])) {
-      return ({index: i, element: self[i]})
+      return ({
+        index: i,
+        element: self[i]
+      })
     }
   }
   return ({}); // the object was not found
@@ -877,7 +1102,9 @@ Admob.prototype.addLocalAdunitToInventory = function(app, localAdunit) {
 Admob.prototype.sendReports = function(params, items, callback) {
   var self = this;
   var reportItems = $.map(items, function(item, i) {
-    var h = {content: item};
+    var h = {
+      content: item
+    };
     if (params.note) {
       h.note = params.note;
     }
@@ -894,12 +1121,18 @@ Admob.prototype.updateAdunitFormats = function(adunit, callback) {
   var self = this;
   // set all formats (text, image, video)
   adunit[16] = [0, 1, 2];
-  var params = {method: "updateAdUnit", params: {2: adunit}, xsrf: self.token};
+  var params = {
+    method: "updateAdUnit",
+    params: {
+      2: adunit
+    },
+    xsrf: self.token
+  };
   self.inventoryPost(params, function(data) {
     try {
       var updatedAdunit = data.result[1][2][0];
       callback(updatedAdunit);
-    } catch(e) {
+    } catch (e) {
       self.showErrorDialog("Update adunit formats: " + e.message);
     }
   })

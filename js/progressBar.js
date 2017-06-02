@@ -10,7 +10,9 @@ var ProgressBar = function(stepsNum) {
 ProgressBar.prototype.setPosition = function(position) {
   this.position = position;
   var percentage = this.position * 100 + "%";
-  this.bar.css({width: percentage});
+  this.bar.css({
+    width: percentage
+  });
 };
 
 // move progress indicator considering processed ad units num
