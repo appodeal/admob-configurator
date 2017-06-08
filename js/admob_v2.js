@@ -1232,7 +1232,7 @@ AdmobV2.prototype.linkLocalApp = function (app, callback) {
     // check if there is no linked local app with a current package name
     // include hidden and not appodeal apps
     // admob allow only one app with unique package name to be linked to store
-    if (self.storeIds.indexOf(app.package_name) === -1) {
+    if (self.storeIds && self.storeIds.length > 0 && !self.storeIds.includes(app.package_name)) {
         self.searchAppInStores(app, function (storeApp) {
             if (storeApp) {
                 self.updateAppStoreHash(app, storeApp, function (localApp) {
