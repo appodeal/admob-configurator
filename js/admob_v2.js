@@ -923,6 +923,33 @@ AdmobV2.prototype.createAdunits = function (app, callback) {
     })
 };
 
+AdmobV2.prototype.FindAndDeleteOldMediationGroup = function (data, self, callback) {
+    var ids_group = [];
+    data.forEach(function (item, i, arr) {
+        if (item[3] == 1 && item[2].includes('Appodeal') &&!(item[2].includes('/android') || item[2].includes('/ios'))) {
+            ids_group.push(item[1]);
+        }
+    });
+    if( ids_group.length > 0 ){
+        $.ajax({
+            type: 'POST',
+            url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/BulkStatusChange?rpcTrackingId=MediationGroupService.BulkStatusChange:1',
+            data: {
+                __ar: JSON.stringify({"1": ids_group,"2": 3}),
+            },
+            async: false,
+            contentType: 'application/x-www-form-urlencoded',
+            headers: {
+                "x-framework-xsrf-token": self.token
+            },
+            error: function (response) {
+                self.showErrorDialog(response.responseText);
+            }
+        });
+    }
+    callback();
+};
+
 AdmobV2.prototype.CreateOrUpdateMediationGroup = function (callback) {
     console.log("Create or Update Mediation Group");
     var self = this;
@@ -951,7 +978,9 @@ AdmobV2.prototype.CreateOrUpdateMediationGroup = function (callback) {
 
                             return result;
                         }, {});
-                        if (OperationSystemMissingSchemeMediationGroup) self.CreateMediationGroup(OperationSystemMissingSchemeMediationGroup, self);
+                        self.FindAndDeleteOldMediationGroup(data[1], self, function () {
+                            if (OperationSystemMissingSchemeMediationGroup) self.CreateMediationGroup(OperationSystemMissingSchemeMediationGroup, self);
+                        });
                     });
                 }
             }
