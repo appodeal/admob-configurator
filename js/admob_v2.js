@@ -125,7 +125,7 @@ AdmobV2.prototype.finishDialog = function () {
         items.push("<h4>" + noAppsMsg + "</h4>");
     }
     items.push("<h4>Admob is synced with Appodeal now.</h4>");
-    self.modal.show("Good job!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps. <br> Please click this <a href='https://apps.admob.com/v2/apps/list'>link</a> to reload and go to url Admob apps. <br> <h3>Synchronized inventory</h3>" + self.humanReport().join(""));
+    self.modal.show("Congratulations! Sync complete!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps and also you need to check and fill completely all payment details in Admob to start show ads. <br> Please click this <a href='https://apps.admob.com/v2/apps/list'>link</a> to reload and go to url Admob apps. <br> <h3>Synchronized inventory</h3>" + self.humanReport().join(""));
     // send finish reports
     self.sendReports({
         mode: 0,
