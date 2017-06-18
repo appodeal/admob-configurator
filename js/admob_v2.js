@@ -71,6 +71,7 @@ AdmobV2.prototype.syncInventory = function (callback) {
             if (!self.getAccountId(request.data.amppd_decode[11]) || !self.isPublisherIdRight()) {
                 return;
             }
+            sendOut(0, 'User using apps.admob.com/v2');
             self.getRemoteInventory(function () {
                 self.getLocalInventory(function () {
                     self.selectStoreIds();
@@ -1044,9 +1045,9 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
                         }, []);
                     }
                 });
-                // Clear undefined
+                // Clear undefined or Array. Only string words
                 need_adunits = need_adunits.filter(function (item) {
-                    if (item != undefined) {
+                    if (item != undefined && !Array.isArray(item)) {
                         return item;
                     }
                 });
