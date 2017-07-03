@@ -16,7 +16,7 @@ chrome.webNavigation.onCompleted.addListener(function(details) {
         chrome.tabs.executeScript(details.tabId, {
           file: "js/reporting_step3.js"
         });
-      } else if (details_url.match(/apps\.admob\.com\/(\?pli=1)?#home/) || details_url.match(/apps\.admob\.com\/v2\/(\?pli=1)?home/)) {
+      } else if (details_url.match(/apps\.admob\.com\/(\/v2)?/)) {
         console.log("calling get_admob_account.js");
         chrome.tabs.executeScript(details.tabId, {
           file: "js/get_admob_account.js"
