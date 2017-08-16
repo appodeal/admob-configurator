@@ -48,13 +48,17 @@ jQuery(function () {
 
     // parse the first download link content
     function getIdAndSecret(download_links, callback) {
-        var result = {id:null,secret:null};
+        var result = {id:null,secret:null}, names;
         $.each(download_links, function () {
             data = JSON.parse(this.getAttribute("content"));
-            var names = data.web.javascript_origins;
-            if(names.includes('https://www.appodeal.com/') || names.includes('https://www.appodeal.com')){
-                result.id = data.web.client_id;
-                result.secret = data.web.client_secret;
+            if(data.web && data.web.javascript_origins){
+                names = data.web.javascript_origins;
+                if(names.includes('https://www.appodeal.com/') || names.includes('https://www.appodeal.com')){
+                    result.id = data.web.client_id;
+                    result.secret = data.web.client_secret;
+                }
+            }else{
+                console.log(data.web.client_id);
             }
         });
         callback(result)
