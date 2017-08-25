@@ -656,13 +656,6 @@ AdmobV2.adunitsScheme = function (app) {
             }
         });
     }
-    $.each(scheme, function () {
-        var name = this.name;
-        var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\//.exec(name);
-        name = name.replace(matchedType[1], '');
-        name = name.replace('/' + app.package_name, '');
-        if (!AdmobV2.schema_data.includes(name)) AdmobV2.schema_data.push(name);
-    });
     return (scheme);
 };
 
@@ -683,14 +676,17 @@ AdmobV2.missingAdunits = function (app) {
 // generate adunit name
 AdmobV2.adunitName = function (app, adName, typeName, bidFloor) {
     var name = "Appodeal/" + app.id + "/" + adName + "/" + typeName;
+    var nameMediationGroup = "Appodeal/" + adName + "/" + typeName;
     if (bidFloor) {
         name += "/" + bidFloor;
+        nameMediationGroup += "/" + bidFloor;
     }
     // max adunit name length equals 80, allocate the rest of name to bundle id
     var bundleLength = 80 - name.length - 1;
     if (bundleLength > 0) {
         name += "/" + app.bundle_id.substring(0, bundleLength);
     }
+    if (!AdmobV2.schema_data.includes(nameMediationGroup)) AdmobV2.schema_data.push(nameMediationGroup);
     return (name);
 };
 
@@ -936,7 +932,7 @@ AdmobV2.prototype.FindAndDeleteOldMediationGroup = function (data, self, callbac
             type: 'POST',
             url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/BulkStatusChange?rpcTrackingId=MediationGroupService.BulkStatusChange:1',
             data: {
-                __ar: JSON.stringify({"1": ids_group,"2": 3}),
+                __ar: JSON.stringify({"1": ids_group,"2": 3})
             },
             async: false,
             contentType: 'application/x-www-form-urlencoded',
@@ -993,11 +989,11 @@ AdmobV2.prototype.CreateOrUpdateMediationGroup = function (callback) {
                 if (data && data[1].length > 0) {
                     AdmobV2.prototype.GetCountOS(data, self, function (os, data) {
                         var OperationSystemMissingSchemeMediationGroup = os.reduce(function (result, item) {
-
+                            //get all created Mediation Groups
                             var LocalScheme = $.grep(data[1], function (local_schema) {
                                 return (local_schema[3] == 1 && local_schema[4][1] == item)
                             });
-
+                            //filter Mediation Groups if included Appodeal scheme
                             result[item] = $.grep(AdmobV2.schema_data, function (GroupSchema) {
                                 return !Object.keys(LocalScheme).map(function (e) {
                                     var name = LocalScheme[e][2];
@@ -1030,7 +1026,7 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
                     var local_schema_name = local_schema[2];
                     if (app.os == item) {
                         var localAdunits = app.localAdunits.map(function (localAdunit) {
-                            var ad_unit_name = localAdunit[3].replace('/' + app.package_name, '');
+                            var ad_unit_name = localAdunit[3];
                             return {'id': localAdunit[1], 'ad_unit_name': ad_unit_name.replace('/' + app.id, '')}
                         });
                         //Clear name Mediation Group
@@ -1038,7 +1034,7 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
                         local_schema_name = local_schema_name.replace('/ios', '');
 
                         return localAdunits.reduce(function (result, item) {
-                            if (local_schema_name == item.ad_unit_name) {
+                            if (item.ad_unit_name.includes(local_schema_name)) {
                                 result = item.id
                             }
                             return result;
