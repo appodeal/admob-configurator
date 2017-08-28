@@ -34,15 +34,17 @@ ReportingStepTwoController = (function() {
     projectToLocation = function () {
         document.location.href = projectConsentUrl(locationProjectName());
     };
-    initOtherLibrary = function () {
-        sendOut(0, "Open project configuration.");
+    initOtherLibrary = function (message) {
+        sendOut(0, message);
         airbrake = new AirbrakeController();
-        modal = new Modal();
-        modal.show("Appodeal Chrome Extension", "Enabling the AdSense Management API");
+        appendJQuery(function() {
+            modal = new Modal();
+            modal.show("Appodeal Chrome Extension", message);
+        });
     };
     return {
         init: function() {
-            initOtherLibrary();
+            initOtherLibrary('Enabling the AdSense Management API');
             adsence_enabling_interval = setInterval(wait_for_adsence_btn, 2000);
         }
     };

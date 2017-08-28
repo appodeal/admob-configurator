@@ -8,11 +8,13 @@ ReportingStepFourController = (function () {
         findAppodealClient,
         waitUntilClientInfoPresent, addCredentials;
 
-    initOtherLibrary = function (massage) {
-        sendOut(0, massage);
+    initOtherLibrary = function (message) {
+        sendOut(0, message);
         airbrake = new AirbrakeController();
-        modal = new Modal();
-        modal.show("Appodeal Chrome Extension", massage);
+        appendJQuery(function() {
+            modal = new Modal();
+            modal.show("Appodeal Chrome Extension", message);
+        });
     };
     waitForCredentials = function () {
         var download_links, no_clients;
@@ -179,10 +181,11 @@ ReportingStepFourController = (function () {
                                 document.location.href = final_href;
                             });
                         } else {
-                            message = 'Error creating admob account on appodeal';
+                            message = 'Error creating admob account on Appodeal';
                             sendOut(1, message);
                             modal.show('Appodeal Chrome Extension', message);
                             chrome.storage.local.remove('reporting_tab_id');
+                            throw new Error(message);
                         }
                     }), 5000);
                 };

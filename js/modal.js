@@ -1,5 +1,7 @@
 var Modal = function() {
-  if (!$(".appodeal_popup").length) {
+  var appodeal_popup;
+  appodeal_popup = $(".appodeal_popup");
+  if (!appodeal_popup.length) {
     var popup = [
       '<div class="appodeal_popup" data-popup="appodeal_popup-1">',
       '    <div class="appodeal_popup-inner">',
@@ -14,7 +16,7 @@ var Modal = function() {
     ].join('');
     $("body").append(popup);
   }
-  this.popup = $(".appodeal_popup");
+  this.popup = appodeal_popup;
   this.title = $(".appodeal_popup-title");
   this.content = $(".appodeal_popup-content");
   var closeScript = "$('[data-popup-close]').on('click', function(e){$('.appodeal_popup').fadeOut(350); e.preventDefault();});";

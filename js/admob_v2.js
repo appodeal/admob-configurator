@@ -14,20 +14,9 @@ var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, int
     // sync local adunits with the server
     AdmobV2.syncUrl = "https://www.appodeal.com/api/v2/sync_inventory";
     // internal admob params
-    AdmobV2.types = {
-        text: 0,
-        image: 1,
-        video: 2
-    };
+    AdmobV2.types = {text: 0, image: 1, video: 2};
     // appodeal ad unit params
-    AdmobV2.adTypes = {
-        interstitial: 0,
-        banner: 1,
-        video: 2,
-        native: 3,
-        mrec: 4,
-        rewarded_video: 5
-    };
+    AdmobV2.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
     // adunits bids
     AdmobV2.interstitialBids = interstitialBids;
     AdmobV2.bannerBids = bannerBids;

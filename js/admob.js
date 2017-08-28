@@ -12,20 +12,9 @@ var Admob = function (userId, apiKey, publisherId, accountEmail, accounts, inter
     // sync local adunits with the server
     Admob.syncUrl = "https://www.appodeal.com/api/v2/sync_inventory";
     // internal admob params
-    Admob.types = {
-        text: 0,
-        image: 1,
-        video: 2
-    };
+    Admob.types = {text: 0, image: 1, video: 2};
     // appodeal ad unit params
-    Admob.adTypes = {
-        interstitial: 0,
-        banner: 1,
-        video: 2,
-        native: 3,
-        mrec: 4,
-        rewarded_video: 5
-    };
+    Admob.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
     // adunits bids
     Admob.interstitialBids = interstitialBids;
     Admob.bannerBids = bannerBids;
@@ -66,15 +55,9 @@ Admob.prototype.syncInventory = function (callback) {
                                 self.createMissingAdunits(function () {
                                     self.finishDialog();
                                     chrome.storage.local.remove("admob_processing");
-                                    self.sendReports({
-                                        mode: 0,
-                                        note: "json"
-                                    }, [JSON.stringify({
-                                        message: "Finish",
-                                        admob: self
-                                    })], function () {
-                                        console.log("Sent finish inventory report");
-                                    });
+                                    self.sendReports({mode: 0, note: "json"
+                                    }, [JSON.stringify({message: "Finish", admob: self
+                                    })], function () {console.log("Sent finish inventory report");});
                                     callback();
                                 })
                             })

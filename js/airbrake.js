@@ -1,3 +1,4 @@
+// throw new Error(message);
 var AirbrakeController = function() {
     this.airbrake = new airbrakeJs.Client({
         projectId: 153590,

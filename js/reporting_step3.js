@@ -27,11 +27,13 @@ ReportingStepThreeController = (function() {
             throw err;
         }
     };
-    initOtherLibrary = function (massage) {
-        sendOut(0, massage);
+    initOtherLibrary = function (message) {
+        sendOut(0, message);
         airbrake = new AirbrakeController();
-        modal = new Modal();
-        modal.show("Appodeal Chrome Extension", massage);
+        appendJQuery(function() {
+            modal = new Modal();
+            modal.show("Appodeal Chrome Extension", message);
+        });
     };
     setEmailCredential = function (project_name) {
         chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
