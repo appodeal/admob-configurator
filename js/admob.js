@@ -87,7 +87,7 @@ Admob.prototype.finishDialog = function () {
     console.log("Show report");
     var self = this;
     var items = [];
-    if (self.report.length == 0) {
+    if (self.report.length === 0) {
         var noAppsMsg = "New apps not found.";
         self.report.push(noAppsMsg);
         items.push("<h4>" + noAppsMsg + "</h4>");
@@ -207,7 +207,7 @@ Admob.prototype.syncPost = function (json, callback) {
     })
         .done(function (data) {
             // success and updated apps exists
-            if (data.code == 0 && data.result) {
+            if (data.code === 0 && data.result) {
                 callback(data);
             } else {
                 self.jsonReport(1, "Wrong answer for a server sync request.", json, data);
@@ -233,13 +233,13 @@ Admob.prototype.newAdunitsForServer = function (app) {
     app.localAdunits.forEach(function (l) {
         // process adunits with correct appodeal app id only if exists
         var adAppId = Admob.adUnitRegex(l[3]).appId;
-        if (!adAppId || adAppId == app.id) {
+        if (!adAppId || adAppId === app.id) {
             var code = self.adunitServerId(l[1]);
             var bid = Admob.adunitBid(l);
             var adType = Admob.adUnitRegex(l[3]).adType;
             var adTypeInt = Admob.adTypes[adType];
             var f = app.ad_units.findByProperty(function (r) {
-                return (r.code == code && r.ad_type == adType && r.bid_floor == bid && r.account_key == self.accountId);
+                return (r.code === code && r.ad_type === adType && r.bid_floor === bid && r.account_key === self.accountId);
             }).element;
             // remote adunit not found
             if (!f) {
@@ -281,7 +281,7 @@ Admob.prototype.isPublisherIdRight = function () {
         self.accounts.forEach(function (element) {
             if (element) {
                 emails.push(element.email);
-                if (element.publisher_id == self.accountId) {
+                if (element.publisher_id === self.accountId) {
                     self.publisherId = element.publisher_id;
                     self.accountEmail = element.email;
                     ret = true;
@@ -296,7 +296,7 @@ Admob.prototype.isPublisherIdRight = function () {
         });
         return ret;
     } else {
-        if (self.publisherId != self.accountId) {
+        if (self.publisherId !== self.accountId) {
             chrome.runtime.sendMessage({
                 type: "wrong_account",
                 info: 'Please login to your Admob account ' + self.accountEmail + ' or run step 2 to sync this account.',
@@ -348,11 +348,11 @@ Admob.adunitBid = function (adunit) {
         bid = adunit[10][0][5][1][1];
         var f = parseInt(bid) / 1000000;
         return (f);
-    } else if (adunit[16].length == 1 && adunit[16][0] == 0) {
+    } else if (adunit[16].length === 1 && adunit[16][0] === 0) {
         return "text";
-    } else if (adunit[16].length == 1 && adunit[16][0] == 1) {
+    } else if (adunit[16].length === 1 && adunit[16][0] === 1) {
         return "image";
-    } else if (adunit[16].length == 1 && adunit[16][0] == 2) {
+    } else if (adunit[16].length === 1 && adunit[16][0] === 2) {
         return "rewarded";
     }
 };
@@ -366,16 +366,16 @@ Admob.localAdunitsToScheme = function (app) {
     app.localAdunits.forEach(function (adunit) {
         var adAppId = Admob.adUnitRegex(adunit[3]).appId;
         // check if adunit has correct appodeal app id (for new name formats)
-        if (!adAppId || adAppId == app.id) {
+        if (!adAppId || adAppId === app.id) {
             var adTypeName = Admob.adUnitRegex(adunit[3]).adType;
             var admobAppId = app.localApp[1];
             var adType = adunit[14];
             var formats = adunit[16];
             var adFormatName;
             // text format name only for text adunits without bid floors
-            if (!adunit[10] && formats.length == 1 && formats[0] == 0) {
+            if (!adunit[10] && formats.length === 1 && formats[0] === 0) {
                 adFormatName = "text";
-            } else if (adunit[18] && formats.length == 1 && formats[0] == 2) {
+            } else if (adunit[18] && formats.length === 1 && formats[0] === 2) {
                 adFormatName = "rewarded";
             } else {
                 adFormatName = "image";
@@ -565,7 +565,7 @@ Admob.missingAdunits = function (app) {
     var missingScheme = $.grep(scheme, function (s) {
         var str = JSON.stringify(s);
         return !(localScheme.findByProperty(function (l) {
-            return (str == JSON.stringify(l));
+            return (str === JSON.stringify(l));
         }).element);
     });
     return (missingScheme);
@@ -653,17 +653,17 @@ Admob.prototype.mapApps = function (callback) {
             if (self.localApps) {
                 // find by admob app id
                 var mappedLocalApp = self.localApps.findByProperty(function (localApp) {
-                    return (remoteApp.admob_app_id == localApp[1]);
+                    return (remoteApp.admob_app_id === localApp[1]);
                 }).element;
                 // find by package name and os or default app name
                 if (!mappedLocalApp) {
                     var mappedLocalApp = self.localApps.findByProperty(function (localApp) {
-                        if (remoteApp.search_in_store && localApp[4] == remoteApp.package_name && localApp[3] == remoteApp.os) {
+                        if (remoteApp.search_in_store && localApp[4] === remoteApp.package_name && localApp[3] === remoteApp.os) {
                             return (true);
                         }
                         // check if name is default (Appodeal/12345/...)
                         var appodealMatch = localApp[2].match(/^Appodeal\/(\d+)(\/|$)/);
-                        return (appodealMatch && parseInt(appodealMatch[1]) == remoteApp.id)
+                        return (appodealMatch && parseInt(appodealMatch[1]) === remoteApp.id)
                     }).element;
                 }
                 // move local app to inventory array
@@ -705,7 +705,7 @@ Admob.prototype.filterHiddenLocalApps = function () {
     var self = this;
     if (self.localApps) {
         self.localApps = $.grep(self.localApps, function (localApp, i) {
-            return (localApp[19] == 0);
+            return (localApp[19] === 0);
         });
     }
 };
@@ -717,13 +717,13 @@ Admob.prototype.selectLocalAdunits = function (admobAppId) {
     if (self.localAdunits) {
         selectedAdunits = $.grep(self.localAdunits, function (adunit, i) {
             // check admob app id and status
-            if (adunit[2] != admobAppId || adunit[9] != 0) {
+            if (adunit[2] !== admobAppId || adunit[9] !== 0) {
                 return (false);
             }
             // check adunit type
             var t = Admob.adUnitRegex(adunit[3]).adType;
-            return (adunit[14] == 1 && (t == 'interstitial' || t == 'rewarded_video')) ||
-                (adunit[14] == 0 && (t == 'banner' || t == 'mrec'));
+            return (adunit[14] === 1 && (t === 'interstitial' || t === 'rewarded_video')) ||
+                (adunit[14] === 0 && (t === 'banner' || t === 'mrec'));
         })
     }
     return (selectedAdunits);
@@ -836,7 +836,7 @@ Admob.prototype.syncWithServer = function (app, callback) {
         admob_app_id: app.localApp[1],
         adunits: self.newAdunitsForServer(app)
     };
-    if (h.admob_app_id != app.admob_app_id || h.adunits.length) {
+    if (h.admob_app_id !== app.admob_app_id || h.adunits.length) {
         params.apps.push(h);
     }
     // send array to the server
@@ -936,7 +936,7 @@ Admob.prototype.searchAppInStores = function (app, callback) {
             var storeApp;
             if (storeApps) {
                 storeApp = storeApps.findByProperty(function (a) {
-                    return (a[4] == app.package_name);
+                    return (a[4] === app.package_name);
                 }).element;
             }
             callback(storeApp);
@@ -1135,7 +1135,7 @@ Admob.prototype.updateAppAdunitFormats = function (app, callback) {
     if (app.localAdunits) {
         // select interstitial adunits with bid floor and without video format
         var adunits = $.grep(app.localAdunits, function (adunit) {
-            return (adunit[10] && adunit[14] == 1 && JSON.stringify(adunit[16]) != "[0,1,2]") && adunit[17] != 1;
+            return (adunit[10] && adunit[14] === 1 && JSON.stringify(adunit[16]) !== "[0,1,2]") && adunit[17] !== 1;
         });
         // update selected adunits
         Admob.synchronousEach(adunits, function (adunit, next) {
