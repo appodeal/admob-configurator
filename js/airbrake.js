@@ -1,11 +1,19 @@
 // throw new Error(message);
-var AirbrakeController = function() {
-    this.airbrake = new airbrakeJs.Client({
-        projectId: 153590,
-        projectKey: 'b85eeb2ff89294025348d370a4faf164'
+var AirbrakeController = function () {
+    chrome.storage.local.get({
+        'airbrake_js': null
+    }, function (items) {
+        if (items.airbrake_js) {
+            this.airbrake = new airbrakeJs.Client({
+                projectId: items.airbrake_js.projectId,
+                projectKey: items.airbrake_js.projectKey
+            });
+        }
     });
 };
 
 AirbrakeController.prototype.setError = function (err) {
-    this.airbrake.notify(err);
+    if (this.airbrake) {
+        this.airbrake.notify(err);
+    }
 };
