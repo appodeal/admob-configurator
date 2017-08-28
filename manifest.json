@@ -3,7 +3,7 @@
   "name": "Appodeal",
   "short_name": "Appodeal Admob Sync",
   "description": "This extension will create and sync Appodeal adunits in your Admob account.",
-  "version": "15.10.7",
+  "version": "15.10.8",
   "browser_action": {
     "default_icon": {
       "16": "img/icon/icon-16.png"
@@ -18,21 +18,49 @@
   },
   "content_scripts": [{
       "matches": ["http://www.appodeal.com/profile/*", "https://www.appodeal.com/profile/*", "http://www.appodeal.com/dashboard*", "https://www.appodeal.com/dashboard*", "http://www.appodeal.com/apps*", "https://www.appodeal.com/apps*"],
-      "js": ["js/vendor/jquery.min.js", "js/utils.js", "js/login.js"]
+      "js": [
+        "js/vendor/jquery.min.js",
+        "js/utils.js",
+        "js/login.js",
+        "js/vendor/node_modules/airbrake-js/dist/client.js",
+        "js/airbrake.js"
+      ]
     },
     {
       "matches": ["https://console.developers.google.com/*"],
-      "js": ["js/vendor/jquery.min.js", "js/utils.js", "js/modal.js"],
+      "js": [
+        "js/vendor/jquery.min.js",
+        "js/utils.js",
+        "js/modal.js",
+        "js/vendor/node_modules/airbrake-js/dist/client.js",
+        "js/airbrake.js"
+      ],
       "css": ["css/modal.console.css"]
     },
     {
-      "js": ["js/vendor/jquery.min.js", "js/utils.js", "js/adunits.js", "js/admob.js", "js/admob_v2.js", "js/modal.js", "js/progressBar.js"],
       "matches": ["https://apps.admob.com/*"],
+      "js": [
+        "js/vendor/jquery.min.js",
+        "js/utils.js",
+        "js/adunits.js",
+        "js/admob.js",
+        "js/admob_v2.js",
+        "js/modal.js",
+        "js/progressBar.js",
+        "js/vendor/node_modules/airbrake-js/dist/client.js",
+        "js/airbrake.js"
+      ],
       "css": ["css/modal.css"]
     }
   ],
   "background": {
-    "scripts": ["js/vendor/jquery.min.js", "js/utils.js", "js/bg.js"],
+    "scripts": [
+      "js/vendor/jquery.min.js",
+      "js/utils.js",
+      "js/bg.js",
+      "js/vendor/node_modules/airbrake-js/dist/client.js",
+      "js/airbrake.js"
+    ],
     "persistent": false
   },
   "web_accessible_resources": ["img/*", "js/vendor/*", "js/helpers/*"],
