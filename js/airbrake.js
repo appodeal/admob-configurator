@@ -1,10 +1,11 @@
 // throw new Error(message);
-var AirbrakeController = function () {
+var AirbrakeController, airbrake;
+AirbrakeController = function () {
     chrome.storage.local.get({
         'airbrake_js': null
     }, function (items) {
         if (items.airbrake_js) {
-            this.airbrake = new airbrakeJs.Client({
+            airbrake = new airbrakeJs.Client({
                 projectId: items.airbrake_js.projectId,
                 projectKey: items.airbrake_js.projectKey
             });
@@ -13,7 +14,7 @@ var AirbrakeController = function () {
 };
 
 AirbrakeController.prototype.setError = function (err) {
-    if (this.airbrake) {
-        this.airbrake.notify(err);
+    if (airbrake) {
+        airbrake.notify(err);
     }
 };

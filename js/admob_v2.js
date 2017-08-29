@@ -157,6 +157,17 @@ AdmobV2.prototype.showErrorDialog = function (content) {
     message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support.<h4>" + content + "</h4>";
     self.modal.show("Appodeal Chrome Extension", message);
     throw new Error(message);
+    // send json with current admob object state
+    var serializedAdmob = JSON.stringify({
+        message: message,
+        admob: self
+    });
+    console.log(serializedAdmob);
+    self.sendReports({
+        mode: 1,
+        note: "json"
+    }, [serializedAdmob], function () {
+    });
 };
 
 // show information modal window
@@ -980,9 +991,7 @@ AdmobV2.prototype.createAdunits = function (app, callback) {
                 next();
             })
         }, function () {
-            self.syncWithServer(app, function (params) {
-                callback();
-            })
+            callback();
         })
     } catch (err) {
         self.airbrake.setError(err);
@@ -1156,11 +1165,12 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
 
             value.forEach(function (item, i, arr) {
                 if (item[4][3] && item[4][3].length > 0) {
+                    var ar = JSON.stringify({"1": item});
                     $.ajax({
                         type: 'POST',
                         url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Update?rpcTrackingId=MediationGroupService.Update:1',
                         data: {
-                            __ar: JSON.stringify({"1": item})
+                            __ar: ar
                         },
                         async: false,
                         contentType: 'application/x-www-form-urlencoded',
@@ -1168,12 +1178,19 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
                             "x-framework-xsrf-token": self.token
                         },
                         error: function (response) {
+                            console.log(ar);
                             self.showErrorDialog("No result in MediationGroupService.Update:1 request." + response.responseText);
                         }
                     });
                 }
                 self.progressBar.increase();
             });
+        });
+        //Send AdUnit to Server
+        self.inventory.forEach(function (app, i, arr) {
+            if (app.ad_units.length !== app.localAdunits.length) {
+                self.syncWithServer(app, function (params) {})
+            }
         });
         callback();
     } catch (err) {
@@ -1203,12 +1220,12 @@ AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeM
                     if (adTypeName === 'banner') type = 0;
                     if (adTypeName === 'interstitial') type = 1;
                     if (adTypeName === 'rewarded_video') type = 5;
-
+                    var ar = '{"1":"' + item + '/' + osName + '","2": 1,"3": {"1": ' + osId + ', "2": ' + type + ', "3": []},"4": [{"2": 1, "3": 1, "4": 2, "5": {"1": "' + bidflor + '", "2": "USD"}, "6": true}]}';
                     $.ajax({
                         type: 'POST',
                         url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Create?rpcTrackingId=MediationGroupService.Create:1',
                         data: {
-                            __ar: '{"1":"' + item + '/' + osName + '","2": 1,"3": {"1": ' + osId + ', "2": ' + type + ', "3": []},"4": [{"2": 1, "3": 1, "4": 2, "5": {"1": "' + bidflor + '", "2": "USD"}, "6": true}]}'
+                            __ar: ar
                         },
                         async: false,
                         contentType: 'application/x-www-form-urlencoded',
@@ -1216,6 +1233,7 @@ AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeM
                             "x-framework-xsrf-token": self.token
                         },
                         error: function (response) {
+                            console.log(ar);
                             self.showErrorDialog(response.responseText);
                         }
                     });
@@ -1250,6 +1268,7 @@ AdmobV2.prototype.syncWithServer = function (app, callback) {
     var self = this, params, id, name, admob_app_id, adunits, h;
     try {
         console.log('syncWithServer');
+        self.report = [];
         // make an array of new and different adunits
         params = {account: self.accountId, api_key: self.apiKey, user_id: self.userId, apps: []};
         id = app.id;
@@ -1273,7 +1292,7 @@ AdmobV2.prototype.syncWithServer = function (app, callback) {
                 self.report.push.apply(self.report, items);
                 self.sendReports({
                     mode: 0
-                }, [items.join("/n")], function () {
+                }, [items.join("\n ")], function () {
                     console.log("Sent reports from " + app.appName);
                 });
                 callback(params);
