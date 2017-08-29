@@ -2,12 +2,12 @@ var AdmobAccountController, airbrake, modal, criticalVersion, currentVersion, ad
 
 AdmobAccountController = (function () {
     var initOtherLibrary, latestCriticalReportingApi;
-    initOtherLibrary = function (massage) {
-        sendOut(0, massage);
+    initOtherLibrary = function (message) {
+        sendOut(0, message);
         airbrake = new AirbrakeController();
         appendJQuery(function() {
             modal = new Modal();
-            modal.show("Appodeal Chrome Extension", massage);
+            modal.show("Appodeal Chrome Extension", message);
         });
     };
     latestCriticalReportingApi = function () {
