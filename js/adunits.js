@@ -82,10 +82,10 @@ AdUnitController = (function () {
     };
     return {
         init: function () {
-            initOtherLibrary('Start sync inventory');
             chrome.storage.local.get("admob_processing", function(result) {
                 //result['admob_processing'] === true or false
                 if (result['admob_processing']) {
+                    initOtherLibrary('Start sync inventory');
                     setTimeout(function() {
                         startInventorySync();
                     }, 4000);
