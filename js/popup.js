@@ -212,7 +212,7 @@ LoadController = (function() {
       }
     }
     if(result['airbrake_js']){
-        localCredentials['airbrake_js'] = { projectId: result['airbrake_js']['projectId'], projectKey: result['airbrake_js']['projectKey'] };
+        localCredentials['airbrake_js'] = { projectId: result['airbrake_js']['project_id'], projectKey: result['airbrake_js']['project_key'] };
     }else {
         chrome.storage.local.remove('airbrake_js');
     }
