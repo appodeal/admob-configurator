@@ -136,7 +136,7 @@ AdmobV2.prototype.finishDialog = function () {
             self.report.push(noAppsMsg);
             items.push("<h4>" + noAppsMsg + "</h4>");
         }
-        items.push("<h4>Admob is synced with Appodeal now.</h4>");
+        items.push('Admob is synced with Appodeal now.');
         self.modal.show("Congratulations! Sync complete!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps and also you need to check and fill completely all payment details in Admob to start show ads. <br> Please click this <a href='https://apps.admob.com/v2/apps/list'>link</a> to reload and go to url Admob apps. <br> <h3>Synchronized inventory</h3>" + self.humanReport().join(""));
         // send finish reports
         self.sendReports({
@@ -270,7 +270,8 @@ AdmobV2.prototype.syncPost = function (json, callback) {
             url: AdmobV2.syncUrl,
             contentType: "application/json",
             dataType: "json",
-            data: params
+            data: params,
+            async: false
         })
             .done(function (data) {
                 // success and updated apps exists
@@ -1187,12 +1188,25 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
             });
         });
         //Send AdUnit to Server
-        self.inventory.forEach(function (app, i, arr) {
-            if (app.ad_units.length !== app.localAdunits.length) {
-                self.syncWithServer(app, function (params) {})
+        self.syncWithServer(self.inventory, function (params) {
+            if(params.apps.length){
+                self.syncPost(params, function (data) {
+                    params.apps.forEach(function (app) {
+                        var items = [];
+                        // collect and send reports to server
+                        items.push("<h4>" + app.name + "</h4>");
+                        app.adunits.forEach(function (adunit) {
+                            items.push(adunit.name);
+                        });
+                        self.report.push.apply(self.report, items);
+                        self.sendReports({mode: 0}, [items.join("\n ")], function () {
+                            console.log("Sent reports from ->" + app.name);
+                        });
+                    });
+                });
             }
+            callback();
         });
-        callback();
     } catch (err) {
         self.airbrake.setError(err);
         throw err;
@@ -1264,42 +1278,24 @@ AdmobV2.prototype.GetCountOS = function (data, self, callback) {
 };
 
 // send information about local apps and adunits to the server
-AdmobV2.prototype.syncWithServer = function (app, callback) {
-    var self = this, params, id, name, admob_app_id, adunits, h;
+AdmobV2.prototype.syncWithServer = function (apps, callback) {
+    var self = this, params = {account: this.accountId, api_key: this.apiKey, user_id: this.userId, apps: []};
     try {
-        console.log('syncWithServer');
         self.report = [];
-        // make an array of new and different adunits
-        params = {account: self.accountId, api_key: self.apiKey, user_id: self.userId, apps: []};
-        id = app.id;
-        name = app.localApp[2];
-        admob_app_id = app.localApp[1];
-        adunits = self.newAdunitsForServer(app);
-        h = {id: id, name: name, admob_app_id: admob_app_id, adunits: adunits};
-        if (h.admob_app_id !== app.admob_app_id || h.adunits.length) {
-            params.apps.push(h);
-        }
-        // send array to the server
-        if (params.apps.length) {
-            console.log("Sync app " + h.name + " with server");
-            self.syncPost(params, function (data) {
-                // collect and send reports to server
-                var items = [];
-                items.push("<h4>" + h.name + "</h4>");
-                h.adunits.forEach(function (adunit) {
-                    items.push(adunit.name);
-                });
-                self.report.push.apply(self.report, items);
-                self.sendReports({
-                    mode: 0
-                }, [items.join("\n ")], function () {
-                    console.log("Sent reports from " + app.appName);
-                });
-                callback(params);
-            })
-        } else {
-            callback(params);
-        }
+        apps.forEach(function (app, i, arr) {
+            var id, name, admob_app_id, adunits, h;
+            if (app.ad_units.length !== app.localAdunits.length) {
+                id = app.id;
+                name = app.localApp[2];
+                admob_app_id = app.localApp[1];
+                adunits = self.newAdunitsForServer(app);
+                h = {id: id, name: name, admob_app_id: admob_app_id, adunits: adunits};
+                if (h.admob_app_id !== app.admob_app_id || h.adunits.length) {
+                    params.apps.push(h);
+                }
+            }
+        });
+        callback(params);
     } catch (err) {
         self.airbrake.setError(err);
         throw err;
