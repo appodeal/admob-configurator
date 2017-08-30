@@ -1161,11 +1161,14 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
         $.each(schema, function (index, value) {
             var osName = 'android';
             if (index === '1') osName = 'ios';
-
-            self.progressBar = new ProgressBar(value.length, 'Please allow several minutes to sync ' + osName + ' your Update Mediation Group.');
-
-            value.forEach(function (item, i, arr) {
+            value = value.filter(function (item) {
                 if (item[4][3] && item[4][3].length > 0) {
+                    return item;
+                }
+            });
+            if (value.length > 0) {
+                self.progressBar = new ProgressBar(value.length, 'Please allow several minutes to sync ' + osName + ' your Update Mediation Group.');
+                value.forEach(function (item, i, arr) {
                     var ar = JSON.stringify({"1": item});
                     $.ajax({
                         type: 'POST',
@@ -1183,13 +1186,13 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
                             self.showErrorDialog("No result in MediationGroupService.Update:1 request." + response.responseText);
                         }
                     });
-                }
-                self.progressBar.increase();
-            });
+                    self.progressBar.increase();
+                });
+            }
         });
         //Send AdUnit to Server
         self.syncWithServer(self.inventory, function (params) {
-            if(params.apps.length){
+            if (params.apps.length) {
                 self.syncPost(params, function (data) {
                     params.apps.forEach(function (app) {
                         var items = [];
@@ -1200,7 +1203,7 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
                         });
                         self.report.push.apply(self.report, items);
                         self.sendReports({mode: 0}, [items.join("\n ")], function () {
-                            console.log("Sent reports from ->" + app.name);
+                            console.log("Sent reports from -> " + app.name);
                         });
                     });
                 });
