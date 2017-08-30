@@ -1,5 +1,6 @@
 // throw new Error(message);
 var AirbrakeController, airbrake;
+
 AirbrakeController = function () {
     chrome.storage.local.get({
         'airbrake_js': null

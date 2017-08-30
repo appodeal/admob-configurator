@@ -1,7 +1,7 @@
-var ReportingStepThreeController, modal, airbrake, consents_interval, email_credentials;
+var ReportingStepThreeController, modal, consents_interval, email_credentials;
 
 ReportingStepThreeController = (function() {
-    var initOtherLibrary, wait_for_consents, setEmailCredential, getEmail;
+    var initOtherLibrary, airbrake, wait_for_consents, setEmailCredential, getEmail;
     wait_for_consents = function () {
         var save_button, script, console_log_code, select_save_code, name_code, set_val_code, code;
         try {

@@ -1,7 +1,7 @@
-var ReportingStepTwoController, modal, adsence_enabling_interval, airbrake;
+var ReportingStepTwoController, modal, adsence_enabling_interval;
 
 ReportingStepTwoController = (function() {
-    var wait_for_adsence_btn, projectToLocation, initOtherLibrary;
+    var wait_for_adsence_btn, airbrake, projectToLocation, initOtherLibrary;
     wait_for_adsence_btn = function() {
         var enableApiBtn, disableBtnCode, disableApiBtn, enableApiBtnOld, disableBtnCodeOld, disableApiBtnOld, code;
         try {

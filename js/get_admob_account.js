@@ -1,7 +1,7 @@
-var AdmobAccountController, airbrake, modal, criticalVersion, currentVersion, admob_account_id, message;
+var AdmobAccountController, modal, criticalVersion, currentVersion, admob_account_id, message;
 
 AdmobAccountController = (function () {
-    var initOtherLibrary, latestCriticalReportingApi;
+    var initOtherLibrary, airbrake, latestCriticalReportingApi;
     initOtherLibrary = function (message) {
         sendOut(0, message);
         airbrake = new AirbrakeController();

@@ -1,7 +1,7 @@
-var BackgroundController, airbrake;
+var BackgroundController;
 
 BackgroundController = (function () {
-    var initOtherLibrary, onMessage, onMessageExternal, webNavigation, notificationsParams;
+    var initOtherLibrary, airbrake, onMessage, onMessageExternal, webNavigation, notificationsParams;
     initOtherLibrary = function () {
         airbrake = new AirbrakeController();
     };

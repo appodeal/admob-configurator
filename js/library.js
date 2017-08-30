@@ -1,7 +1,8 @@
-var LibraryController, modal, id_project, airbrake, timeout = 2000, projectName = 'Appodeal';
+var LibraryController, modal, id_project, timeout = 2000, projectName = 'Appodeal';
 
 LibraryController = function () {
-    var initOtherLibrary, readBody, random_string, projectIdSuggestion, find, create, find_from_create, url_project;
+    var initOtherLibrary, airbrake, readBody, random_string, projectIdSuggestion, find, create, find_from_create,
+        url_project;
 
     initOtherLibrary = function (message) {
         sendOut(0, message);
@@ -28,16 +29,34 @@ LibraryController = function () {
             throw err;
         }
     };
-    random_string = function (length) {
+
+    /**
+     * RANDOM STRING GENERATOR
+     *
+     * Info:      http://stackoverflow.com/a/27872144/383904
+     * Use:       randomString(length [,"A"] [,"N"] );
+     * Default:   return a random alpha-numeric string
+     * Arguments: If you use the optional "A", "N" flags:
+     *            "A" (Alpha flag)   return random a-Z string
+     *            "N" (Numeric flag) return random 0-9 string
+     */
+    random_string = function (len, an) {
         try {
-            return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+            an = an && an.toLowerCase();
+            var str = "", i = 0, min = an === "a" ? 10 : 0, max = an === "n" ? 10 : 62;
+            for (; i++ < len;) {
+                var r = Math.random() * (max - min) + min << 0;
+                str += String.fromCharCode(r += r > 9 ? r < 36 ? 55 : 61 : 48);
+            }
+            return str;
         } catch (err) {
             airbrake.setError(err);
             throw err;
         }
     };
+
     projectIdSuggestion = function (callback) {
-        var random = 'appodeal-' + random_string(10);
+        var random = 'appodeal-' + random_string(20, 'N');
         $.ajax({
             type: "GET",
             url: 'https://console.developers.google.com/m/projectidsuggestion?authuser=0&pidAvailable=' + random,
@@ -46,7 +65,7 @@ LibraryController = function () {
             async: false,
             complete: function (response, textStatus, jqXHR) {
                 try {
-                    if (response.readyState == 4 && response.status === 200) {
+                    if (response.readyState === 4 && response.status === 200) {
                         var data = JSON.parse(readBody(response).replace(")]}'", ""));
                         console.log(data.id, data.available);
                         if (data.available) {
@@ -191,46 +210,49 @@ LibraryController = function () {
             throw err;
         }
     };
-    find_from_create = function () {
+    find_from_create = function (id_project) {
+        console.log('find_from_create');
         var refreshIntervalId = setInterval(function () {
-            var req = new XMLHttpRequest();
-            req.open("GET", 'https://console.developers.google.com/m/operations?authuser=0&maxResults=100', true);
-            req.onload = function (event) {
-                var message;
-                try {
-                    if (req.readyState == 4 && req.status === 200) {
+            try {
+                var req = new XMLHttpRequest();
+                req.open("GET", 'https://console.developers.google.com/m/operations?authuser=0&maxResults=100', true);
+                req.onload = function (event) {
+                    var message;
+                    if (req.readyState === 4 && req.status === 200) {
                         var data = JSON.parse(readBody(req).replace(")]}'", ""));
                         if (data.items.length > 0) {
                             $.each(data.items, function (index, value) {
-                                if (value.descriptionLocalizationArgs.assignedIdForDisplay === id) {
+                                if (value.descriptionLocalizationArgs.assignedIdForDisplay === id_project) {
                                     message = '';
                                     if (value.status === "DONE") {
                                         sendOut(0, JSON.stringify(value));
-                                        document.location.href = url_project(id);
+                                        document.location.href = url_project(id_project);
                                         clearInterval(refreshIntervalId);
-                                    } else if (value.status === "FAILED" && value.error.causeErrorMessage.indexOf('ALREADY_EXISTS') != -1) {
+                                    } else if (value.status === "FAILED" && value.error.causeErrorMessage.indexOf('ALREADY_EXISTS') !== -1) {
                                         sendOut(0, value.error.causeErrorMessage);
                                         message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
                                         modal.show("Appodeal Chrome Extension", message);
                                         clearInterval(refreshIntervalId);
                                         throw new Error(message);
-                                    } else if (value.status === "FAILED" && value.error.causeErrorMessage.indexOf('RESOURCE_EXHAUSTED') != -1) {
+                                    } else if (value.status === "FAILED" && value.error.causeErrorMessage.indexOf('RESOURCE_EXHAUSTED') !== -1) {
                                         sendOut(0, value.error.causeErrorMessage);
                                         message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
                                         modal.show("Appodeal Chrome Extension", message);
                                         clearInterval(refreshIntervalId);
                                         throw new Error(message);
+                                    } else {
+                                        sendOut(0, JSON.stringify(value));
                                     }
                                 }
                             });
                         }
                     }
-                } catch (err) {
-                    airbrake.setError(err);
-                    throw err;
-                }
-            };
-            req.send(null);
+                };
+                req.send(null);
+            } catch (err) {
+                airbrake.setError(err);
+                throw err;
+            }
         }, timeout);
     };
     url_project = function (projectName) {

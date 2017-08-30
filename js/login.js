@@ -1,7 +1,7 @@
-﻿var LoginController, airbrake;
+﻿var LoginController;
 
 LoginController = (function () {
-    var initOtherLibrary, findEmailAndApiKey;
+    var initOtherLibrary, airbrake, findEmailAndApiKey;
     initOtherLibrary = function (message) {
         sendOut(0, message);
         airbrake = new AirbrakeController();

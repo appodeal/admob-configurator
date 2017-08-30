@@ -1,8 +1,8 @@
-var ReportingStepFourController, airbrake, modal, credentials_interval, redirect_uri = REDIRECT_URI;
+var ReportingStepFourController, modal, credentials_interval, redirect_uri = REDIRECT_URI;
 
 ReportingStepFourController = (function () {
 
-    var initOtherLibrary, waitForCredentials, outhclientPageLink, startCredentialsCreating,
+    var initOtherLibrary, airbrake, waitForCredentials, outhclientPageLink, startCredentialsCreating,
         getClientIdAndSecretIdFromDetailsAndRun,
         resetCredentialSecret, checkAndSaveClientCredentials, fetchCredentials, addAdmobAccount, getIdAndSecret,
         findAppodealClient,
