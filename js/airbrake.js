@@ -1,6 +1,6 @@
 // document.head.insertBefore(document.createElement('style'));
 var AirbrakeController = function () {
-    this.init.apply(this);
+    this.init(this);
 };
 
 AirbrakeController.prototype.getError = function () {
