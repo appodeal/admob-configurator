@@ -11,7 +11,7 @@ ReportingStepFourController = (function () {
     initOtherLibrary = function (message) {
         sendOut(0, message);
         airbrake = new AirbrakeController();
-        appendJQuery(function() {
+        appendJQuery(function () {
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", message);
         });
@@ -33,22 +33,33 @@ ReportingStepFourController = (function () {
             }
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     outhclientPageLink = function () {
-        return oauthPageUrl(locationProjectName());
+        try {
+            return oauthPageUrl(locationProjectName());
+        } catch (err) {
+            airbrake.setError(err);
+        }
     };
     startCredentialsCreating = function () {
-        console.log('Start credentials creating');
-        document.location = outhclientPageLink();
+        try {
+            console.log('Start credentials creating');
+            document.location = outhclientPageLink();
+        } catch (err) {
+            airbrake.setError(err);
+        }
     };
     getClientIdAndSecretIdFromDetailsAndRun = function () {
         var clientId, clientSecret, secretSpan;
-        clientId = jQuery('div.p6n-kv-list-value span').first().text().trim();
-        secretSpan = jQuery('div[ng-if=\'ctrl.isSecretVisible() && ctrl.client.clientSecret\'] .p6n-kv-list-value span');
-        clientSecret = secretSpan.text().trim();
-        checkAndSaveClientCredentials(clientId, clientSecret);
+        try {
+            clientId = jQuery('div.p6n-kv-list-value span').first().text().trim();
+            secretSpan = jQuery('div[ng-if=\'ctrl.isSecretVisible() && ctrl.client.clientSecret\'] .p6n-kv-list-value span');
+            clientSecret = secretSpan.text().trim();
+            checkAndSaveClientCredentials(clientId, clientSecret);
+        } catch (err) {
+            airbrake.setError(err);
+        }
     };
     resetCredentialSecret = function () {
         setTimeout((function () {
@@ -77,7 +88,6 @@ ReportingStepFourController = (function () {
                 }
             } catch (err) {
                 airbrake.setError(err);
-                throw err;
             }
         }), 1000);
     };
@@ -132,25 +142,29 @@ ReportingStepFourController = (function () {
             'email_credentials': null
         }, function (items) {
             var email, json, message, url;
-            url = APPODEAL_URL_SSL + '/api/v1/add_admob_account.json';
-            email = items.email_credentials;
-            if (email === '' || email === null) {
-                message = 'Error creating admob account. Not find user email from console';
-                sendOut(1, message);
-                modal.show('Appodeal Chrome Extension', message);
-                chrome.storage.local.remove('reporting_tab_id');
-                return;
+            try {
+                url = APPODEAL_URL_SSL + '/api/v1/add_admob_account.json';
+                email = items.email_credentials;
+                if (email === '' || email === null) {
+                    message = 'Error creating admob account. Not find user email from console';
+                    sendOut(1, message);
+                    modal.show('Appodeal Chrome Extension', message);
+                    chrome.storage.local.remove('reporting_tab_id');
+                    throw new Error(message);
+                }
+                json = {
+                    'email': email,
+                    'client_id': clientId,
+                    'client_secret': clientSecret,
+                    'account_id': account_id,
+                    'api_key': appodeal_api_key,
+                    'user_id': appodeal_user_id
+                };
+                console.log(JSON.stringify(json));
+                modal.show('Appodeal Chrome Extension', 'Please grant permission to Appodeal to read your Admob reports.<br>You will be automatically redirected in 5 seconds.');
+            } catch (err) {
+                airbrake.setError(err);
             }
-            json = {
-                'email': email,
-                'client_id': clientId,
-                'client_secret': clientSecret,
-                'account_id': account_id,
-                'api_key': appodeal_api_key,
-                'user_id': appodeal_user_id
-            };
-            console.log(JSON.stringify(json));
-            modal.show('Appodeal Chrome Extension', 'Please grant permission to Appodeal to read your Admob reports.<br>You will be automatically redirected in 5 seconds.');
             setTimeout((function () {
                 var http;
                 http = new XMLHttpRequest;
@@ -161,31 +175,35 @@ ReportingStepFourController = (function () {
                     console.log('State changed');
                     setInterval((function () {
                         var message, local_settings, response;
-                        if (http.readyState === 4 && http.status === 200) {
-                            message = 'Admob account created on Appodeal.';
-                            console.log(message);
-                            response = JSON.parse(http.responseText);
-                            if (response['id'] === null) {
-                                console.log('Error creating admob account on appodeal. Field id not null');
-                                return;
-                            }
-                            local_settings = {
-                                reporting_client_creating: true,
-                                appodeal_admob_account_id: response['id']
-                            };
-                            chrome.storage.local.set(local_settings, function () {
-                                var final_href;
-                                console.log('redirecting to oauth...');
-                                final_href = 'https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=' + redirect_uri + '&response_type=code&approval_prompt=force&state=' + response['id'] + ':' + clientId + '&client_id=' + clientId + '&access_type=offline';
+                        try {
+                            if (http.readyState === 4 && http.status === 200) {
+                                message = 'Admob account created on Appodeal.';
+                                console.log(message);
+                                response = JSON.parse(http.responseText);
+                                if (response['id'] === null) {
+                                    console.log('Error creating admob account on appodeal. Field id not null');
+                                    return;
+                                }
+                                local_settings = {
+                                    reporting_client_creating: true,
+                                    appodeal_admob_account_id: response['id']
+                                };
+                                chrome.storage.local.set(local_settings, function () {
+                                    var final_href;
+                                    console.log('redirecting to oauth...');
+                                    final_href = 'https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=' + redirect_uri + '&response_type=code&approval_prompt=force&state=' + response['id'] + ':' + clientId + '&client_id=' + clientId + '&access_type=offline';
+                                    chrome.storage.local.remove('reporting_tab_id');
+                                    document.location.href = final_href;
+                                });
+                            } else {
+                                message = 'Error creating admob account on Appodeal';
+                                sendOut(1, message);
+                                modal.show('Appodeal Chrome Extension', message);
                                 chrome.storage.local.remove('reporting_tab_id');
-                                document.location.href = final_href;
-                            });
-                        } else {
-                            message = 'Error creating admob account on Appodeal';
-                            sendOut(1, message);
-                            modal.show('Appodeal Chrome Extension', message);
-                            chrome.storage.local.remove('reporting_tab_id');
-                            throw new Error(message);
+                                throw new Error(message);
+                            }
+                        } catch (err) {
+                            airbrake.setError(err);
                         }
                     }), 5000);
                 };
@@ -193,33 +211,45 @@ ReportingStepFourController = (function () {
         });
     };
     getIdAndSecret = function (download_links, callback) {
-        var names, result;
-        result = {
-            id: null,
-            secret: null
-        };
-        $.each(download_links, function () {
-            var data;
-            data = JSON.parse(this.getAttribute('content'));
-            if (data.web && data.web.javascript_origins) {
-                names = data.web.javascript_origins;
-                if (names.includes(APPODEAL_URL_SSL + '/') || names.includes(APPODEAL_URL_SSL)) {
-                    result.id = data.web.client_id;
-                    result.secret = data.web.client_secret;
+        try {
+            var names, result;
+            result = {
+                id: null,
+                secret: null
+            };
+            $.each(download_links, function () {
+                var data;
+                data = JSON.parse(this.getAttribute('content'));
+                if (data.web && data.web.javascript_origins) {
+                    names = data.web.javascript_origins;
+                    if (names.includes(APPODEAL_URL_SSL + '/') || names.includes(APPODEAL_URL_SSL)) {
+                        result.id = data.web.client_id;
+                        result.secret = data.web.client_secret;
+                    }
+                } else {
+                    console.log(data.web.client_id);
                 }
-            } else {
-                console.log(data.web.client_id);
-            }
-        });
-        callback(result);
+            });
+            callback(result)
+        } catch (err) {
+            airbrake.setError(err);
+        }
     };
     findAppodealClient = function () {
-        return jQuery('tr[pan-table-row] td a[content*=\'appodeal.com/admin/oauth2callback\']').parents('tr[pan-table-row]');
+        try {
+            return jQuery('tr[pan-table-row] td a[content*=\'appodeal.com/admin/oauth2callback\']').parents('tr[pan-table-row]');
+        } catch (err) {
+            airbrake.setError(err);
+        }
     };
     waitUntilClientInfoPresent = function () {
         window.setInterval((function () {
-            console.log('Redirect to credentials page');
-            document.location = credentialPageUrl(locationProjectName());
+            try {
+                console.log('Redirect to credentials page');
+                document.location = credentialPageUrl(locationProjectName());
+            } catch (err) {
+                airbrake.setError(err);
+            }
         }), 5000);
     };
     addCredentials = function () {
@@ -244,7 +274,6 @@ ReportingStepFourController = (function () {
             }), 1000);
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     return {

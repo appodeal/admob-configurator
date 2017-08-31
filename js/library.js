@@ -26,7 +26,6 @@ LibraryController = function () {
             return data;
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
 
@@ -51,7 +50,6 @@ LibraryController = function () {
             return str;
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
 
@@ -76,7 +74,6 @@ LibraryController = function () {
                     }
                 } catch (err) {
                     airbrake.setError(err);
-                    throw err;
                 }
             }
         });
@@ -92,23 +89,21 @@ LibraryController = function () {
                 async: false,
                 complete: function (response, textStatus, jqXHR) {
                     try {
-                        if (response.readyState == 4 && response.status === 200) {
+                        if (response.readyState === 4 && response.status === 200) {
                             var data = JSON.parse(readBody(response).replace(")]}'", ""));
                             if (data) {
                                 sendOut(0, readBody(response).replace(")]}'", ""));
-                                $.each(data.default.resource, function (index, value) {
+                                data.default.resource.forEach(function (value, index, arr) {
                                     if (value.display_name === projectName) {
                                         document.location.href = url_project(value.id);
                                     }
-                                });
-                                create();
+                                }, create());
                             } else {
                                 find();
                             }
                         }
                     } catch (err) {
                         airbrake.setError(err);
-                        throw err;
                     }
                 }
             });
@@ -207,52 +202,49 @@ LibraryController = function () {
             });
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     find_from_create = function (id_project) {
         console.log('find_from_create');
         var refreshIntervalId = setInterval(function () {
-            try {
-                var req = new XMLHttpRequest();
-                req.open("GET", 'https://console.developers.google.com/m/operations?authuser=0&maxResults=100', true);
-                req.onload = function (event) {
-                    var message;
+
+            var req = new XMLHttpRequest();
+            req.open("GET", 'https://console.developers.google.com/m/operations?authuser=0&maxResults=100', true);
+            req.onload = function (event) {
+                var message;
+                try {
                     if (req.readyState === 4 && req.status === 200) {
                         var data = JSON.parse(readBody(req).replace(")]}'", ""));
                         if (data.items.length > 0) {
-                            $.each(data.items, function (index, value) {
+                            data.items.forEach(function (value, index, arr) {
                                 if (value.descriptionLocalizationArgs.assignedIdForDisplay === id_project) {
                                     message = '';
-                                    if (value.status === "DONE") {
-                                        sendOut(0, JSON.stringify(value));
-                                        document.location.href = url_project(id_project);
-                                        clearInterval(refreshIntervalId);
-                                    } else if (value.status === "FAILED" && value.error.causeErrorMessage.indexOf('ALREADY_EXISTS') !== -1) {
-                                        sendOut(0, value.error.causeErrorMessage);
-                                        message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
-                                        modal.show("Appodeal Chrome Extension", message);
-                                        clearInterval(refreshIntervalId);
-                                        throw new Error(message);
-                                    } else if (value.status === "FAILED" && value.error.causeErrorMessage.indexOf('RESOURCE_EXHAUSTED') !== -1) {
-                                        sendOut(0, value.error.causeErrorMessage);
-                                        message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
-                                        modal.show("Appodeal Chrome Extension", message);
-                                        clearInterval(refreshIntervalId);
-                                        throw new Error(message);
-                                    } else {
-                                        sendOut(0, JSON.stringify(value));
+                                    switch (value.status) {
+                                        case 'DONE':
+                                            sendOut(0, JSON.stringify(value));
+                                            document.location.href = url_project(id_project);
+                                            clearInterval(refreshIntervalId);
+                                            break;
+                                        case 'FAILED':
+                                            sendOut(0, value.error.causeErrorMessage);
+                                            message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
+                                            modal.show("Appodeal Chrome Extension", message);
+                                            clearInterval(refreshIntervalId);
+                                            throw new Error(message);
+                                            break;
+                                        default:
+                                            sendOut(0, JSON.stringify(value));
+                                            break;
                                     }
                                 }
                             });
                         }
                     }
-                };
-                req.send(null);
-            } catch (err) {
-                airbrake.setError(err);
-                throw err;
-            }
+                } catch (err) {
+                    airbrake.setError(err);
+                }
+            };
+            req.send(null);
         }, timeout);
     };
     url_project = function (projectName) {
@@ -264,7 +256,6 @@ LibraryController = function () {
             return page_url;
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     return {

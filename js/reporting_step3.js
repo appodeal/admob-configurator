@@ -24,7 +24,6 @@ ReportingStepThreeController = (function() {
             }
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     initOtherLibrary = function (message) {

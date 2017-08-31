@@ -2,8 +2,7 @@
 
 LoginController = (function () {
     var initOtherLibrary, airbrake, findEmailAndApiKey;
-    initOtherLibrary = function (message) {
-        sendOut(0, message);
+    initOtherLibrary = function () {
         airbrake = new AirbrakeController();
     };
     findEmailAndApiKey = function () {
@@ -19,9 +18,7 @@ LoginController = (function () {
                 }, function (items) {
                     if (appodeal_email !== items['appodeal_email']) {
                         chrome.storage.local.remove(['appodeal_email', 'appodeal_api_key', 'appodeal_user_id'], function (items) {
-                            data = {
-                                'appodeal_email': appodeal_email
-                            };
+                            var data = {'appodeal_email': appodeal_email};
                             chrome.storage.local.set(data);
                             console.log("You have successfully logged in (Appodeal Chrome Extension).")
                         })
@@ -32,12 +29,11 @@ LoginController = (function () {
             }
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     return {
         init: function () {
-            initOtherLibrary('Get Login User ID and email property');
+            initOtherLibrary();
             findEmailAndApiKey();
         }
     };

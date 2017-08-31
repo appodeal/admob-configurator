@@ -1,7 +1,7 @@
-var AdUnitController, airbrake, modal;
+var AdUnitController, modal;
 
 AdUnitController = (function () {
-    var initOtherLibrary, startInventorySync;
+    var initOtherLibrary, airbrake, startInventorySync;
     initOtherLibrary = function (message) {
         sendOut(0, message);
         airbrake = new AirbrakeController();
@@ -77,7 +77,6 @@ AdUnitController = (function () {
             })
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     return {

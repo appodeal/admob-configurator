@@ -38,7 +38,6 @@ AdmobV2.prototype.getXsrf = function () {
     ');
     } catch (err) {
         this.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -103,7 +102,6 @@ AdmobV2.prototype.syncInventory = function (callback) {
         self.getXsrf();
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -121,7 +119,6 @@ AdmobV2.prototype.humanReport = function () {
         return report_human;
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -147,7 +144,6 @@ AdmobV2.prototype.finishDialog = function () {
         });
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -183,7 +179,6 @@ AdmobV2.prototype.showInfoDialog = function (content) {
         self.modal.show("Appodeal Chrome Extension", content);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -235,7 +230,6 @@ AdmobV2.prototype.inventoryPost = function (json, callback, options) {
             });
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -256,7 +250,6 @@ AdmobV2.prototype.jsonReport = function (mode, content, json, data) {
         });
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -288,7 +281,6 @@ AdmobV2.prototype.syncPost = function (json, callback) {
             });
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -299,7 +291,6 @@ AdmobV2.prototype.adunitServerId = function (internalId) {
         return ("ca-app-" + this.accountId + "/" + internalId);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -343,7 +334,6 @@ AdmobV2.prototype.newAdunitsForServer = function (app) {
         return (adunits);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -359,7 +349,6 @@ AdmobV2.prototype.getAccountId = function (accountId) {
         return (self.accountId);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -370,7 +359,6 @@ AdmobV2.prototype.getVersion = function () {
         this.version = extensionVersion();
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -410,7 +398,6 @@ AdmobV2.prototype.isPublisherIdRight = function () {
         return true;
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -423,7 +410,6 @@ AdmobV2.prototype.defaultAppName = function (app) {
         return name.substring(0, maxLength);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -441,7 +427,6 @@ AdmobV2.prototype.synchronousEach = function (array, callback, finish) {
         }
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -461,7 +446,6 @@ AdmobV2.prototype.adUnitRegex = function (name) {
         return result;
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -484,7 +468,6 @@ AdmobV2.prototype.adunitBid = function (adunit) {
         }
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -547,7 +530,6 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
         return (scheme);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -589,7 +571,6 @@ AdmobV2.prototype.createLocalAdunit = function (s, os, callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -617,7 +598,6 @@ AdmobV2.prototype.GetMediationGroupList = function (callback) {
         });
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -691,7 +671,6 @@ AdmobV2.prototype.adunitsScheme = function (app) {
         return (scheme);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -711,7 +690,6 @@ AdmobV2.prototype.missingAdunits = function (app) {
         return (missingScheme);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -734,7 +712,6 @@ AdmobV2.prototype.adunitName = function (app, adName, typeName, bidFloor) {
         return (name);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -763,7 +740,6 @@ AdmobV2.prototype.getRemoteInventory = function (callback) {
             });
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -783,7 +759,6 @@ AdmobV2.prototype.getLocalInventory = function (callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -847,7 +822,6 @@ AdmobV2.prototype.selectStoreIds = function () {
         }
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -863,7 +837,6 @@ AdmobV2.prototype.filterHiddenLocalApps = function () {
         }
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -886,7 +859,6 @@ AdmobV2.prototype.selectLocalAdunits = function (admobAppId) {
         return (selectedAdunits);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -910,7 +882,6 @@ AdmobV2.prototype.createMissingApps = function (callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -933,7 +904,6 @@ AdmobV2.prototype.linkApps = function (callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -976,7 +946,6 @@ AdmobV2.prototype.createMissingAdunits = function (callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -996,7 +965,6 @@ AdmobV2.prototype.createAdunits = function (app, callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1028,7 +996,6 @@ AdmobV2.prototype.FindAndDeleteOldMediationGroup = function (data, self, callbac
         callback();
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1101,7 +1068,6 @@ AdmobV2.prototype.CreateOrUpdateMediationGroup = function (callback) {
         });
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1157,8 +1123,7 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
             });
             return result;
         }, {});
-
-        $.each(schema, function (index, value) {
+        schema.forEach(function (value, index, arr) {
             var osName = 'android';
             if (index === '1') osName = 'ios';
             value = value.filter(function (item) {
@@ -1212,14 +1177,13 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
         });
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
 AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeMediationGroup, self) {
     try {
         console.log("Create Mediation Group");
-        $.each(OperationSystemMissingSchemeMediationGroup, function (index, value) {
+        OperationSystemMissingSchemeMediationGroup.forEach(function (value, index, arr) {
             if (value.length > 0) {
 
                 var osId = index;
@@ -1260,7 +1224,6 @@ AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeM
         });
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1276,7 +1239,6 @@ AdmobV2.prototype.GetCountOS = function (data, self, callback) {
         callback(scheme, data)
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1301,7 +1263,6 @@ AdmobV2.prototype.syncWithServer = function (apps, callback) {
         callback(params);
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1322,7 +1283,6 @@ AdmobV2.prototype.createLocalApp = function (app, callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1354,7 +1314,6 @@ AdmobV2.prototype.linkLocalApp = function (app, callback) {
         }
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1388,7 +1347,6 @@ AdmobV2.prototype.searchAppInStores = function (app, callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1429,7 +1387,6 @@ AdmobV2.prototype.updateAppStoreHash = function (app, storeApp, callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1444,7 +1401,6 @@ AdmobV2.prototype.addStoreId = function (storeId) {
         }
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1463,7 +1419,6 @@ AdmobV2.prototype.findByProperty = function (condition) {
         return ({}); // the object was not found
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1479,7 +1434,6 @@ AdmobV2.prototype.addLocalAdunitToInventory = function (app, localAdunit) {
         }
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1499,7 +1453,6 @@ AdmobV2.prototype.sendReports = function (params, items, callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1527,7 +1480,6 @@ AdmobV2.prototype.updateAdunitFormats = function (adunit, callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1558,7 +1510,6 @@ AdmobV2.prototype.updateAppAdunitFormats = function (app, callback) {
         }
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };
 
@@ -1577,6 +1528,5 @@ AdmobV2.prototype.updateFormats = function (callback) {
         })
     } catch (err) {
         self.airbrake.setError(err);
-        throw err;
     }
 };

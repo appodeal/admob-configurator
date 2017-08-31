@@ -16,7 +16,6 @@ BackgroundController = (function () {
             };
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     onMessage = function () {
@@ -47,7 +46,6 @@ BackgroundController = (function () {
             });
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     onMessageExternal = function () {
@@ -89,7 +87,6 @@ BackgroundController = (function () {
             });
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     webNavigation = function () {
@@ -129,7 +126,6 @@ BackgroundController = (function () {
             });
         } catch (err) {
             airbrake.setError(err);
-            throw err;
         }
     };
     return {
