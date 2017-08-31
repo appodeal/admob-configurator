@@ -2,12 +2,19 @@ var AdmobAccountController, modal, criticalVersion, currentVersion, admob_accoun
 
 AdmobAccountController = (function () {
     var initOtherLibrary, airbrake, latestCriticalReportingApi;
-    initOtherLibrary = function (message) {
+    initOtherLibrary = function (message, callback) {
         sendOut(0, message);
-        airbrake = new AirbrakeController();
         appendJQuery(function () {
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", message);
+        });
+        chrome.storage.local.get({
+            'airbrake_js': null
+        }, function (items) {
+            if (items.airbrake_js) {
+                airbrake = new AirbrakeController(items.airbrake_js.projectId, items.airbrake_js.projectKey);
+            }
+            callback();
         });
     };
     latestCriticalReportingApi = function () {
@@ -50,8 +57,9 @@ AdmobAccountController = (function () {
     };
     return {
         init: function () {
-            initOtherLibrary('Start configure admob reporting api');
-            airbrake.error.call(latestCriticalReportingApi);
+            initOtherLibrary('Start configure admob reporting api', function () {
+                airbrake.error.call(latestCriticalReportingApi);
+            });
         }
     };
 })();

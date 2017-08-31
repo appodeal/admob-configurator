@@ -1,6 +1,6 @@
 var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
     console.log("Initialize admob" + " (" + userId + ", " + apiKey + ", " + publisherId + ", " + accountEmail + ")");
-    this.airbrake = new AirbrakeController();
+    this.airbrake = airbrake;
     this.userId = userId;
     this.apiKey = apiKey;
     this.publisherId = publisherId;

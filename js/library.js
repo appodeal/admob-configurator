@@ -1,12 +1,11 @@
 var LibraryController, modal, id_project, timeout = 2000, projectName = 'Appodeal';
 
 LibraryController = function () {
-    var initOtherLibrary, airbrake, readBody, random_string, projectIdSuggestion, find, create, find_from_create,
+    var initOtherLibrary, readBody, random_string, projectIdSuggestion, find, create, find_from_create,
         url_project;
 
     initOtherLibrary = function (message) {
         sendOut(0, message);
-        airbrake = new AirbrakeController();
         appendJQuery(function () {
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", message);

@@ -1,7 +1,7 @@
 var ReportingStepTwoController, modal, adsence_enabling_interval;
 
 ReportingStepTwoController = (function() {
-    var wait_for_adsence_btn, airbrake, projectToLocation, initOtherLibrary;
+    var wait_for_adsence_btn, projectToLocation, initOtherLibrary;
     wait_for_adsence_btn = function() {
         var enableApiBtn, disableBtnCode, disableApiBtn, enableApiBtnOld, disableBtnCodeOld, disableApiBtnOld, code;
         try {
@@ -35,7 +35,6 @@ ReportingStepTwoController = (function() {
     };
     initOtherLibrary = function (message) {
         sendOut(0, message);
-        airbrake = new AirbrakeController();
         appendJQuery(function() {
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", message);

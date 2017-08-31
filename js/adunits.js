@@ -1,10 +1,9 @@
 var AdUnitController, modal;
 
 AdUnitController = (function () {
-    var initOtherLibrary, airbrake, startInventorySync;
+    var initOtherLibrary, startInventorySync;
     initOtherLibrary = function (message) {
         sendOut(0, message);
-        airbrake = new AirbrakeController();
         appendJQuery(function() {
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", message);

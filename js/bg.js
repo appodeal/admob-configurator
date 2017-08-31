@@ -1,9 +1,16 @@
 var BackgroundController;
 
 BackgroundController = (function () {
-    var initOtherLibrary, airbrake, onMessage, onMessageExternal, webNavigation, notificationsParams;
-    initOtherLibrary = function () {
-        airbrake = new AirbrakeController();
+    var initOtherLibrary, airbrake,onMessage, onMessageExternal, webNavigation, notificationsParams;
+    initOtherLibrary = function (callback) {
+        chrome.storage.local.get({
+            'airbrake_js': null
+        }, function (items) {
+            if (items.airbrake_js) {
+                airbrake = new AirbrakeController(items.airbrake_js.projectId, items.airbrake_js.projectKey);
+            }
+            callback();
+        });
     };
     notificationsParams = function (type, request) {
         return {
@@ -61,7 +68,6 @@ BackgroundController = (function () {
         });
     };
     webNavigation = function () {
-        // document.head.insertBefore(document.createElement('style'));
         chrome.webNavigation.onCompleted.addListener(function (details) {
             chrome.storage.local.get("reporting_tab_id", function (result) {
                 if (result['reporting_tab_id'] && details.tabId.toString() === result['reporting_tab_id'].toString()) {
@@ -93,10 +99,11 @@ BackgroundController = (function () {
     };
     return {
         init: function () {
-            initOtherLibrary();
-            airbrake.error.call(webNavigation);
-            airbrake.error.call(onMessage);
-            airbrake.error.call(onMessageExternal);
+            initOtherLibrary(function () {
+                airbrake.error.call(webNavigation);
+                airbrake.error.call(onMessage);
+                airbrake.error.call(onMessageExternal);
+            });
         }
     };
 })();

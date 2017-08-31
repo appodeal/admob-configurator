@@ -2,7 +2,7 @@ var ReportingStepFourController, modal, credentials_interval, redirect_uri = RED
 
 ReportingStepFourController = (function () {
 
-    var initOtherLibrary, airbrake, waitForCredentials, outhclientPageLink, startCredentialsCreating,
+    var initOtherLibrary, waitForCredentials, outhclientPageLink, startCredentialsCreating,
         getClientIdAndSecretIdFromDetailsAndRun,
         resetCredentialSecret, checkAndSaveClientCredentials, fetchCredentials, addAdmobAccount, getIdAndSecret,
         findAppodealClient,
@@ -10,7 +10,6 @@ ReportingStepFourController = (function () {
 
     initOtherLibrary = function (message) {
         sendOut(0, message);
-        airbrake = new AirbrakeController();
         appendJQuery(function () {
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", message);

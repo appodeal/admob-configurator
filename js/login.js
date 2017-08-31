@@ -1,10 +1,8 @@
 ﻿var LoginController;
 
 LoginController = (function () {
-    var initOtherLibrary, airbrake, findEmailAndApiKey;
-    initOtherLibrary = function () {
-        airbrake = new AirbrakeController();
-    };
+    var initOtherLibrary, findEmailAndApiKey;
+    initOtherLibrary = function () {};
     findEmailAndApiKey = function () {
         var user, appodeal_email;
         try {
