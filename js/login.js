@@ -28,7 +28,7 @@ LoginController = (function () {
                 chrome.storage.local.remove(['appodeal_email', 'appodeal_api_key', 'appodeal_user_id'])
             }
         } catch (err) {
-            airbrake.setError(err);
+            airbrake.error.notify(err)
         }
     };
     return {

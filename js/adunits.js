@@ -76,7 +76,7 @@ AdUnitController = (function () {
                 }
             })
         } catch (err) {
-            airbrake.setError(err);
+            airbrake.error.notify(err)
         }
     };
     return {

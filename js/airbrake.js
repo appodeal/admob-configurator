@@ -1,21 +1,16 @@
-// throw new Error(message);
-var AirbrakeController, airbrake;
-
-AirbrakeController = function () {
-    chrome.storage.local.get({
-        'airbrake_js': null
-    }, function (items) {
-        if (items.airbrake_js) {
-            airbrake = new airbrakeJs.Client({
-                projectId: items.airbrake_js.projectId,
-                projectKey: items.airbrake_js.projectKey
-            });
-        }
-    });
+// document.head.insertBefore(document.createElement('style'));
+var AirbrakeController = function () {
+    this.init.apply(this);
 };
 
-AirbrakeController.prototype.setError = function (err) {
-    if (airbrake) {
-        airbrake.notify(err);
-    }
+AirbrakeController.prototype.getError = function () {
+    return this.error;
+};
+
+AirbrakeController.prototype.init = function () {
+    var self = this;
+    self.error = new airbrakeJs.Client({
+        projectId: 153590,
+        projectKey: 'b85eeb2ff89294025348d370a4faf164'
+    });
 };

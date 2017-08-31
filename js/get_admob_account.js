@@ -5,19 +5,20 @@ AdmobAccountController = (function () {
     initOtherLibrary = function (message) {
         sendOut(0, message);
         airbrake = new AirbrakeController();
-        appendJQuery(function() {
+        appendJQuery(function () {
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", message);
         });
     };
     latestCriticalReportingApi = function () {
-        try {
-            criticalUpdates(function (updates) {
-                criticalVersion = updates.reportingVersion;
-                currentVersion = extensionVersion();
-                console.log('The latest critical reporting api sync update is ' + criticalVersion);
-                setTimeout(function () {
-                    modal.show('Appodeal Chrome Extension', "Checking Admob account.");
+        criticalUpdates(function (updates) {
+
+            criticalVersion = updates.reportingVersion;
+            currentVersion = extensionVersion();
+            console.log('The latest critical reporting api sync update is ' + criticalVersion);
+            setTimeout(function () {
+                modal.show('Appodeal Chrome Extension', "Checking Admob account.");
+                try {
                     if (!criticalVersion || currentVersion >= criticalVersion) {
                         console.log('Get admob account id.');
                         admob_account_id = /pub-\d+/.exec(document.documentElement.innerHTML);
@@ -41,16 +42,16 @@ AdmobAccountController = (function () {
                         modal.show('Appodeal Chrome Extension', message);
                         throw new Error(message);
                     }
-                }, 1000);
-            });
-        } catch (err) {
-            airbrake.setError(err);
-        }
+                }catch (err) {
+                    airbrake.error.notify(err);
+                }
+            }, 1000);
+        });
     };
     return {
         init: function () {
             initOtherLibrary('Start configure admob reporting api');
-            latestCriticalReportingApi();
+            airbrake.error.call(latestCriticalReportingApi);
         }
     };
 })();

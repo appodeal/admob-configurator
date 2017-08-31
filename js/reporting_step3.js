@@ -23,7 +23,7 @@ ReportingStepThreeController = (function() {
                 });
             }
         } catch (err) {
-            airbrake.setError(err);
+            airbrake.error.notify(err);
         }
     };
     initOtherLibrary = function (message) {
@@ -40,7 +40,8 @@ ReportingStepThreeController = (function() {
                 try {
                     email_credentials = request.data.pantheon_account_chooser_data[1][4];
                 } catch (err) {
-                    email_credentials = null
+                    email_credentials = null;
+                    airbrake.error.notify(err);
                 }
                 chrome.storage.local.set({
                     "email_credentials": email_credentials
@@ -56,12 +57,7 @@ ReportingStepThreeController = (function() {
     };
     getEmail = function () {
         Utils.injectScript('\
-        chrome.runtime.sendMessage("' + chrome.runtime.id + '", {type: "console_email_notification", pantheon_account_chooser_data: pantheon_account_chooser_data },\
-        function(response) {\
-            if (!response.success)\
-                handleError("console_email_notification");\
-        });\
-      ');
+        chrome.runtime.sendMessage("' + chrome.runtime.id + '", {type: "console_email_notification", pantheon_account_chooser_data: pantheon_account_chooser_data })');
     };
     return {
         init: function() {

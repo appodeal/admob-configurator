@@ -21,14 +21,13 @@ ReportingStepTwoController = (function() {
                     run_script(code);
                 }
                 waitForElement(disableBtnCode + ", " + disableBtnCodeOld, null, function (element) {
-                    projectToLocation()
+                    airbrake.error.call(projectToLocation)
                 })
             } else if ((disableApiBtn.length || disableApiBtnOld.length)) {
-                projectToLocation()
+                airbrake.error.call(projectToLocation)
             }
         } catch (err) {
-            airbrake.setError(err);
-            throw err;
+            airbrake.error.notify(err);
         }
     };
     projectToLocation = function () {

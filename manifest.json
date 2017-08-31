@@ -16,54 +16,74 @@
     "64": "img/icon/icon-64.png",
     "128": "img/icon/icon-128.png"
   },
-  "content_scripts": [{
-      "matches": ["http://www.appodeal.com/profile/*", "https://www.appodeal.com/profile/*", "http://www.appodeal.com/dashboard*", "https://www.appodeal.com/dashboard*", "http://www.appodeal.com/apps*", "https://www.appodeal.com/apps*"],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://www.appodeal.com/profile/*",
+        "https://www.appodeal.com/profile/*",
+        "http://www.appodeal.com/dashboard*",
+        "https://www.appodeal.com/dashboard*",
+        "http://www.appodeal.com/apps*",
+        "https://www.appodeal.com/apps*"
+      ],
       "js": [
         "js/vendor/jquery.min.js",
         "js/vendor/node_modules/airbrake-js/dist/client.js",
+        "js/airbrake.js",
         "js/utils.js",
-        "js/login.js",
-        "js/airbrake.js"
+        "js/login.js"
       ]
     },
     {
-      "matches": ["https://console.developers.google.com/*"],
+      "matches": [
+        "https://console.developers.google.com/*"
+      ],
       "js": [
         "js/vendor/jquery.min.js",
         "js/vendor/node_modules/airbrake-js/dist/client.js",
+        "js/airbrake.js",
         "js/utils.js",
-        "js/modal.js",
-        "js/airbrake.js"
+        "js/modal.js"
       ],
-      "css": ["css/modal.console.css"]
+      "css": [
+        "css/modal.console.css"
+      ]
     },
     {
-      "matches": ["https://apps.admob.com/*"],
+      "matches": [
+        "https://apps.admob.com/*"
+      ],
       "js": [
         "js/vendor/jquery.min.js",
         "js/vendor/node_modules/airbrake-js/dist/client.js",
+        "js/airbrake.js",
         "js/utils.js",
         "js/adunits.js",
         "js/admob.js",
         "js/admob_v2.js",
         "js/modal.js",
-        "js/progressBar.js",
-        "js/airbrake.js"
+        "js/progressBar.js"
       ],
-      "css": ["css/modal.css"]
+      "css": [
+        "css/modal.css"
+      ]
     }
   ],
   "background": {
     "scripts": [
       "js/vendor/jquery.min.js",
       "js/vendor/node_modules/airbrake-js/dist/client.js",
+      "js/airbrake.js",
       "js/utils.js",
-      "js/bg.js",
-      "js/airbrake.js"
+      "js/bg.js"
     ],
     "persistent": false
   },
-  "web_accessible_resources": ["img/*", "js/vendor/*", "js/helpers/*"],
+  "web_accessible_resources": [
+    "img/*",
+    "js/vendor/*",
+    "js/helpers/*"
+  ],
   "permissions": [
     "tabs",
     "cookies",
@@ -73,9 +93,14 @@
     "identity",
     "*://*.appodeal.com/*",
     "*://*.admob.com/*",
-    "*://*.google.com/*"
+    "*://console.developers.google.com/*",
+    "*://chrome.google.com/webstore/detail/appodeal/*"
   ],
   "externally_connectable": {
-    "matches": ["*://*.admob.com/*", "*://*.google.com/*"]
+    "matches": [
+      "*://*.admob.com/*",
+      "*://console.developers.google.com/*",
+      "*://chrome.google.com/webstore/detail/appodeal/*"
+    ]
   }
 }

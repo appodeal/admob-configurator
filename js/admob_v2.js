@@ -28,16 +28,12 @@ var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, int
 };
 
 AdmobV2.prototype.getXsrf = function () {
+    var self = this;
     try {
         Utils.injectScript('\
-      chrome.runtime.sendMessage("' + chrome.runtime.id + '", {type: "admob_notification", amppd_decode: JSON.parse(amppd), amrpd_decode: JSON.parse(amrpd) },\
-      function(response) {\
-          if (!response.success)\
-              handleError("admob_notification");\
-      });\
-    ');
+      chrome.runtime.sendMessage("' + chrome.runtime.id + '", {type: "admob_notification", amppd_decode: JSON.parse(amppd), amrpd_decode: JSON.parse(amrpd) })');
     } catch (err) {
-        this.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -101,7 +97,7 @@ AdmobV2.prototype.syncInventory = function (callback) {
 
         self.getXsrf();
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -118,7 +114,7 @@ AdmobV2.prototype.humanReport = function () {
         });
         return report_human;
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -143,7 +139,7 @@ AdmobV2.prototype.finishDialog = function () {
             console.log("Sent finish reports");
         });
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -178,7 +174,7 @@ AdmobV2.prototype.showInfoDialog = function (content) {
         });
         self.modal.show("Appodeal Chrome Extension", content);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -229,7 +225,7 @@ AdmobV2.prototype.inventoryPost = function (json, callback, options) {
                 errorEvent("Failed to make an internal request.", data);
             });
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -249,7 +245,7 @@ AdmobV2.prototype.jsonReport = function (mode, content, json, data) {
         }, [JSON.stringify(r)], function () {
         });
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -280,7 +276,7 @@ AdmobV2.prototype.syncPost = function (json, callback) {
                 self.showErrorDialog("Failed to make a server sync request.");
             });
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -290,7 +286,7 @@ AdmobV2.prototype.adunitServerId = function (internalId) {
     try {
         return ("ca-app-" + this.accountId + "/" + internalId);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -333,7 +329,7 @@ AdmobV2.prototype.newAdunitsForServer = function (app) {
         });
         return (adunits);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -348,7 +344,7 @@ AdmobV2.prototype.getAccountId = function (accountId) {
         }
         return (self.accountId);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -358,7 +354,7 @@ AdmobV2.prototype.getVersion = function () {
     try {
         this.version = extensionVersion();
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -397,7 +393,7 @@ AdmobV2.prototype.isPublisherIdRight = function () {
         }
         return true;
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -409,7 +405,7 @@ AdmobV2.prototype.defaultAppName = function (app) {
         var name = 'Appodeal/' + app.id + "/" + app.appName;
         return name.substring(0, maxLength);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -426,7 +422,7 @@ AdmobV2.prototype.synchronousEach = function (array, callback, finish) {
             finish();
         }
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -445,7 +441,7 @@ AdmobV2.prototype.adUnitRegex = function (name) {
         }
         return result;
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -467,7 +463,7 @@ AdmobV2.prototype.adunitBid = function (adunit) {
             return null;
         }
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -529,7 +525,7 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
         });
         return (scheme);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -570,7 +566,7 @@ AdmobV2.prototype.createLocalAdunit = function (s, os, callback) {
             }
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -597,7 +593,7 @@ AdmobV2.prototype.GetMediationGroupList = function (callback) {
             }
         });
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -670,7 +666,7 @@ AdmobV2.prototype.adunitsScheme = function (app) {
         }
         return (scheme);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -689,7 +685,7 @@ AdmobV2.prototype.missingAdunits = function (app) {
         });
         return (missingScheme);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -711,7 +707,7 @@ AdmobV2.prototype.adunitName = function (app, adName, typeName, bidFloor) {
         if (!AdmobV2.schema_data.includes(nameMediationGroup)) AdmobV2.schema_data.push(nameMediationGroup);
         return (name);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -739,7 +735,7 @@ AdmobV2.prototype.getRemoteInventory = function (callback) {
                 self.showErrorDialog("Failed to get remote inventory.");
             });
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -758,7 +754,7 @@ AdmobV2.prototype.getLocalInventory = function (callback) {
             callback(data.result);
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -821,7 +817,7 @@ AdmobV2.prototype.selectStoreIds = function () {
             });
         }
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -836,7 +832,7 @@ AdmobV2.prototype.filterHiddenLocalApps = function () {
             });
         }
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -858,7 +854,7 @@ AdmobV2.prototype.selectLocalAdunits = function (admobAppId) {
         }
         return (selectedAdunits);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -881,7 +877,7 @@ AdmobV2.prototype.createMissingApps = function (callback) {
             callback();
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -903,7 +899,7 @@ AdmobV2.prototype.linkApps = function (callback) {
             callback();
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -945,7 +941,7 @@ AdmobV2.prototype.createMissingAdunits = function (callback) {
             callback();
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -964,7 +960,7 @@ AdmobV2.prototype.createAdunits = function (app, callback) {
             callback();
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -995,7 +991,7 @@ AdmobV2.prototype.FindAndDeleteOldMediationGroup = function (data, self, callbac
         }
         callback();
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1067,7 +1063,7 @@ AdmobV2.prototype.CreateOrUpdateMediationGroup = function (callback) {
             });
         });
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1123,7 +1119,7 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
             });
             return result;
         }, {});
-        schema.forEach(function (value, index, arr) {
+        $.each(schema, function (index, value) {
             var osName = 'android';
             if (index === '1') osName = 'ios';
             value = value.filter(function (item) {
@@ -1176,14 +1172,14 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
             callback();
         });
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
 AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeMediationGroup, self) {
     try {
         console.log("Create Mediation Group");
-        OperationSystemMissingSchemeMediationGroup.forEach(function (value, index, arr) {
+        $.each(OperationSystemMissingSchemeMediationGroup, function (index, value) {
             if (value.length > 0) {
 
                 var osId = index;
@@ -1223,7 +1219,7 @@ AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeM
             }
         });
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1238,7 +1234,7 @@ AdmobV2.prototype.GetCountOS = function (data, self, callback) {
         });
         callback(scheme, data)
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1262,7 +1258,7 @@ AdmobV2.prototype.syncWithServer = function (apps, callback) {
         });
         callback(params);
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1282,7 +1278,7 @@ AdmobV2.prototype.createLocalApp = function (app, callback) {
             }
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1313,7 +1309,7 @@ AdmobV2.prototype.linkLocalApp = function (app, callback) {
             callback();
         }
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1346,7 +1342,7 @@ AdmobV2.prototype.searchAppInStores = function (app, callback) {
             skip: true
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1386,7 +1382,7 @@ AdmobV2.prototype.updateAppStoreHash = function (app, storeApp, callback) {
             skip: true
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1400,7 +1396,7 @@ AdmobV2.prototype.addStoreId = function (storeId) {
             self.storeIds = [storeId];
         }
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1418,7 +1414,7 @@ AdmobV2.prototype.findByProperty = function (condition) {
         }
         return ({}); // the object was not found
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1433,7 +1429,7 @@ AdmobV2.prototype.addLocalAdunitToInventory = function (app, localAdunit) {
             app.localAdunits = [localAdunit];
         }
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1452,7 +1448,7 @@ AdmobV2.prototype.sendReports = function (params, items, callback) {
             callback();
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1479,7 +1475,7 @@ AdmobV2.prototype.updateAdunitFormats = function (adunit, callback) {
             }
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1509,7 +1505,7 @@ AdmobV2.prototype.updateAppAdunitFormats = function (app, callback) {
             callback();
         }
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };
 
@@ -1527,6 +1523,6 @@ AdmobV2.prototype.updateFormats = function (callback) {
             callback();
         })
     } catch (err) {
-        self.airbrake.setError(err);
+        self.airbrake.error.notify(err);
     }
 };

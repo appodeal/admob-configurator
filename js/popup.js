@@ -212,9 +212,9 @@ LoadController = (function() {
       }
     }
     if(result['airbrake_js']){
-        localCredentials['airbrake_js'] = { projectId: result['airbrake_js']['project_id'], projectKey: result['airbrake_js']['project_key'] };
+        chrome.storage.sync.set({'airbrake_js': { projectId: result['airbrake_js']['project_id'], projectKey: result['airbrake_js']['project_key'] }});
     }else {
-        chrome.storage.local.remove('airbrake_js');
+        chrome.storage.sync.remove('airbrake_js');
     }
 
     chrome.storage.local.set(localCredentials, function() {
@@ -246,7 +246,7 @@ LoadController = (function() {
               if (data['many_user_admob_accounts'] && data['many_user_admob_accounts']['accounts']) {
                 acc_name = '<ul>';
                 data['many_user_admob_accounts']['accounts'].forEach(function (value, key, arr) {
-                    if (value !== undefined) {
+                    if (value !== undefined && value !== null) {
                         acc_name = acc_name + '<li class="account">' + cut('Synced ' + (value['synced'] >= 2 ? 'apps' : 'app') + ': ' + value['synced'] + ' ' + value['email'], 40) + '</li>';
                     }
                 });

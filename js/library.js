@@ -25,7 +25,7 @@ LibraryController = function () {
             }
             return data;
         } catch (err) {
-            airbrake.setError(err);
+            airbrake.error.notify(err);
         }
     };
 
@@ -49,7 +49,7 @@ LibraryController = function () {
             }
             return str;
         } catch (err) {
-            airbrake.setError(err);
+            airbrake.error.notify(err);
         }
     };
 
@@ -73,7 +73,7 @@ LibraryController = function () {
                         }
                     }
                 } catch (err) {
-                    airbrake.setError(err);
+                    airbrake.error.notify(err);
                 }
             }
         });
@@ -103,7 +103,7 @@ LibraryController = function () {
                             }
                         }
                     } catch (err) {
-                        airbrake.setError(err);
+                        airbrake.error.notify(err);
                     }
                 }
             });
@@ -201,7 +201,7 @@ LibraryController = function () {
                 find_from_create(id_project);
             });
         } catch (err) {
-            airbrake.setError(err);
+            airbrake.error.notify(err);
         }
     };
     find_from_create = function (id_project) {
@@ -230,7 +230,7 @@ LibraryController = function () {
                                             message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
                                             modal.show("Appodeal Chrome Extension", message);
                                             clearInterval(refreshIntervalId);
-                                            throw new Error(message);
+                                            airbrake.error.notify(message);
                                             break;
                                         default:
                                             sendOut(0, JSON.stringify(value));
@@ -241,7 +241,7 @@ LibraryController = function () {
                         }
                     }
                 } catch (err) {
-                    airbrake.setError(err);
+                    airbrake.error.notify(err);
                 }
             };
             req.send(null);
@@ -255,13 +255,13 @@ LibraryController = function () {
             console.log("Redirect to the new project", page_url);
             return page_url;
         } catch (err) {
-            airbrake.setError(err);
+            airbrake.error.notify(err);
         }
     };
     return {
         init: function () {
             initOtherLibrary('Create new project from the library page (new accounts)');
-            find();
+            airbrake.error.call(find);
         }
     }
 }();
