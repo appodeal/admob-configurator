@@ -18,6 +18,8 @@ chrome.storage.local.get({
 }, function (items) {
     if (items.airbrake_js) {
         airbrake = new AirbrakeController(items.airbrake_js.projectId, items.airbrake_js.projectKey);
+    } else{
+        airbrake = new AirbrakeController(items.airbrake_js, items.airbrake_js);
     }
 });
 
