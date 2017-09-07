@@ -226,7 +226,7 @@ ReportingStepFourController = (function () {
                         result.secret = data.web.client_secret;
                     }
                 } else {
-                    console.log(data.web.client_id);
+                    console.log(data.web);
                 }
             });
             callback(result)
