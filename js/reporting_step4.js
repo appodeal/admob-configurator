@@ -195,6 +195,7 @@ ReportingStepFourController = (function () {
                                     document.location.href = final_href;
                                 });
                             } else {
+                                console.log(url, JSON.stringify(json));
                                 message = 'Error creating admob account on Appodeal';
                                 sendOut(1, message);
                                 modal.show('Appodeal Chrome Extension', message);
