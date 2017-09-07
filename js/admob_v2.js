@@ -1147,9 +1147,14 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
                         headers: {
                             "x-framework-xsrf-token": self.token
                         },
-                        error: function (response) {
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log('UserID' + self.user_id);
                             console.log(ar);
-                            self.showErrorDialog("No result in MediationGroupService.Update:1 request." + response.responseText);
+                            if (jqXHR.status === 500) {
+                                self.showErrorDialog('Internal error: ' + jQuery.parseJSON(jqXHR.responseText));
+                            } else {
+                                self.showErrorDialog('Unexpected error.');
+                            }
                         }
                     });
                     self.progressBar.increase();
@@ -1214,9 +1219,14 @@ AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeM
                         headers: {
                             "x-framework-xsrf-token": self.token
                         },
-                        error: function (response) {
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log('UserID' + self.user_id);
                             console.log(ar);
-                            self.showErrorDialog(response.responseText);
+                            if (jqXHR.status === 500) {
+                                self.showErrorDialog('Internal error: ' + jQuery.parseJSON(jqXHR.responseText));
+                            } else {
+                                self.showErrorDialog('Unexpected error.');
+                            }
                         }
                     });
                     self.progressBar.increase();

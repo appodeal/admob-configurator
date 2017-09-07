@@ -221,9 +221,11 @@ ReportingStepFourController = (function () {
                 data = JSON.parse(this.getAttribute('content'));
                 if (data.web && data.web.javascript_origins) {
                     names = data.web.javascript_origins;
-                    if (names.includes(APPODEAL_URL_SSL + '/') || names.includes(APPODEAL_URL_SSL)) {
+                    if (names.length > 0 && (names.includes(APPODEAL_URL_SSL + '/') || names.includes(APPODEAL_URL_SSL))) {
                         result.id = data.web.client_id;
                         result.secret = data.web.client_secret;
+                    } else {
+                        console.log(names);
                     }
                 } else {
                     console.log(data.web);
