@@ -1083,11 +1083,16 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
                                 return {'id': localAdunit[1], 'ad_unit_name': ad_unit_name.replace('/' + app.id, '')}
                             });
                             //Clear name Mediation Group
-                            local_schema_name = local_schema_name.replace('/android', '');
-                            local_schema_name = local_schema_name.replace('/ios', '');
+                            local_schema_name = local_schema_name.replace('android', '');
+                            local_schema_name = local_schema_name.replace('ios', '');
 
                             return localAdunits.reduce(function (result, item) {
-                                if (item.ad_unit_name.includes(local_schema_name)) {
+                                // local_schema_name == item.ad_unit_name
+                                var arr = item.ad_unit_name.split('/');
+                                // delete package_name
+                                delete arr[arr.length - 1];
+                                var ad_unit_name = arr.join('/');
+                                if (ad_unit_name === local_schema_name) {
                                     result = item.id
                                 }
                                 return result;
