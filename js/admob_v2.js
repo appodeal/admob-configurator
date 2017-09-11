@@ -926,7 +926,9 @@ AdmobV2.prototype.createMissingAdunits = function (callback) {
         self.report = [];
         // init progress bar
         self.inventory.forEach(function (app) {
-            missingAdunitsNum += app.missingAdunits.length;
+            if (app.missingAdunits) {
+                missingAdunitsNum += app.missingAdunits.length;
+            }
         });
         self.progressBar = new ProgressBar(missingAdunitsNum);
         // create missing local adunits
