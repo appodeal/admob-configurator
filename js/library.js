@@ -1,4 +1,4 @@
-var LibraryController, modal, id_project, timeout = 2000, projectName = 'Appodeal';
+var LibraryController, modal, id_project, timeout = 4000, projectName = 'Appodeal';
 
 LibraryController = function () {
     var initOtherLibrary, readBody, random_string, projectIdSuggestion, find, create, find_from_create,
