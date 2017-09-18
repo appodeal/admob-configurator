@@ -33,7 +33,6 @@ AdmobAccountController = (function () {
                             message = "Can't proceed to enabling AdSense Reporting API. If you are not logged in, please authorize and try again.";
                             modal.show('Appodeal Chrome Extension', message);
                             chrome.storage.local.remove('reporting_tab_id');
-                            throw new Error(message);
                         }
                     } else {
                         message = "You're using an old version (" + currentVersion + ") of Appodeal Chrome Extension. Please update extensions at <b>chrome://extensions/</b> and try again.";
