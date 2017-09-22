@@ -1,7 +1,7 @@
 var BackgroundController;
 
 BackgroundController = (function () {
-    var initOtherLibrary, airbrake,onMessage, onMessageExternal, webNavigation, notificationsParams;
+    var initOtherLibrary, airbrake,onMessage, onMessageExternal, webNavigation, notificationsParams, need_resync_report;
     initOtherLibrary = function (callback) {
         chrome.storage.local.get({
             'airbrake_js': null
@@ -27,19 +27,16 @@ BackgroundController = (function () {
         chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             switch (request.type) {
                 case 'shownotification':
-                    chrome.notifications.create('notify', request.opt, function () {
-                    });
+                    chrome.notifications.create('notify', request.opt, function () {});
                     break;
                 case 'wrong_account':
                     chrome.tabs.update({url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'}, function (tab) {
-                        chrome.notifications.create(notificationsParams('basic', request), function () {
-                        })
+                        chrome.notifications.create(notificationsParams('basic', request), function () {})
                     });
                     break;
                 case 'update_plugin':
                     chrome.tabs.update({url: 'https://chrome.google.com/webstore/detail/appodeal/cnlfcihkilpkgdlnhjonhkfjjmbpbpbj'}, function (tab) {
-                        chrome.notifications.create(notificationsParams('basic', request), function () {
-                        })
+                        chrome.notifications.create(notificationsParams('basic', request), function () {})
                     });
                     break;
                 default:
@@ -99,9 +96,27 @@ BackgroundController = (function () {
             });
         });
     };
+    need_resync_report = function () {
+        chrome.storage.local.get({
+            'accounts': null
+        }, function (items) {
+            // credential_error
+            if (items.accounts) {
+                $.each(items.accounts, function(key,val) {
+                    if(val.credential_error){
+                        var title = 'Please re-sync account!';
+                        var message = 'Sorry, your token in: '+ val.email + '( ' + val.publisher_id + ') expired!';
+                        var params = notificationsParams('basic', { title: title, info: message});
+                        chrome.notifications.create(params, function () {})
+                    }
+                });
+            }
+        });
+    };
     return {
         init: function () {
             initOtherLibrary(function () {
+                airbrake.error.call(need_resync_report);
                 airbrake.error.call(webNavigation);
                 airbrake.error.call(onMessage);
                 airbrake.error.call(onMessageExternal);
