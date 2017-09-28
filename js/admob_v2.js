@@ -30,8 +30,8 @@ var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, int
 AdmobV2.prototype.getXsrf = function () {
     var self = this;
     try {
-        Utils.injectScript('\
-      chrome.runtime.sendMessage("' + chrome.runtime.id + '", {type: "admob_notification", amppd_decode: JSON.parse(amppd), amrpd_decode: JSON.parse(amrpd) })');
+        Utils.injectScript(''+
+      +'chrome.runtime.sendMessage("' + chrome.runtime.id + '", {type: "admob_notification", amppd_decode: JSON.parse(amppd), amrpd_decode: JSON.parse(amrpd) })');
     } catch (err) {
         self.airbrake.error.notify(err);
     }
@@ -148,7 +148,6 @@ AdmobV2.prototype.showErrorDialog = function (content) {
     var self = this, message;
     message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support.<h4>" + content + "</h4>";
     self.modal.show("Appodeal Chrome Extension", message);
-    throw new Error(message);
     // send json with current admob object state
     var serializedAdmob = JSON.stringify({
         message: message,
@@ -158,8 +157,8 @@ AdmobV2.prototype.showErrorDialog = function (content) {
     self.sendReports({
         mode: 1,
         note: "json"
-    }, [serializedAdmob], function () {
-    });
+    }, [serializedAdmob], function () {});
+    throw new Error(message);
 };
 
 // show information modal window

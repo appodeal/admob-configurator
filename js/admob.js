@@ -229,7 +229,7 @@ Admob.prototype.adunitServerId = function (internalId) {
 // convert to server request format
 Admob.prototype.newAdunitsForServer = function (app) {
     var self = this;
-    adunits = [];
+    var adunits = [];
     app.localAdunits.forEach(function (l) {
         // process adunits with correct appodeal app id only if exists
         var adAppId = Admob.adUnitRegex(l[3]).appId;
@@ -345,7 +345,7 @@ Admob.adUnitRegex = function (name) {
 // get bid from local adunit
 Admob.adunitBid = function (adunit) {
     if (adunit[10]) {
-        bid = adunit[10][0][5][1][1];
+        var bid = adunit[10][0][5][1][1];
         var f = parseInt(bid) / 1000000;
         return (f);
     } else if (adunit[16].length === 1 && adunit[16][0] === 0) {
@@ -635,7 +635,7 @@ Admob.prototype.getLocalInventory = function (callback) {
 
 // get admob account current xsrf token
 Admob.prototype.getPageToken = function () {
-    xsrf = /\[.+,"(.+:.+)","\/logout/.exec(document.documentElement.innerHTML)[1];
+    var xsrf = /\[.+,"(.+:.+)","\/logout/.exec(document.documentElement.innerHTML)[1];
     this.token = xsrf;
     return this.token;
 };
@@ -657,7 +657,7 @@ Admob.prototype.mapApps = function (callback) {
                 }).element;
                 // find by package name and os or default app name
                 if (!mappedLocalApp) {
-                    var mappedLocalApp = self.localApps.findByProperty(function (localApp) {
+                    mappedLocalApp = self.localApps.findByProperty(function (localApp) {
                         if (remoteApp.search_in_store && localApp[4] === remoteApp.package_name && localApp[3] === remoteApp.os) {
                             return (true);
                         }
@@ -920,7 +920,7 @@ Admob.prototype.searchAppInStores = function (app, callback) {
     console.log("Search app #" + app.id + " in stores");
     var self = this;
     var searchString = app.package_name;
-    params = {
+    var params = {
         "method": "searchMobileApplication",
         "params": {
             "2": searchString,
@@ -1003,9 +1003,7 @@ Admob.prototype.addStoreId = function (storeId) {
 Admob.prototype.createLocalAdunit = function (s, callback) {
     console.log("Create adunit " + s.name);
     var self = this;
-    var reward_settings = '';
-
-    params = {
+    var params = {
         "method": "insertInventory",
         "params": {
             "3": {

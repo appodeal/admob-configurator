@@ -113,90 +113,90 @@ LibraryController = function () {
         try {
             projectIdSuggestion(function (data) {
                 id_project = data.id;
-                Utils.injectScript('\
-                  var params = {\
-                      name: "' + projectName + '",\
-                      isAe4B: "false",\
-                      assignedIdForDisplay: "' + id_project + '",\
-                      generateProjectId: "false",\
-                      billingAccountId: null,\
-                      projectCreationInterface: "create-project",\
-                      noCloudProject: "false",\
-                      userAgent: navigator.userAgent,\
-                      parent: null,\
-                      marketingUtmCode: {operation: "createProject", value: "' + id_project + '"},\
-                      descriptionLocalizationKey: "panCreateProject",\
-                          descriptionLocalizationArgs: {\
-                          name: "' + projectName + '",\
-                              isAe4B: "false",\
-                              assignedIdForDisplay: "' + id_project + '",\
-                              generateProjectId: "false",\
-                              billingAccountId: null,\
-                              projectCreationInterface: "create-project",\
-                              noCloudProject: "false",\
-                              userAgent: navigator.userAgent,\
-                              parent: null\
-                      },\
-                      phantomData: {\
-                          displayName: "' + projectName + '",\
-                              type: "PROJECT",\
-                              lifecycleState: "ACTIVE",\
-                              id: "' + id_project + '",\
-                              name: "projects/" + "' + id_project + '"\
-                      }\
-                  };\
-                  console.log(pantheon_main_init_args);\
-                  var xsrf_token = pantheon_main_init_args[1]._;\
-                  if (xsrf_token === undefined || xsrf_token === null) {\
-                      xsrf_token = pantheon_main_init_args[0]._;\
-                  }\
-                  console.log("xsrf-token",xsrf_token);\
-                  setTimeout(function () {\
-                      $.ajax\
-                      ({\
-                          type: "POST",\
-                          url: "https://console.developers.google.com/m/operations?authuser=0&organizationId=0&operationType=cloud-console.project.createProject",\
-                          contentType: "application/json; charset=UTF-8",\
-                          dataType: "json",\
-                          async: false,\
-                          data: JSON.stringify(params),\
-                          headers: {"x-framework-xsrf-token": xsrf_token},\
-                          error: function(response, textStatus, jqXHR) {\
-                              if (response.readyState === 4 && response.status === 403) {\
-                                  var data = JSON.parse(response.responseText.replace(")]}\'", ""));\
-                                  console.log("error", data);\
-                                  if (data.message === "The user must accept the Terms of Service before performing this operation."){\
-                                      setTimeout(function () {\
-                                          $.ajax\
-                                          ({\
-                                              type: "POST",\
-                                              url: "https://console.developers.google.com/m/preferences?tos=true&tos_id=pantheon&authuser=0",\
-                                              contentType: "application/json; charset=UTF-8",\
-                                              dataType: "json",\
-                                              async: false,\
-                                              headers: {"x-framework-xsrf-token": xsrf_token},\
-                                              complete: function (response, textStatus, jqXHR) { console.log(response);},\
-                                          });\
-                                      }, ' + timeout + ');\
-                                      setTimeout(function () {\
-                                          $.ajax\
-                                          ({\
-                                              type: "POST",\
-                                              url: "https://console.developers.google.com/m/accountsettings?authuser=0",\
-                                              contentType: "application/json; charset=UTF-8",\
-                                              dataType: "json",\
-                                              data: JSON.stringify({"emailSettings":{"performance":true,"feature":true,"offer":true,"feedback":true}}),\
-                                              async: false,\
-                                              headers: {"x-framework-xsrf-token": xsrf_token},\
-                                              complete: function (response, textStatus, jqXHR) { location.reload();},\
-                                          });\
-                                      }, ' + timeout + ');\
-                                  }\
-                              }\
-                          },\
-                          complete: function(response, textStatus, jqXHR) {console.log("complete",response)},\
-                      });\
-                  }, ' + timeout + ');');
+                Utils.injectScript('' +
+                  'var params = {' +
+                      'name: "' + projectName + '",' +
+                      'isAe4B: "false",' +
+                      'assignedIdForDisplay: "' + id_project + '",' +
+                      'generateProjectId: "false",' +
+                      'billingAccountId: null,' +
+                      'projectCreationInterface: "create-project",' +
+                      'noCloudProject: "false",' +
+                      'userAgent: navigator.userAgent,' +
+                      'parent: null,' +
+                      'marketingUtmCode: {operation: "createProject", value: "' + id_project + '"},' +
+                      'descriptionLocalizationKey: "panCreateProject",' +
+                          'descriptionLocalizationArgs: {' +
+                          'name: "' + projectName + '",' +
+                              'isAe4B: "false",' +
+                              'assignedIdForDisplay: "' + id_project + '",' +
+                              'generateProjectId: "false",' +
+                              'billingAccountId: null,' +
+                              'projectCreationInterface: "create-project",' +
+                              'noCloudProject: "false",' +
+                              'userAgent: navigator.userAgent,' +
+                              'parent: null' +
+                      '},' +
+                      'phantomData: {' +
+                          'displayName: "' + projectName + '",' +
+                              'type: "PROJECT",' +
+                              'lifecycleState: "ACTIVE",' +
+                              'id: "' + id_project + '",' +
+                              'name: "projects/" + "' + id_project + '"' +
+                      '}' +
+                  '};' +
+                  'console.log(pantheon_main_init_args);' +
+                  'var xsrf_token = pantheon_main_init_args[1]._;' +
+                  'if (xsrf_token === undefined || xsrf_token === null) {' +
+                      'xsrf_token = pantheon_main_init_args[0]._;' +
+                  '}' +
+                  'console.log("xsrf-token",xsrf_token);' +
+                  'setTimeout(function () {' +
+                      '$.ajax' +
+                      '({' +
+                          'type: "POST",' +
+                          'url: "https://console.developers.google.com/m/operations?authuser=0&organizationId=0&operationType=cloud-console.project.createProject",' +
+                          'contentType: "application/json; charset=UTF-8",' +
+                          'dataType: "json",' +
+                          'async: false,' +
+                          'data: JSON.stringify(params),' +
+                          'headers: {"x-framework-xsrf-token": xsrf_token},' +
+                          'error: function(response, textStatus, jqXHR) {' +
+                              'if (response.readyState === 4 && response.status === 403) {' +
+                                  'var data = JSON.parse(response.responseText.replace(")]}\'", ""));' +
+                                  'console.log("error", data);' +
+                                  'if (data.message === "The user must accept the Terms of Service before performing this operation."){' +
+                                      'setTimeout(function () {' +
+                                          '$.ajax' +
+                                          '({' +
+                                              'type: "POST",' +
+                                              'url: "https://console.developers.google.com/m/preferences?tos=true&tos_id=pantheon&authuser=0",' +
+                                              'contentType: "application/json; charset=UTF-8",' +
+                                              'dataType: "json",' +
+                                              'async: false,' +
+                                              'headers: {"x-framework-xsrf-token": xsrf_token},' +
+                                              'complete: function (response, textStatus, jqXHR) { console.log(response);},' +
+                                          '});' +
+                                      '}, ' + timeout + ');' +
+                                      'setTimeout(function () {' +
+                                          '$.ajax' +
+                                          '({' +
+                                              'type: "POST",' +
+                                              'url: "https://console.developers.google.com/m/accountsettings?authuser=0",' +
+                                              'contentType: "application/json; charset=UTF-8",' +
+                                              'dataType: "json",' +
+                                              'data: JSON.stringify({"emailSettings":{"performance":true,"feature":true,"offer":true,"feedback":true}}),' +
+                                              'async: false,' +
+                                              'headers: {"x-framework-xsrf-token": xsrf_token},' +
+                                              'complete: function (response, textStatus, jqXHR) { location.reload();},' +
+                                          '});' +
+                                      '}, ' + timeout + ');' +
+                                  '}' +
+                              '}' +
+                          '},' +
+                          'complete: function(response, textStatus, jqXHR) {console.log("complete",response)},' +
+                      '});' +
+                  '}, ' + timeout + ');');
                 find_from_create(id_project);
             });
         } catch (err) {

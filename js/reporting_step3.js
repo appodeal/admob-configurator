@@ -55,8 +55,8 @@ ReportingStepThreeController = (function() {
         });
     };
     getEmail = function () {
-        Utils.injectScript('\
-        chrome.runtime.sendMessage("' + chrome.runtime.id + '", {type: "console_email_notification", pantheon_account_chooser_data: pantheon_account_chooser_data })');
+        Utils.injectScript(''+
+        'chrome.runtime.sendMessage("' + chrome.runtime.id + '", {type: "console_email_notification", pantheon_account_chooser_data: pantheon_account_chooser_data })');
     };
     return {
         init: function() {
