@@ -69,13 +69,13 @@ function extensionVersion() {
 
 // async jQuery load
 function appendJQuery(complete) {
-    logConsole('Appending jquery from googleapis');
+    console.log('Appending jquery from googleapis');
     var head = document.getElementsByTagName("head")[0];
     var jq = document.createElement('script');
     jq.type = 'text/javascript';
     jq.src = chrome.extension.getURL('js/vendor/jquery.min.js');
     jq.onload = function () {
-        logConsole("Jquery from googleapis appended.");
+        console.log("Jquery from googleapis appended.");
         complete();
     };
     head.appendChild(jq);
@@ -91,7 +91,7 @@ function run_script(code) {
 // waiting for element
 function waitForElement(selector, numberRequests, callback) {
     var i = 0;
-    logConsole('waitForElement ' + selector);
+    console.log('waitForElement ' + selector);
     var checkElement = setInterval(function () {
         var element = jQuery(selector);
         if (element.length) {
@@ -124,23 +124,20 @@ function sendLogs(apiKey, userId, mode, part, version, items, callback) {
         contentType: "application/json",
         dataType: "json",
         data: params
-    })
-        .done(function (data) {
-            if (data.code != 0) {
-                logConsole("Wrong report answer " + JSON.stringify(json) + " -> " + JSON.stringify(data))
+    }).done(function (data) {
+            if (data.code !== 0) {
+                console.log("Wrong report answer " + JSON.stringify(json) + " -> " + JSON.stringify(data))
             }
-        })
-        .fail(function (data) {
-            logConsole("Failed to send reports " + JSON.stringify(json) + " -> " + JSON.stringify(data))
-        })
-        .always(function (data) {
-            callback(data);
-        });
+    }).fail(function (data) {
+            console.log("Failed to send reports " + JSON.stringify(json) + " -> " + JSON.stringify(data))
+    }).always(function (data) {
+            console.log(data);
+    });
 }
 
 // handy way to send logs from step 2 (items: chrome.storage, reports: array of strings)
 function sendOut(mode, report) {
-    logConsole(report);
+    console.log(report);
     chrome.storage.local.get({
         'appodeal_api_key': null,
         'appodeal_user_id': null
@@ -149,12 +146,7 @@ function sendOut(mode, report) {
             var apiKey = items['appodeal_api_key'];
             var userId = items['appodeal_user_id'];
             var version = extensionVersion();
-            var output_at = Date.now();
-            sendLogs(apiKey, userId, mode, 2, version, [{
-                content: report
-            }], function () {
-                logConsole("Reports sent");
-            })
+            sendLogs(apiKey, userId, mode, 2, version, [{content: report}])
         }
     });
 }
@@ -175,15 +167,6 @@ function triggerMouseEvent(node, eventType) {
     clickEvent.initEvent(eventType, true, true);
     node.dispatchEvent(clickEvent);
 }
-
-logConsole = function () {
-    var args = [];
-    for (var i = 0; i < arguments.length; i++) {
-        args[i] = arguments[i];
-        logs.push([arguments[i], new Date(), window.location.href])
-    }
-    console.log(args.toString());
-};
 
 var sendNotification = function (title, ms, progress) {
 

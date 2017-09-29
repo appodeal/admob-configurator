@@ -237,7 +237,7 @@ LoadController = (function() {
       getAppodealStatus(function(result) {
         if (checking_plugin_version(result)) {
           updateAppodealCredentials(result, function() {
-            var data, leftNum, accounts_data, acc_name;
+            var data, leftNum, acc_name;
             data = result['plugin_status'];
             data['many_user_admob_accounts'] = result['plugin_status_ids'];
             console.log(data);
