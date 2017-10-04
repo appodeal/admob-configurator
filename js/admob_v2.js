@@ -30,8 +30,8 @@ var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, int
 AdmobV2.prototype.getXsrf = function () {
     var self = this;
     try {
-        Utils.injectScript(''+
-      +'chrome.runtime.sendMessage("' + chrome.runtime.id + '", {type: "admob_notification", amppd_decode: JSON.parse(amppd), amrpd_decode: JSON.parse(amrpd) })');
+        Utils.injectScript('\
+      chrome.runtime.sendMessage("' + chrome.runtime.id + '", {type: "admob_notification", amppd_decode: JSON.parse(amppd), amrpd_decode: JSON.parse(amrpd) })');
     } catch (err) {
         self.airbrake.error.notify(err);
     }
