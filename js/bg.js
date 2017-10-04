@@ -98,17 +98,15 @@ BackgroundController = (function () {
     };
     need_resync_report = function () {
         chrome.storage.local.get({
-            'accounts': null
+            'credential_error': null
         }, function (items) {
             // credential_error
-            if (items.accounts) {
-                $.each(items.accounts, function(key,val) {
-                    if(val.credential_error){
-                        var title = 'Please re-sync account!';
-                        var message = 'Sorry, your token in: '+ val.email + '( ' + val.publisher_id + ') expired!';
-                        var params = notificationsParams('basic', { title: title, info: message});
-                        chrome.notifications.create(params, function () {})
-                    }
+            if (items.credential_error) {
+                $.each(items.credential_error, function(key,val) {
+                    var title = 'Appodeal Chrome Extension';
+                    var message = 'Sorry, the action of your Token expired \n'+ val.email + '( ' + val.publisher_id + '). Please re-sync account!';
+                    var params = notificationsParams('basic', { title: title, info: message});
+                    chrome.notifications.create(params, function () {})
                 });
             }
         });
