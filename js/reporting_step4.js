@@ -229,7 +229,7 @@ ReportingStepFourController = (function () {
                         console.log(names);
                     }
                 } else {
-                    console.log(data.web);
+                    if (data.web){ console.log(data.web) }
                 }
             });
             callback(result)

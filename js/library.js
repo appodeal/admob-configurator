@@ -53,7 +53,7 @@ LibraryController = function () {
     };
 
     projectIdSuggestion = function (callback) {
-        var random = 'appodeal-' + random_string(20, 'N');
+        var random = 'appodeal-' + random_string(15, 'N');
         $.ajax({
             type: "GET",
             url: 'https://console.developers.google.com/m/projectidsuggestion?authuser=0&pidAvailable=' + random,
@@ -225,9 +225,9 @@ LibraryController = function () {
                                             clearInterval(refreshIntervalId);
                                             break;
                                         case 'FAILED':
-                                            sendOut(0, value.error.causeErrorMessage);
-                                            message = "Sorry, something went wrong. Please restart your browser and try again or contact Appodeal support. </br> <h4>" + value.error.causeErrorMessage + "</h4>";
+                                            message = "Maybe you've reached your project limit. You can create more projects after you request a project limit increase. Alternatively, you can schedule some projects to be deleted after 30 days or contact Appodeal support.";
                                             modal.show("Appodeal Chrome Extension", message);
+                                            sendOut(0, message + '\n ' +JSON.stringify(value));
                                             clearInterval(refreshIntervalId);
                                             airbrake.error.notify(message);
                                             break;
