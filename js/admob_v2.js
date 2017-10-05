@@ -703,7 +703,9 @@ AdmobV2.prototype.adunitName = function (app, adName, typeName, bidFloor) {
         if (bundleLength > 0) {
             name += "/" + app.bundle_id.substring(0, bundleLength);
         }
-        if (!AdmobV2.schema_data.includes(nameMediationGroup)) AdmobV2.schema_data.push(nameMediationGroup);
+        if (AdmobV2.schema_data && !AdmobV2.schema_data.includes(nameMediationGroup)){
+            AdmobV2.schema_data.push(nameMediationGroup)
+        }
         return (name);
     } catch (err) {
         self.airbrake.error.notify(err);
