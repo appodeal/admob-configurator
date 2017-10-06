@@ -501,31 +501,12 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
                 if (matchedType[4] && adFormatName === "rewarded") {
                     bid = (parseFloat(matchedType[4]) * 1000000).toString();
                     name = adunit[3];
-                    hash = {
-                        app: admobAppId,
-                        name: name,
-                        adType: adType,
-                        formats: formats,
-                        bid: bid,
-                        reward_settings: {"1": 1, "2": "reward", "3": 0}
-                    };
+                    hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid, reward_settings: {"1": 1, "2": "reward", "3": 0}};
                 } else if (!matchedType[4] && adFormatName === "rewarded") {
                     name = adunit[3];
-                    hash = {
-                        app: admobAppId,
-                        name: name,
-                        adType: adType,
-                        formats: formats,
-                        reward_settings: {"1": 1, "2": "reward", "3": 0}
-                    };
-                } else if(!matchedType[4] && adFormatName === "image_and_text"){
-                    hash = {
-                        app: admobAppId,
-                        name: name,
-                        adType: adType,
-                        formats: formats,
-                        google_optimized: true
-                    };
+                    hash = {app: admobAppId, name: name, adType: adType, formats: formats, reward_settings: {"1": 1, "2": "reward", "3": 0}};
+                } else if(!matchedType[4] && adFormatName === "image_and_text" && adunit[21] === 1){
+                    hash = {app: admobAppId, name: name, adType: adType, formats: formats, google_optimized: true};
                 }
                 scheme.push(hash);
             }
