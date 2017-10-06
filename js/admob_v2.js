@@ -551,9 +551,14 @@ AdmobV2.prototype.createLocalAdunit = function (s, os, callback) {
             },
             "xsrf": self.token
         };
+
         if (s.reward_settings) {
             params.params[3][17] = 1;
             params.params[3][18] = s.reward_settings;
+        }
+
+        if (s.google_optimized){
+            params.params[3][21] = s.google_optimized;
         }
 
         self.inventoryPost(params, function (data) {
@@ -617,6 +622,10 @@ AdmobV2.prototype.adunitsScheme = function (app) {
         scheme.push({app: app.localApp[1], name: self.adunitName(app, "banner", "text"), adType: 0, formats: [0]});
         scheme.push({app: app.localApp[1], name: self.adunitName(app, "mrec", "image"), adType: 0, formats: [1]});
         scheme.push({app: app.localApp[1], name: self.adunitName(app, "mrec", "text"), adType: 0, formats: [0]});
+
+        //google_optimized
+        scheme.push({app: app.localApp[1], name: self.adunitName(app, "banner", "image_and_text"), adType: 0, formats: [0, 1], google_optimized: true});
+
         if (AdmobV2.rewarded_videoBids.length > 0) {
             scheme.push({
                 app: app.localApp[1],
