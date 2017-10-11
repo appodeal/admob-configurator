@@ -6,7 +6,6 @@ var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, int
     this.publisherId = publisherId;
     this.accountEmail = accountEmail;
     this.accounts = accounts;
-    this.operation_system = null;
     AdmobV2.schema_data = [];
     // internal admob request url
     AdmobV2.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
@@ -17,11 +16,12 @@ var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, int
     // internal admob params
     AdmobV2.types = {text: 0, image: 1, video: 2};
     // appodeal ad unit params
-    AdmobV2.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
+    // AdmobV2.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
+    AdmobV2.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, rewarded_video: 5};
     // adunits bids
     AdmobV2.interstitialBids = interstitialBids;
     AdmobV2.bannerBids = bannerBids;
-    AdmobV2.mrecBids = mrecBids;
+    // AdmobV2.mrecBids = mrecBids;
     AdmobV2.rewarded_videoBids = rewarded_videoBids;
     // initialize modal window
     this.modal = new Modal();
@@ -431,7 +431,8 @@ AdmobV2.prototype.adUnitRegex = function (name) {
     try {
         result = {};
         // works with both old and new adunit names
-        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\//.exec(name);
+        // matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\//.exec(name);
+        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\//.exec(name);
         if (matchedType && matchedType.length > 1) {
             result.adType = matchedType[2];
             if (matchedType[1]) {
@@ -448,9 +449,11 @@ AdmobV2.prototype.adUnitRegex = function (name) {
 AdmobV2.prototype.adunitBid = function (adunit) {
     var self = this, matchedType;
     try {
-        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
+        // matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
+        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
         if (!matchedType) {
-            matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
+            // matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
+            matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
         }
         if (matchedType) {
             if (matchedType[4]) {
@@ -476,7 +479,8 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
         app.localAdunits.forEach(function (adunit) {
             var bid, name, hash, admobAppId, adType, formats, adFormatName, adAppId, matchedType;
             adAppId = self.adUnitRegex(adunit[3]).appId;
-            matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
+            // matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
+            matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
             // check if adunit has correct appodeal app id (for new name formats)
             if (!adAppId || adAppId === app.id) {
                 admobAppId = adunit[2];
@@ -486,7 +490,8 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
                 if (matchedType && matchedType.length > 1) {
                     adFormatName = matchedType[3];
                 } else {
-                    matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
+                    // matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
+                    matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
                     adFormatName = matchedType[3];
                 }
                 if (matchedType[4]) {
@@ -595,13 +600,16 @@ AdmobV2.prototype.adunitsScheme = function (app) {
     var self = this, scheme = [];
     try {
         // default adunits
-        scheme.push({app: app.localApp[1], name: self.adunitName(app, "interstitial", "image"), adType: 1, formats: [1]});
-        scheme.push({app: app.localApp[1], name: self.adunitName(app, "interstitial", "text"), adType: 1, formats: [0]});
-        scheme.push({app: app.localApp[1], name: self.adunitName(app, "banner", "image"), adType: 0, formats: [1]});
-        scheme.push({app: app.localApp[1], name: self.adunitName(app, "banner", "text"), adType: 0, formats: [0]});
-        scheme.push({app: app.localApp[1], name: self.adunitName(app, "banner", "image_and_text"), adType: 0, formats: [0, 1], google_optimized: true}); //google_optimized
-        scheme.push({app: app.localApp[1], name: self.adunitName(app, "mrec", "image"), adType: 0, formats: [1]});
-        scheme.push({app: app.localApp[1], name: self.adunitName(app, "mrec", "text"), adType: 0, formats: [0]});
+        // scheme.push({app: app.localApp[1], name: self.adunitName(app, "interstitial", "image"), adType: 1, formats: [1]});
+        // scheme.push({app: app.localApp[1], name: self.adunitName(app, "interstitial", "text"), adType: 1, formats: [0]});
+        // {method: "insertInventory", params: {"3":{"2":"3910139983","3":"Appodeal/90578/banner/text/123456789","14":0,"16":[0,1],"21":false}}, xsrf: "ALwxsBEjcr0I6z9LTcVsX6A9O-KneeqaOg:1507712713800"}
+        // scheme.push({app: app.localApp[1], name: self.adunitName(app, "banner", "image"), adType: 0, formats: [1], google_optimized: false});
+        // scheme.push({app: app.localApp[1], name: self.adunitName(app, "banner", "text"), adType: 0, formats: [0], google_optimized: false});
+        // scheme.push({app: app.localApp[1], name: self.adunitName(app, "mrec", "image"), adType: 0, formats: [1]});
+        // scheme.push({app: app.localApp[1], name: self.adunitName(app, "mrec", "text"), adType: 0, formats: [0]});
+        scheme.push({app: app.localApp[1], name: self.adunitName(app, "banner", "image_and_text"), adType: 0, formats: [0, 1]});
+        // scheme.push({app: app.localApp[1], name: self.adunitName(app, "banner", "image_and_text"), adType: 0, formats: [0, 1], google_optimized: true}); //google_optimized
+        scheme.push({app: app.localApp[1], name: self.adunitName(app, "interstitial", "image_and_text"), adType: 1, formats: [0, 1]});
         if (AdmobV2.rewarded_videoBids.length > 0) {
             scheme.push({
                 app: app.localApp[1],
@@ -628,10 +636,10 @@ AdmobV2.prototype.adunitsScheme = function (app) {
             scheme.push({app: app.localApp[1], name: name, adType: 0, formats: [0, 1], bid: admobBidFloor(bid)})
         });
         // mrec adunits
-        AdmobV2.mrecBids.forEach(function (bid) {
-            var name = self.adunitName(app, "mrec", "image", bid);
-            scheme.push({app: app.localApp[1], name: name, adType: 0, formats: [0, 1], bid: admobBidFloor(bid)})
-        });
+        // AdmobV2.mrecBids.forEach(function (bid) {
+        //     var name = self.adunitName(app, "mrec", "image", bid);
+        //     scheme.push({app: app.localApp[1], name: name, adType: 0, formats: [0, 1], bid: admobBidFloor(bid)})
+        // });
         //rewarded_video adunits
         if (AdmobV2.rewarded_videoBids.length > 0) {
             AdmobV2.rewarded_videoBids.forEach(function (bid) {
@@ -834,8 +842,8 @@ AdmobV2.prototype.selectLocalAdunits = function (admobAppId) {
                 }
                 // check adunit type
                 var t = self.adUnitRegex(adunit[3]).adType;
-                return (adunit[14] === 1 && (t === 'interstitial' || t === 'rewarded_video')) ||
-                    (adunit[14] === 0 && (t === 'banner' || t === 'mrec'));
+                // return (adunit[14] === 1 && (t === 'interstitial' || t === 'rewarded_video')) ||  (adunit[14] === 0 && (t === 'banner' || t === 'mrec'));
+                return (adunit[14] === 1 && (t === 'interstitial' || t === 'rewarded_video')) ||  (adunit[14] === 0 && (t === 'banner'));
             })
         }
         return (selectedAdunits);
@@ -1191,7 +1199,8 @@ AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeM
                     var s6 = true;
                     var s4 = 2;
                     var bidflor = "10000";
-                    var matchedType = item.replace(/^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\//, "");
+                    // var matchedType = item.replace(/^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\//, "");
+                    var matchedType = item.replace(/^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//, "");
                     if (!isNaN(matchedType)) bidflor = (parseFloat(matchedType) * 1000000).toString();
                     if (matchedType === 'Appodeal/banner/image_and_text'){
                         //google optimization
