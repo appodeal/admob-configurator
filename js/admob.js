@@ -421,18 +421,9 @@ Admob.localAdunitsToScheme = function (app) {
 Admob.adunitsScheme = function (app) {
     var scheme = [];
     // default adunits
-    // scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "interstitial", "image"), adType: 1, formats: [1]});
-    // scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "interstitial", "text"), adType: 1, formats: [0]});
-    // scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "banner", "image"), adType: 0, formats: [1]});
-    // scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "banner", "text"), adType: 0, formats: [0]});
-    // scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "banner", "image_and_text"), adType: 0, formats: [0, 1], google_optimized: true}); //google_optimized
-    // scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "mrec", "image"), adType: 0, formats: [1]});
-    // scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "mrec", "text"), adType: 0, formats: [0]});
-    scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "banner", "image_and_text"), adType: 0, formats: [0, 1]});
-    scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "interstitial", "image_and_text"), adType: 1, formats: [0, 1]});
-    if (Admob.rewarded_videoBids.length > 0) {
-        scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "rewarded_video", "rewarded"), adType: 1, formats: [2], reward_settings: {"1": 1, "2": "reward", "3": 0}});
-    }
+    scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "banner", "image_and_text"), adType: 0, formats: [AdmobV2.types.text, AdmobV2.types.image]});
+    scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "interstitial", "image_and_text"), adType: 1, formats: [AdmobV2.types.text, AdmobV2.types.image]});
+    scheme.push({app: app.localApp[1], name: Admob.adunitName(app, "rewarded_video", "rewarded"), adType: 1, formats: [AdmobV2.types.video], reward_settings: {"1": 1, "2": "reward", "3": 0}});
     // adunit bid floor in admob format
     function admobBidFloor(bid) {
         return (bid * 1000000).toString();
@@ -446,23 +437,16 @@ Admob.adunitsScheme = function (app) {
     });
     // banner adunits
     Admob.bannerBids.forEach(function (bid) {
-        var name = Admob.adunitName(app, "banner", "image", bid);
-        scheme.push({app: app.localApp[1], name: name, adType: 0, formats: [0, 1], bid: admobBidFloor(bid)})
+        var name = Admob.adunitName(app, "banner", "image_and_text", bid);
+        scheme.push({app: app.localApp[1], name: name, adType: 0, formats: [AdmobV2.types.text, AdmobV2.types.image], bid: admobBidFloor(bid)})
     });
-    // mrec adunits
-    // Admob.mrecBids.forEach(function (bid) {
-    //     var name = Admob.adunitName(app, "mrec", "image", bid);
-    //     scheme.push({app: app.localApp[1], name: name, adType: 0, formats: [0, 1], bid: admobBidFloor(bid)})
-    // });
     //rewarded_video adunits
-    if (Admob.rewarded_videoBids.length > 0) {
-        Admob.rewarded_videoBids.forEach(function (bid) {
-            if(bid > 0){
-                var name = Admob.adunitName(app, "rewarded_video", "rewarded", bid);
-                scheme.push({app: app.localApp[1], name: name, adType: 1, formats: [2], bid: admobBidFloor(bid), reward_settings: {"1": 1, "2": "reward", "3": 0}});
-            }
-        });
-    }
+    Admob.rewarded_videoBids.forEach(function (bid) {
+        if(bid > 0){
+            var name = Admob.adunitName(app, "rewarded_video", "rewarded", bid);
+            scheme.push({app: app.localApp[1], name: name, adType: 1, formats: [AdmobV2.types.video], bid: admobBidFloor(bid), reward_settings: {"1": 1, "2": "reward", "3": 0}});
+        }
+    });
     return (scheme);
 };
 
