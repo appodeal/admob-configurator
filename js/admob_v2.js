@@ -689,7 +689,7 @@ AdmobV2.prototype.missingAdunits = function (app) {
 
 // generate adunit name
 AdmobV2.prototype.adunitName = function (app, adName, typeName, bidFloor) {
-    var self = this, name, nameMediationGroup, bundleLength;
+    var self = this, name, nameMediationGroup, bundleLength, schema_data;
     try {
         name = "Appodeal/" + app.id + "/" + adName + "/" + typeName;
         nameMediationGroup = "Appodeal/" + adName + "/" + typeName;
@@ -702,8 +702,9 @@ AdmobV2.prototype.adunitName = function (app, adName, typeName, bidFloor) {
         if (bundleLength > 0) {
             name += "/" + app.bundle_id.substring(0, bundleLength);
         }
-        if (AdmobV2.schema_data && !AdmobV2.schema_data.includes(nameMediationGroup)) {
-            AdmobV2.schema_data.push(nameMediationGroup)
+        schema_data = AdmobV2.schema_data;
+        if (schema_data && Array.isArray(schema_data)) {
+            if(!schema_data.includes(nameMediationGroup)) schema_data.push(nameMediationGroup);
         }
         return (name);
     } catch (err) {
