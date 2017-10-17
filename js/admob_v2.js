@@ -477,39 +477,44 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
         return scheme;
     }
     app.localAdunits.forEach(function (adunit) {
-        var bid, name, hash, admobAppId, adType, formats, adFormatName, adAppId, matchedType;
+        var hash, admobAppId, adType, formats, adFormatName, adAppId, matchedType;
         try {
-            adAppId = self.adUnitRegex(adunit[3]).appId;
-            matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
-            // check if adunit has correct appodeal app id (for new name formats)
-            if (!adAppId || adAppId === app.id) {
-                admobAppId = adunit[2];
-                adType = adunit[14];
-                formats = adunit[16];
-                if (matchedType && matchedType.length > 1) {
-                    adFormatName = matchedType[3];
-                } else {
-                    matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
-                    adFormatName = matchedType[3];
-                }
-                if (matchedType[4]) {
-                    bid = (parseFloat(matchedType[4]) * 1000000).toString();
-                    name = adunit[3];
-                    hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid};
-                } else {
-                    name = adunit[3];
-                    hash = {app: admobAppId, name: name, adType: adType, formats: formats};
-                }
+            if (adunit[3]) {
+                adAppId = self.adUnitRegex(adunit[3]).appId;
+                matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
+                // check if adunit has correct appodeal app id (for new name formats)
+                if (!adAppId || adAppId === app.id) {
+                    admobAppId = adunit[2];
+                    adType = adunit[14];
+                    formats = adunit[16];
+                    if (matchedType && matchedType.length > 1) {
+                        adFormatName = matchedType[3];
+                    } else {
+                        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
+                        adFormatName = matchedType[3];
+                    }
+                    if (matchedType[4]) {
+                        hash = {
+                            app: admobAppId,
+                            name: adunit[3],
+                            adType: adType,
+                            formats: formats,
+                            bid: (parseFloat(matchedType[4]) * 1000000).toString()
+                        };
+                    } else {
+                        hash = {app: admobAppId, name: adunit[3], adType: adType, formats: formats};
+                    }
 
-                if (adFormatName && adFormatName === "rewarded") {
-                    Object.assign(hash, {reward_settings: {"1": 1, "2": "reward", "3": 0}});
-                }
+                    if (adFormatName && adFormatName === "rewarded") {
+                        Object.assign(hash, {reward_settings: {"1": 1, "2": "reward", "3": 0}});
+                    }
 
-                if (typeof adunit[21] !== 'undefined') {
-                    Object.assign(hash, {google_optimized: adunit[21] === 1 ? true : false});
-                }
+                    if (typeof adunit[21] !== 'undefined') {
+                        Object.assign(hash, {google_optimized: adunit[21] === 1 ? true : false});
+                    }
 
-                scheme.push(hash);
+                    scheme.push(hash);
+                }
             }
         } catch (err) {
             console.log(adunit);
@@ -705,7 +710,7 @@ AdmobV2.prototype.adunitName = function (app, adName, typeName, bidFloor) {
         }
         schema_data = AdmobV2.schema_data;
         if (schema_data && Array.isArray(schema_data)) {
-            if(!schema_data.includes(nameMediationGroup)) schema_data.push(nameMediationGroup);
+            if (!schema_data.includes(nameMediationGroup)) schema_data.push(nameMediationGroup);
         }
         return (name);
     } catch (err) {
