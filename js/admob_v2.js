@@ -512,6 +512,7 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
                 scheme.push(hash);
             }
         } catch (err) {
+            console.log(adunit);
             self.airbrake.error.notify(err);
         }
     });
@@ -913,8 +914,9 @@ AdmobV2.prototype.makeMissingAdunitsLists = function (callback) {
             app.missingAdunits = self.missingAdunits(app);
         });
         callback();
-    } catch (e) {
-        self.showErrorDialog("Missing adunits list: " + e.message);
+    } catch (err) {
+        self.showErrorDialog("Missing adunits list: " + err.message);
+        self.airbrake.error.notify(err);
     }
 };
 
