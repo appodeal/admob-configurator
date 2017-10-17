@@ -473,12 +473,12 @@ AdmobV2.prototype.adunitBid = function (adunit) {
 // make scheme array from existing local adunits to compare it with the full scheme and find missing
 AdmobV2.prototype.localAdunitsToScheme = function (app) {
     var self = this, scheme = [];
-    try {
-        if (!app.localAdunits) {
-            return scheme;
-        }
-        app.localAdunits.forEach(function (adunit) {
-            var bid, name, hash, admobAppId, adType, formats, adFormatName, adAppId, matchedType;
+    if (!app.localAdunits) {
+        return scheme;
+    }
+    app.localAdunits.forEach(function (adunit) {
+        var bid, name, hash, admobAppId, adType, formats, adFormatName, adAppId, matchedType;
+        try {
             adAppId = self.adUnitRegex(adunit[3]).appId;
             matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
             // check if adunit has correct appodeal app id (for new name formats)
@@ -501,21 +501,21 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
                     hash = {app: admobAppId, name: name, adType: adType, formats: formats};
                 }
 
-                if (adFormatName && adFormatName === "rewarded"){
-                    Object.assign(hash, { reward_settings: {"1": 1, "2": "reward", "3": 0} });
+                if (adFormatName && adFormatName === "rewarded") {
+                    Object.assign(hash, {reward_settings: {"1": 1, "2": "reward", "3": 0}});
                 }
 
-                if (typeof adunit[21] !== 'undefined'){
-                    Object.assign(hash, { google_optimized: adunit[21] === 1 ? true : false });
+                if (typeof adunit[21] !== 'undefined') {
+                    Object.assign(hash, {google_optimized: adunit[21] === 1 ? true : false});
                 }
 
                 scheme.push(hash);
             }
-        });
-        return (scheme);
-    } catch (err) {
-        self.airbrake.error.notify(err);
-    }
+        } catch (err) {
+            self.airbrake.error.notify(err);
+        }
+    });
+    return (scheme);
 };
 
 
