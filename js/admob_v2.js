@@ -603,14 +603,14 @@ AdmobV2.prototype.adunitsScheme = function (app) {
     try {
         scheme.push({
             app: app.localApp[1],
-            name: self.adunitName(app, "banner", "image_and_text"),
+            name: self.adunitName(app, "banner", "image"),
             adType: 0,
             formats: [AdmobV2.types.text, AdmobV2.types.image],
             google_optimized: false
         });
         scheme.push({
             app: app.localApp[1],
-            name: self.adunitName(app, "interstitial", "image_and_text"),
+            name: self.adunitName(app, "interstitial", "image"),
             adType: 1,
             formats: [AdmobV2.types.text, AdmobV2.types.image],
             google_optimized: false
