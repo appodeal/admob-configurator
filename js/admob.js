@@ -372,40 +372,46 @@ Admob.localAdunitsToScheme = function (app) {
         return scheme;
     }
     app.localAdunits.forEach(function (adunit) {
-        var adAppId = Admob.adUnitRegex(adunit[3]).appId;
-        var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
-        // check if adunit has correct appodeal app id (for new name formats)
-        if (!adAppId || adAppId === app.id) {
-            var adTypeName = Admob.adUnitRegex(adunit[3]).adType;
-            var admobAppId = app.localApp[1];
-            var adType = adunit[14];
-            var formats = adunit[16];
-            var adFormatName, bid, name, hash, floatBid;
+        var adAppId, matchedType, adTypeName, admobAppId, adType, formats, adFormatName, bid, name, hash, floatBid;
+        if (adunit[3]) {
+            adAppId = Admob.adUnitRegex(adunit[3]).appId;
+            matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
+            // check if adunit has correct appodeal app id (for new name formats)
+            if (!adAppId || adAppId === app.id) {
+                adTypeName = Admob.adUnitRegex(adunit[3]).adType;
+                admobAppId = app.localApp[1];
+                adType = adunit[14];
+                formats = adunit[16];
 
-            if (matchedType && matchedType.length > 1) {
-                adFormatName = matchedType[3];
-            } else {
-                matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
-                adFormatName = matchedType[3];
-            }
+                if (matchedType && matchedType.length > 1) {
+                    adFormatName = matchedType[3];
+                } else {
+                    matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
+                    if (matchedType && matchedType[3]) {
+                        adFormatName = matchedType[3];
+                    } else {
+                        return;
+                    }
+                }
 
-            if (adunit[10]) {
-                bid = adunit[10][0][5][1][1];
-                floatBid = Admob.adunitBid(adunit);
-                name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
-                hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid};
-            } else {
-                name = Admob.adunitName(app, adTypeName, adFormatName);
-                hash = {app: admobAppId, name: name, adType: adType, formats: formats};
-            }
-            if (adFormatName && adFormatName === "rewarded") {
-                Object.assign(hash, {reward_settings: {"1": 1, "2": "reward", "3": 0}});
-            }
+                if (adunit[10]) {
+                    bid = adunit[10][0][5][1][1];
+                    floatBid = Admob.adunitBid(adunit);
+                    name = Admob.adunitName(app, adTypeName, adFormatName, floatBid);
+                    hash = {app: admobAppId, name: name, adType: adType, formats: formats, bid: bid};
+                } else {
+                    name = Admob.adunitName(app, adTypeName, adFormatName);
+                    hash = {app: admobAppId, name: name, adType: adType, formats: formats};
+                }
+                if (adFormatName && adFormatName === "rewarded") {
+                    Object.assign(hash, {reward_settings: {"1": 1, "2": "reward", "3": 0}});
+                }
 
-            if (typeof adunit[21] !== 'undefined') {
-                Object.assign(hash, {google_optimized: adunit[21] === 1 ? true : false});
+                if (typeof adunit[21] !== 'undefined') {
+                    Object.assign(hash, {google_optimized: adunit[21] === 1 ? true : false});
+                }
+                scheme.push(hash);
             }
-            scheme.push(hash);
         }
     });
     return (scheme);
@@ -417,14 +423,14 @@ Admob.adunitsScheme = function (app) {
     // default adunits
     scheme.push({
         app: app.localApp[1],
-        name: Admob.adunitName(app, "banner", "image_and_text"),
+        name: Admob.adunitName(app, "banner", "image"),
         adType: 0,
         formats: [Admob.types.text, Admob.types.image],
         google_optimized: false
     });
     scheme.push({
         app: app.localApp[1],
-        name: Admob.adunitName(app, "interstitial", "image_and_text"),
+        name: Admob.adunitName(app, "interstitial", "image"),
         adType: 1,
         formats: [Admob.types.text, Admob.types.image],
         google_optimized: false

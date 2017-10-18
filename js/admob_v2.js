@@ -491,7 +491,11 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
                         adFormatName = matchedType[3];
                     } else {
                         matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
-                        adFormatName = matchedType[3];
+                        if (matchedType && matchedType[3]) {
+                            adFormatName = matchedType[3];
+                        } else {
+                            return;
+                        }
                     }
                     if (matchedType[4]) {
                         hash = {
