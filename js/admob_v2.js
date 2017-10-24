@@ -602,7 +602,7 @@ AdmobV2.prototype.GetMediationGroupList = function (callback) {
 };
 
 // Find all missing adunits for app in inventory
-AdmobV2.prototype.adunitsScheme = function (app) {
+AdmobV2.prototype.adunitsScheme = function (app, bid_floors) {
     var self = this, scheme = [];
     try {
         scheme.push({
@@ -632,9 +632,7 @@ AdmobV2.prototype.adunitsScheme = function (app) {
             return (bid * 1000000).toString();
         }
 
-        // adunits with bid floors
-        // interstitial adunits
-        AdmobV2.interstitialBids.forEach(function (bid) {
+        bid_floors.interstitialBids.forEach(function (bid) {
             var name = self.adunitName(app, "interstitial", "image_and_text", bid);
             scheme.push({
                 app: app.localApp[1],
@@ -646,7 +644,7 @@ AdmobV2.prototype.adunitsScheme = function (app) {
             })
         });
         // banner adunits
-        AdmobV2.bannerBids.forEach(function (bid) {
+        bid_floors.bannerBids.forEach(function (bid) {
             var name = self.adunitName(app, "banner", "image_and_text", bid);
             scheme.push({
                 app: app.localApp[1],
@@ -658,7 +656,7 @@ AdmobV2.prototype.adunitsScheme = function (app) {
             })
         });
         // rewarded_video adunits
-        AdmobV2.rewarded_videoBids.forEach(function (bid) {
+        bid_floors.rewarded_videoBids.forEach(function (bid) {
             if (bid !== 0) {
                 var name = self.adunitName(app, "rewarded_video", "rewarded", bid);
                 scheme.push({
@@ -672,6 +670,9 @@ AdmobV2.prototype.adunitsScheme = function (app) {
                 });
             }
         });
+
+        // adunits with bid floors
+        // interstitial adunits
         return (scheme);
     } catch (err) {
         self.airbrake.error.notify(err);
@@ -680,9 +681,17 @@ AdmobV2.prototype.adunitsScheme = function (app) {
 
 // Find all missing adunits for app in inventory
 AdmobV2.prototype.missingAdunits = function (app) {
-    var self = this, scheme, localScheme, missingScheme;
+    var self = this, scheme, localScheme, missingScheme, bid_floors;
     try {
-        scheme = self.adunitsScheme(app);
+        bid_floors = self.accounts.reduce(function (accounts_result, account) {
+            account.apps.forEach(function (app_account) {
+                if (app_account.id === app.id) accounts_result = app_account.bid_floors;
+            });
+            if (accounts_result) {
+                return accounts_result;
+            }
+        }, {});
+        scheme = self.adunitsScheme(app, bid_floors);
         localScheme = self.localAdunitsToScheme(app);
         // select all elements from scheme that are not existing in localScheme
         missingScheme = $.grep(scheme, function (s) {

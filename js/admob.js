@@ -337,7 +337,6 @@ Admob.synchronousEach = function (array, callback, finish) {
 Admob.adUnitRegex = function (name) {
     var result = {};
     // works with both old and new adunit names
-    // var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\//.exec(name);
     var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\//.exec(name);
     if (matchedType && matchedType.length > 1) {
         result.adType = matchedType[2];
@@ -350,18 +349,18 @@ Admob.adUnitRegex = function (name) {
 
 // get bid from local adunit
 Admob.adunitBid = function (adunit) {
+    var matchedType, bid, f;
+    matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
+    if (!matchedType) {
+        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
+    }
+
     if (adunit[10]) {
-        var bid = adunit[10][0][5][1][1];
-        var f = parseInt(bid) / 1000000;
+        bid = adunit[10][0][5][1][1];
+        f = parseInt(bid) / 1000000;
         return (f);
-    } else if (adunit[16].length === 1 && adunit[16][0] === 0) {
-        return "text";
-    } else if (adunit[16].length === 1 && adunit[16][0] === 1) {
-        return "image";
-    } else if (adunit[16].length === 1 && adunit[16][0] === 2) {
-        return "rewarded";
-    } else if (adunit[16].length === 2 && adunit[16][0] === 0 && adunit[16][1] === 1) {
-        return "image_and_text";
+    } else if (matchedType && matchedType[3]) {
+        return matchedType[3]
     }
 };
 
@@ -418,7 +417,7 @@ Admob.localAdunitsToScheme = function (app) {
 };
 
 // Find all missing adunits for app in inventory
-Admob.adunitsScheme = function (app) {
+Admob.adunitsScheme = function (app, bid_floors) {
     var scheme = [];
     // default adunits
     scheme.push({
@@ -450,7 +449,7 @@ Admob.adunitsScheme = function (app) {
 
     // adunits with bid floors
     // interstitial adunits
-    Admob.interstitialBids.forEach(function (bid) {
+    bid_floors.interstitialBids.forEach(function (bid) {
         var name = Admob.adunitName(app, "interstitial", "image_and_text", bid);
         scheme.push({
             app: app.localApp[1],
@@ -462,7 +461,7 @@ Admob.adunitsScheme = function (app) {
         })
     });
     // banner adunits
-    Admob.bannerBids.forEach(function (bid) {
+    bid_floors.bannerBids.forEach(function (bid) {
         var name = Admob.adunitName(app, "banner", "image_and_text", bid);
         scheme.push({
             app: app.localApp[1],
@@ -474,7 +473,7 @@ Admob.adunitsScheme = function (app) {
         })
     });
     //rewarded_video adunits
-    Admob.rewarded_videoBids.forEach(function (bid) {
+    bid_floors.rewarded_videoBids.forEach(function (bid) {
         if (bid > 0) {
             var name = Admob.adunitName(app, "rewarded_video", "rewarded", bid);
             scheme.push({
@@ -492,11 +491,20 @@ Admob.adunitsScheme = function (app) {
 };
 
 // Find all missing adunits for app in inventory
-Admob.missingAdunits = function (app) {
-    var scheme = Admob.adunitsScheme(app);
-    var localScheme = Admob.localAdunitsToScheme(app);
+Admob.prototype.missingAdunits = function (app) {
+    var self = this, scheme, localScheme, missingScheme, bid_floors;
+    bid_floors = self.accounts.reduce(function (accounts_result, account) {
+        account.apps.forEach(function (app_account) {
+            if (app_account.id === app.id) accounts_result = app_account.bid_floors;
+        });
+        if (accounts_result) {
+            return accounts_result;
+        }
+    }, {});
+    scheme = Admob.adunitsScheme(app, bid_floors);
+    localScheme = Admob.localAdunitsToScheme(app);
     // select all elements from scheme that are not existing in localScheme
-    var missingScheme = $.grep(scheme, function (s) {
+    missingScheme = $.grep(scheme, function (s) {
         var str = JSON.stringify(s);
         return !(localScheme.findByProperty(function (l) {
             return (str === JSON.stringify(l));
@@ -707,7 +715,7 @@ Admob.prototype.makeMissingAdunitsLists = function (callback) {
     var self = this;
     try {
         self.inventory.forEach(function (app, index, apps) {
-            app.missingAdunits = Admob.missingAdunits(app);
+            app.missingAdunits = self.missingAdunits(app);
         });
         callback();
     } catch (e) {
