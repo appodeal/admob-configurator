@@ -14,12 +14,11 @@ var Admob = function (userId, apiKey, publisherId, accountEmail, accounts, inter
     // internal admob params
     Admob.types = {text: 0, image: 1, video: 2};
     // appodeal ad unit params
-    // Admob.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
-    Admob.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, rewarded_video: 5};
+    Admob.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
     // adunits bids
     Admob.interstitialBids = interstitialBids;
     Admob.bannerBids = bannerBids;
-    // Admob.mrecBids = mrecBids;
+    Admob.mrecBids = mrecBids;
     Admob.rewarded_videoBids = rewarded_videoBids;
     // initialize modal window
     this.modal = new Modal();
@@ -337,7 +336,7 @@ Admob.synchronousEach = function (array, callback, finish) {
 Admob.adUnitRegex = function (name) {
     var result = {};
     // works with both old and new adunit names
-    var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\//.exec(name);
+    var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\//.exec(name);
     if (matchedType && matchedType.length > 1) {
         result.adType = matchedType[2];
         if (matchedType[1]) {
@@ -350,9 +349,9 @@ Admob.adUnitRegex = function (name) {
 // get bid from local adunit
 Admob.adunitBid = function (adunit) {
     var matchedType, bid, f;
-    matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
+    matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
     if (!matchedType) {
-        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
+        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
     }
 
     if (adunit[10]) {
@@ -374,7 +373,7 @@ Admob.localAdunitsToScheme = function (app) {
         var adAppId, matchedType, adTypeName, admobAppId, adType, formats, adFormatName, bid, name, hash, floatBid;
         if (adunit[3]) {
             adAppId = Admob.adUnitRegex(adunit[3]).appId;
-            matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
+            matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
             // check if adunit has correct appodeal app id (for new name formats)
             if (!adAppId || adAppId === app.id) {
                 adTypeName = Admob.adUnitRegex(adunit[3]).adType;
@@ -385,7 +384,7 @@ Admob.localAdunitsToScheme = function (app) {
                 if (matchedType && matchedType.length > 1) {
                     adFormatName = matchedType[3];
                 } else {
-                    matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
+                    matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
                     if (matchedType && matchedType[3]) {
                         adFormatName = matchedType[3];
                     } else {
@@ -436,6 +435,13 @@ Admob.adunitsScheme = function (app, bid_floors) {
     });
     scheme.push({
         app: app.localApp[1],
+        name: Admob.adunitName(app, "mrec", "image"),
+        adType: 0,
+        formats: [Admob.types.text, Admob.types.image],
+        google_optimized: false
+    });
+    scheme.push({
+        app: app.localApp[1],
         name: Admob.adunitName(app, "rewarded_video", "rewarded"),
         adType: 1,
         formats: [Admob.types.video],
@@ -463,6 +469,18 @@ Admob.adunitsScheme = function (app, bid_floors) {
     // banner adunits
     bid_floors.bannerBids.forEach(function (bid) {
         var name = Admob.adunitName(app, "banner", "image_and_text", bid);
+        scheme.push({
+            app: app.localApp[1],
+            name: name,
+            adType: 0,
+            formats: [Admob.types.text, Admob.types.image],
+            bid: admobBidFloor(bid),
+            google_optimized: false
+        })
+    });
+    // mrec adunits
+    bid_floors.mrecBids.forEach(function (bid) {
+        var name = Admob.adunitName(app, "mrec", "image_and_text", bid);
         scheme.push({
             app: app.localApp[1],
             name: name,
@@ -664,8 +682,7 @@ Admob.prototype.selectLocalAdunits = function (admobAppId) {
             }
             // check adunit type
             var t = Admob.adUnitRegex(adunit[3]).adType;
-            // return (adunit[14] === 1 && (t === 'interstitial' || t === 'rewarded_video')) || (adunit[14] === 0 && (t === 'banner' || t === 'mrec'));
-            return (adunit[14] === 1 && (t === 'interstitial' || t === 'rewarded_video')) || (adunit[14] === 0 && (t === 'banner'))
+            return (adunit[14] === 1 && (t === 'interstitial' || t === 'rewarded_video')) || (adunit[14] === 0 && (t === 'banner' || t === 'mrec'))
         })
     }
     return (selectedAdunits);
