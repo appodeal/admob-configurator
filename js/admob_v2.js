@@ -73,7 +73,7 @@ AdmobV2.prototype.syncInventory = function (callback) {
                                         self.makeMissingAdunitsLists(function () {
                                             self.createMissingAdunits(function () {
                                                 self.CreateOrUpdateMediationGroup(function () {
-                                                    chrome.storage.local.remove("admob_processing");
+                                                    // chrome.storage.local.remove("admob_processing");
                                                     self.finishDialog();
                                                     self.sendReports({
                                                         mode: 0,
@@ -1543,6 +1543,7 @@ AdmobV2.prototype.updateAppAdunitFormats = function (app, callback) {
     var self = this, adunits;
     try {
         if (app.localAdunits) {
+            self.removeOldAdunits(app);
             // select interstitial adunits with bid floor and without video format
             adunits = $.grep(app.localAdunits, function (adunit) {
                 return (adunit[10] && adunit[14] === 1 && JSON.stringify(adunit[16]) !== "[0,1,2]") && adunit[17] !== 1;
@@ -1581,6 +1582,37 @@ AdmobV2.prototype.updateFormats = function (callback) {
         }, function () {
             callback();
         })
+    } catch (err) {
+        self.airbrake.error.notify(err);
+    }
+};
+
+AdmobV2.prototype.removeOldAdunits = function (app) {
+    var self = this, adunits = [];
+    try {
+        adunits = $.grep(app.localAdunits, function (adunit) {
+            if (adunit[3]) {
+                // Find Old Adunits
+                var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|image_and_text|rewarded)\//.exec(adunit[3]);
+                return (adunit[3].includes('Appodeal') && (matchedType === null || typeof matchedType[1] === 'undefined' || typeof matchedType[2] === 'undefined' || typeof matchedType[3] === 'undefined'));
+            }
+        });
+        if (adunits.length > 0){
+            var adunits_ids = [];
+            adunits.forEach(function (adunit, i, arr) {
+                adunits_ids.push(adunit[1])
+            });
+            var params = {
+                method: "archiveInventory",
+                params: {
+                    3: adunits_ids
+                },
+                xsrf: self.token
+            };
+            self.inventoryPost(params, function (data) {
+                console.log('Clear old adunits -> ' + adunits_ids);
+            });
+        }
     } catch (err) {
         self.airbrake.error.notify(err);
     }
