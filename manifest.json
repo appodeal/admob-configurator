@@ -19,7 +19,10 @@
   "content_scripts": [
     {
       "matches": [
-        "*://*.appodeal.com/*"
+        "*://www.appodeal.com/profile*",
+        "*://www.appodeal.com/dashboard*",
+        "*://www.appodeal.com/internal_dashboard*",
+        "*://www.appodeal.com/apps*"
       ],
       "js": [
         "js/vendor/jquery.min.js",
