@@ -1107,7 +1107,6 @@ Admob.prototype.updateAppAdunitFormats = function (app, callback) {
     var self = this;
     if (app.localAdunits) {
         // select interstitial adunits with bid floor and without video format
-        if (app.admob_app_id) self.removeOldAdunits(app.admob_app_id);
         var adunits = $.grep(app.localAdunits, function (adunit) {
             return (adunit[10] && adunit[14] === 1 && JSON.stringify(adunit[16]) !== "[0,1,2]") && adunit[17] !== 1;
         });
@@ -1141,38 +1140,4 @@ Admob.prototype.updateFormats = function (callback) {
     }, function () {
         callback();
     })
-};
-
-Admob.prototype.removeOldAdunits = function (admobAppId) {
-    var self = this, adunits = [], localAdunits = [];
-    try {
-        localAdunits = $.grep(self.allAdunits, function (adunit) {
-            return (adunit[2] === admobAppId && adunit[9] === 0);
-        });
-        adunits = $.grep(localAdunits, function (adunit) {
-            if (adunit[3]) {
-                var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|image_and_text|rewarded)\//.exec(adunit[3]);
-                return (adunit[3].includes('Appodeal') && (!adunit[22] || matchedType === null || typeof matchedType[1] === 'undefined' || typeof matchedType[2] === 'undefined' || typeof matchedType[3] === 'undefined'));
-            }
-        });
-        if (adunits.length > 0) {
-            var adunits_ids = [];
-            adunits.forEach(function (adunit, i, arr) {
-                adunits_ids.push(adunit[1])
-            });
-            var params = {
-                method: "archiveInventory",
-                params: {
-                    3: adunits_ids
-                },
-                xsrf: self.token
-            };
-            self.inventoryPost(params, function (data) {
-                console.log('Clear old adunits -> ' + adunits_ids);
-                location.reload();
-            });
-        }
-    } catch (err) {
-        self.airbrake.error.notify(err);
-    }
 };
