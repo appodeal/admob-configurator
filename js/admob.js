@@ -1170,6 +1170,7 @@ Admob.prototype.removeOldAdunits = function (admobAppId) {
             };
             self.inventoryPost(params, function (data) {
                 console.log('Clear old adunits -> ' + adunits_ids);
+                location.reload();
             });
         }
     } catch (err) {

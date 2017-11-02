@@ -1334,15 +1334,13 @@ AdmobV2.prototype.syncWithServer = function (apps, callback) {
         if (apps) {
             apps.forEach(function (app, i, arr) {
                 var id, name, admob_app_id, adunits, h;
-                if (app.ad_units.length !== app.localAdunits.length) {
-                    id = app.id;
-                    name = app.localApp[2];
-                    admob_app_id = app.localApp[1];
-                    adunits = self.newAdunitsForServer(app);
-                    h = {id: id, name: name, admob_app_id: admob_app_id, adunits: adunits};
-                    if (h.admob_app_id !== app.admob_app_id || h.adunits.length) {
-                        params.apps.push(h);
-                    }
+                id = app.id;
+                name = app.localApp[2];
+                admob_app_id = app.localApp[1];
+                adunits = self.newAdunitsForServer(app);
+                h = {id: id, name: name, admob_app_id: admob_app_id, adunits: adunits};
+                if (h.admob_app_id !== app.admob_app_id || h.adunits.length) {
+                    params.apps.push(h);
                 }
             });
         }
@@ -1626,7 +1624,6 @@ AdmobV2.prototype.removeOldAdunits = function (admobAppId) {
         });
         adunits = $.grep(localAdunits, function (adunit) {
             if (adunit[3]) {
-                // Find Old Adunits
                 var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|image_and_text|rewarded)\//.exec(adunit[3]);
                 return (adunit[3].includes('Appodeal') && (matchedType === null || typeof matchedType[1] === 'undefined' || typeof matchedType[2] === 'undefined' || typeof matchedType[3] === 'undefined'));
             }
@@ -1645,6 +1642,7 @@ AdmobV2.prototype.removeOldAdunits = function (admobAppId) {
             };
             self.inventoryPost(params, function (data) {
                 console.log('Clear old adunits -> ' + adunits_ids);
+                location.reload();
             });
         }
     } catch (err) {
