@@ -223,6 +223,12 @@ LoadController = (function() {
         chrome.storage.local.remove('credential_error');
     }
 
+      if (result['plugin_critical_version']){
+          localCredentials['plugin_critical_version'] = result['plugin_critical_version'];
+      } else {
+          chrome.storage.local.remove('plugin_critical_version');
+      }
+
     chrome.storage.local.set(localCredentials, function() {
       callback();
     });
