@@ -1151,9 +1151,8 @@ Admob.prototype.removeOldAdunits = function (admobAppId) {
         });
         adunits = $.grep(localAdunits, function (adunit) {
             if (adunit[3]) {
-                // Find Old Adunits
                 var matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|image_and_text|rewarded)\//.exec(adunit[3]);
-                return (adunit[3].includes('Appodeal') && (matchedType === null || typeof matchedType[1] === 'undefined' || typeof matchedType[2] === 'undefined' || typeof matchedType[3] === 'undefined'));
+                return (adunit[3].includes('Appodeal') && (!adunit[22] || matchedType === null || typeof matchedType[1] === 'undefined' || typeof matchedType[2] === 'undefined' || typeof matchedType[3] === 'undefined'));
             }
         });
         if (adunits.length > 0) {
