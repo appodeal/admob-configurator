@@ -1569,7 +1569,7 @@ AdmobV2.prototype.updateAdunitFormats = function (adunit, callback) {
 
 // Add video format to all app adunits
 AdmobV2.prototype.updateAppAdunitFormats = function (app, callback) {
-    var self = this, adunits;
+    var self = this;
     try {
         if (app.localAdunits) {
             self.removeOldAdunits(app.admob_app_id, function (clear_adunits) {
@@ -1578,15 +1578,20 @@ AdmobV2.prototype.updateAppAdunitFormats = function (app, callback) {
                     clear_adunits.forEach(function (adunit, i, arr) {
                         adunits_ids.push(adunit[1])
                     });
+                    // Filter deleted adunits
+                    app.localAdunits = app.localAdunits.filter(function (localAdunit) {
+                        return !adunits_ids.includes(localAdunit[1])
+                    });
+                    // Send from archive adunits
                     self.inventoryPost({
                         method: "archiveInventory",
                         params: {3: adunits_ids},
                         xsrf: self.token
                     }, function () {
                         console.log('Clear old adunits -> ' + adunits_ids);
-                        location.reload();
+                        callback();
                     });
-                }else{
+                } else {
                     callback();
                 }
             });
