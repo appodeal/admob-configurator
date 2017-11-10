@@ -1569,12 +1569,11 @@ AdmobV2.prototype.updateAdunitFormats = function (adunit, callback) {
 
 // Add video format to all app adunits
 AdmobV2.prototype.updateAppAdunitFormats = function (app, callback) {
-    var self = this;
+    var self = this, adunits_ids = [];
     try {
         if (app.localAdunits) {
             self.removeOldAdunits(app.admob_app_id, function (clear_adunits) {
                 if (clear_adunits.length > 0) {
-                    var adunits_ids = [];
                     clear_adunits.forEach(function (adunit, i, arr) {
                         adunits_ids.push(adunit[1])
                     });
@@ -1582,21 +1581,13 @@ AdmobV2.prototype.updateAppAdunitFormats = function (app, callback) {
                     app.localAdunits = app.localAdunits.filter(function (localAdunit) {
                         return !adunits_ids.includes(localAdunit[1])
                     });
-                    // Send from archive adunits
-                    self.inventoryPost({
-                        method: "archiveInventory",
-                        params: {3: adunits_ids},
-                        xsrf: self.token
-                    }, function () {
-                        console.log('Clear old adunits -> ' + adunits_ids);
-                        callback();
-                    });
+                    callback(adunits_ids);
                 } else {
-                    callback();
+                    callback(adunits_ids);
                 }
             });
         } else {
-            callback();
+            callback(adunits_ids);
         }
     } catch (err) {
         self.airbrake.error.notify(err);
@@ -1605,16 +1596,31 @@ AdmobV2.prototype.updateAppAdunitFormats = function (app, callback) {
 
 // Add video format to all appodeal app's adunits
 AdmobV2.prototype.updateFormats = function (callback) {
-    var self = this;
+    var self = this, adunits_ids = [];
     try {
         console.log("Update absent formats");
         // update formats in all local adunits from appodeal apps
         self.synchronousEach(self.inventory.slice(), function (app, next) {
-            self.updateAppAdunitFormats(app, function () {
+            self.updateAppAdunitFormats(app, function (ids) {
+                if (ids.length > 0) {
+                    adunits_ids = adunits_ids.concat(ids);
+                }
                 next();
             })
         }, function () {
-            callback();
+            if (adunits_ids.length > 0) {
+                // Send from archive adunits
+                self.inventoryPost({
+                    method: "archiveInventory",
+                    params: {3: adunits_ids},
+                    xsrf: self.token
+                }, function () {
+                    console.log('Clear old adunits -> ' + adunits_ids);
+                    callback();
+                });
+            } else {
+                callback();
+            }
         })
     } catch (err) {
         self.airbrake.error.notify(err);
