@@ -109,7 +109,7 @@ LibraryController = function () {
         }, timeout);
     };
     create = function () {
-        modal.show("Appodeal Chrome Extension", "Create Appodeal project. Please wait");
+        modal.show("Appodeal Chrome Extension", "Creating Appodeal project. Please wait");
         try {
             projectIdSuggestion(function (data) {
                 id_project = data.id;
@@ -259,7 +259,7 @@ LibraryController = function () {
     };
     return {
         init: function () {
-            initOtherLibrary('Create new project from the library page (new accounts)');
+            initOtherLibrary('Creating new project from the library page (new accounts)');
             airbrake.error.call(find);
         }
     }
