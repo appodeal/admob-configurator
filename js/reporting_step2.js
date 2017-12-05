@@ -1,19 +1,24 @@
 var ReportingStepTwoController, modal, adsence_enabling_interval;
 
-ReportingStepTwoController = (function() {
+ReportingStepTwoController = (function () {
     var wait_for_adsence_btn, projectToLocation, initOtherLibrary;
-    wait_for_adsence_btn = function() {
-        var enableApiBtn, disableBtnCode, disableApiBtn, enableApiBtnOld, disableBtnCodeOld, disableApiBtnOld, code;
+    wait_for_adsence_btn = function () {
+        var enableApiBtn, disableBtnCode, disableApiBtn, enableApiBtnOld, disableBtnCodeOld, disableApiBtnOld,
+            enableApiBtnNew, code;
         try {
             enableApiBtn = $("pan-action-bar-button[icon='start'][action='apiCtrl.toggleApi()']:not(.ng-hide) button");
             disableBtnCode = "pan-action-bar-button[icon='stop'][action='apiCtrl.toggleApi()']:not(.ng-hide) button";
             disableApiBtn = $(disableBtnCode);
 
             enableApiBtnOld = $("[ng-if='!apiCtrl.isServiceEnabled()']");
-            disableBtnCodeOld = "[ng-if='apiCtrl.isServiceEnabled()']";
+            enableApiBtnNew = $("[ng-if='!$ctrl.isServiceEnabled() && !$ctrl.isServiceProvisionable()']");
+            disableBtnCodeOld = "[ng-if='!apiCtrl.isServiceEnabled() && !apiCtrl.isServiceProvisionable()']";
             disableApiBtnOld = $(disableBtnCodeOld);
-            if ((enableApiBtn.length || enableApiBtnOld.length)) {
+            if ((enableApiBtn.length || enableApiBtnOld.length || enableApiBtnNew.length)) {
                 clearInterval(adsence_enabling_interval);
+                if (enableApiBtnNew.length) {
+                    enableApiBtnNew.click();
+                }
                 if (enableApiBtn.length) {
                     enableApiBtn.click();
                 } else {
@@ -35,19 +40,19 @@ ReportingStepTwoController = (function() {
     };
     initOtherLibrary = function (message) {
         sendOut(0, message);
-        appendJQuery(function() {
+        appendJQuery(function () {
             modal = new Modal();
             modal.show("Appodeal Chrome Extension", message);
         });
     };
     return {
-        init: function() {
+        init: function () {
             initOtherLibrary('Enabling the AdSense Management API');
             adsence_enabling_interval = setInterval(wait_for_adsence_btn, 2000);
         }
     };
 })();
 
-$(document).ready(function() {
+$(document).ready(function () {
     ReportingStepTwoController.init();
 });
