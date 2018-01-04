@@ -83,7 +83,7 @@ BackgroundController = (function () {
                         chrome.tabs.executeScript(details.tabId, {
                             file: "js/get_admob_account.js"
                         });
-                    } else if (details_url.match(/adsense\/overview/)) {
+                    } else if (details_url.match(/adsense\/overview/) || details_url.match(/adsensehost.googleapis.com/)) {
                         chrome.tabs.executeScript(details.tabId, {
                             file: "js/reporting_step2.js"
                         });
