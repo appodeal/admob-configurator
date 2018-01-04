@@ -31,7 +31,7 @@ function locationProjectName() {
 }
 
 function overviewPageUrl(projectId) {
-    return "https://console.developers.google.com/apis/api/adsensehost.googleapis.com/overview?project=" + projectId;
+    return "https://console.developers.google.com/apis/api/adsense.googleapis.com/overview?project=" + projectId;
 }
 
 function projectConsentUrl(projectName) {
