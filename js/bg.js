@@ -80,6 +80,7 @@ BackgroundController = (function () {
                             file: "js/reporting_step3.js"
                         });
                     } else if (details_url.match(/apps\.admob\.com\/(\/v2)?/)) {
+                        console.log(details_url);
                         chrome.tabs.executeScript(details.tabId, {
                             file: "js/get_admob_account.js"
                         });

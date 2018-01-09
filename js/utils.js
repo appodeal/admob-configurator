@@ -11,20 +11,21 @@ var ADMOB_LINK = "https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD";
 var ADMOB_LOGOUT = 'https://accounts.google.com/AddSession?hl=en&continue=' + ADMOB_LINK;
 var GOOGLE_CLOUD_CONSOLE_CREDENTIAL = 'https://console.developers.google.com/projectselector/apis/credentials';
 var REDIRECT_URI = APPODEAL_URL_SSL + "/admin/oauth2callback";
-var airbrake;
+var airbrake, projectId = null, projectKey = null, logs = [];
 
 chrome.storage.local.get({
     'airbrake_js': null
 }, function (items) {
-    if (items.airbrake_js) {
-        airbrake = new AirbrakeController(items.airbrake_js.projectId, items.airbrake_js.projectKey);
-    } else{
-        airbrake = new AirbrakeController(items.airbrake_js, items.airbrake_js);
+    if (items.airbrake_js){
+        projectId = items.airbrake_js.projectId;
+        projectKey = items.airbrake_js.projectKey;
+
+        airbrake = new AirbrakeController(projectId, projectKey);
     }
+
+    airbrake = new AirbrakeController(projectId, projectKey);
 });
 
-
-var logs = [];
 // get project name in google console from current url
 function locationProjectName() {
     return document.location.toString().match(/\project=(.+)$/)[1];
