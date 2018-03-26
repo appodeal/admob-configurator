@@ -498,6 +498,7 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
                             return;
                         }
                     }
+
                     if (matchedType[4]) {
                         hash = {
                             app: admobAppId,
@@ -511,7 +512,8 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
                     }
 
                     if (adFormatName && adFormatName === "rewarded") {
-                        Object.assign(hash, {reward_settings: {"1": 1, "2": "reward", "3": 0}});
+                        console.log(hash);
+                        Object.assign(hash, {reward_settings: {"1": 1, "2": "Reward", "3": true}});
                     }
 
                     if (typeof adunit[21] !== 'undefined') {
@@ -543,23 +545,30 @@ AdmobV2.prototype.createLocalAdunit = function (s, os, callback) {
         params = {
             "method": "insertInventory",
             "params": {
-                "3": {
-                    "2": s.app,
-                    "3": s.name,
-                    "14": s.adType,
-                    "16": s.formats
-                }
+              "3": {
+                "2": s.app,
+                "3": s.name,
+                "14": s.adType,
+                "16": s.formats,
+                "21": true,
+                "23": {"1":1}
+              }
             },
             "xsrf": self.token
-        };
+          };
+
+        if (s.bid) {
+          params.params[3][23] =  {"1":3, "3":{"1":{"1":s.bid, "2":"USD"}}};
+        }
 
         if (s.reward_settings) {
-            params.params[3][17] = 1;
-            params.params[3][18] = s.reward_settings;
+          params.params[3][21] = null;
+          params.params[3][17] = true;
+          params.params[3][18] = s.reward_settings;
         }
 
         if (s.google_optimized) {
-            params.params[3][21] = s.google_optimized;
+          params.params[3][21] = s.google_optimized;
         }
 
         self.inventoryPost(params, function (data) {
