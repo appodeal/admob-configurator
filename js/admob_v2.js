@@ -641,7 +641,7 @@ AdmobV2.prototype.adunitsScheme = function (app, bid_floors) {
             name: self.adunitName(app, "rewarded_video", "rewarded"),
             adType: 1,
             formats: [AdmobV2.types.video],
-            reward_settings: {"1": 1, "2": "reward", "3": 0},
+            reward_settings: {"1": 1, "2": "reward", "3": true},
             google_optimized: false
         });
         // adunit bid floor in admob format
@@ -702,7 +702,7 @@ AdmobV2.prototype.adunitsScheme = function (app, bid_floors) {
                         adType: 1,
                         formats: [AdmobV2.types.video],
                         bid: admobBidFloor(bid),
-                        reward_settings: {"1": 1, "2": "reward", "3": 0},
+                        reward_settings: {"1": 1, "2": "reward", "3": true},
                         google_optimized: false
                     });
                 }
