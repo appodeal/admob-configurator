@@ -10,9 +10,9 @@ var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, int
     // internal admob request url
     AdmobV2.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
     // get all current user's apps and adunits from server
-    AdmobV2.remoteInventoryUrl = APPODEAL_URL_SSL + "/api/v2/apps_with_ad_units";
+    AdmobV2.remoteInventoryUrl = APPODEAL_API_URL + "/api/v2/apps_with_ad_units";
     // sync local adunits with the server
-    AdmobV2.syncUrl = APPODEAL_URL_SSL + "/api/v2/sync_inventory";
+    AdmobV2.syncUrl = APPODEAL_API_URL + "/api/v2/sync_inventory";
     // internal admob params
     AdmobV2.types = {text: 0, image: 1, video: 2};
     // appodeal ad unit params

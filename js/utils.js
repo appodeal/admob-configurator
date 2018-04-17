@@ -3,8 +3,9 @@ var APPODEAL_URL = "http://www.appodeal.com";
 var APPODEAL_URL_NOT_WWW = "http://appodeal.com";
 var APPODEAL_URL_SSL = "https://www.appodeal.com";
 var APPODEAL_URL_SSL_NOT_WWW = "https://appodeal.com";
+var APPODEAL_API_URL = "https://api.appodeal.com"
 var APPODEAL_URL_SSL_SIGN = APPODEAL_URL_SSL + "/signin";
-var APPODEAL_STATUS_URL = APPODEAL_URL_SSL + "/api/v2/get_api_key";
+var APPODEAL_STATUS_URL = APPODEAL_API_URL + "/api/v2/get_api_key";
 var FAQ_LINK = 'https://github.com/appodeal/admob-configurator/wiki/FAQ';
 var GOOGLE_CLOUD_CONSOLE = 'https://apps.admob.com/logout?continue=https://apps.admob.com/#home';
 var ADMOB_LINK = "https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD";
@@ -121,7 +122,7 @@ function sendLogs(apiKey, userId, mode, part, version, items, callback) {
     var params = JSON.stringify(json);
     $.ajax({
         method: "POST",
-        url: "https://www.appodeal.com/api/v2/save_extension_logs",
+        url: "https://api.appodeal.com/api/v2/save_extension_logs",
         contentType: "application/json",
         dataType: "json",
         data: params
