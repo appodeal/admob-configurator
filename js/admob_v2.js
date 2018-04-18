@@ -1596,7 +1596,7 @@ AdmobV2.prototype.removeOldAdunits = function (callback) {
 AdmobV2.prototype.removeAdunits = function (app, callback) {
     var self = this, adunits = [], localAdunits = []; adunits_ids = [];
     try {
-        if (app.localAdunits) {
+        if (app.localAdunits && app.localAdunits.length > 0) {
             localAdunits = $.grep(self.allAdunits, function (adunit) {
                 return (adunit[2] === app.admob_app_id && adunit[9] === 0);
             });
