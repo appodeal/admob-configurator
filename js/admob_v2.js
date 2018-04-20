@@ -1625,6 +1625,8 @@ AdmobV2.prototype.removeAdunits = function (app, callback) {
                     console.log('Removed old adunits -> ' + adunits_ids);
                     callback();
                 });
+            } else {
+                callback();
             }
         } else {
             callback();
