@@ -1,7 +1,5 @@
-var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
-    console.log("Initialize admob" + " (" + userId + ", " + apiKey + ", " + publisherId + ", " + accountEmail + ")");
+var AdmobV2 = function (apiKey, publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
     this.airbrake = airbrake;
-    this.userId = userId;
     this.apiKey = apiKey;
     this.publisherId = publisherId;
     this.accountEmail = accountEmail;
@@ -777,11 +775,7 @@ AdmobV2.prototype.getRemoteInventory = function (callback) {
     var self = this, json = {};
     try {
         console.log("Get remote inventory");
-        if (self.accounts.length >= 2) {
-            json = {user_id: self.userId, api_key: self.apiKey, account: self.publisherId};
-        } else {
-            json = {user_id: self.userId, api_key: self.apiKey};
-        }
+        json = {api_key: self.apiKey, account: self.publisherId};
         $.get(AdmobV2.remoteInventoryUrl, json)
             .done(function (data) {
                 self.inventory = data.applications;
@@ -1222,7 +1216,6 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
                             "x-framework-xsrf-token": self.token
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
-                            console.log('UserID' + self.user_id);
                             console.log(ar);
                             if (jqXHR.status === 500) {
                                 self.showErrorDialog('Internal error: ' + jQuery.parseJSON(jqXHR.responseText));
@@ -1303,8 +1296,6 @@ AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeM
                             "x-framework-xsrf-token": self.token
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
-                            console.log('UserID' + self.user_id);
-                            console.log(ar);
                             if (jqXHR.status === 500) {
                                 self.showErrorDialog('Internal error: ' + jQuery.parseJSON(jqXHR.responseText));
                             } else {
@@ -1338,7 +1329,7 @@ AdmobV2.prototype.GetCountOS = function (data, self, callback) {
 
 // send information about local apps and adunits to the server
 AdmobV2.prototype.syncWithServer = function (apps, callback) {
-    var self = this, params = {account: this.accountId, api_key: this.apiKey, user_id: this.userId, apps: []};
+    var self = this, params = {account: this.accountId, api_key: this.apiKey, apps: []};
     try {
         self.report = [];
         if (apps) {
@@ -1542,7 +1533,7 @@ AdmobV2.prototype.sendReports = function (params, items, callback) {
             }
             return h;
         });
-        sendLogs(self.apiKey, self.userId, params.mode, 3, self.version, reportItems, function () {
+        sendLogs(self.apiKey, params.mode, 3, self.version, reportItems, function () {
             callback();
         })
     } catch (err) {
