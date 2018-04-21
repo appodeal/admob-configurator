@@ -110,15 +110,8 @@ function waitForElement(selector, numberRequests, callback) {
 }
 
 // base send logs
-function sendLogs(apiKey, userId, mode, part, version, items, callback) {
-    var json = {
-        "api_key": apiKey,
-        "user_id": userId,
-        "part": part,
-        "mode": mode,
-        "version": version,
-        "items": items
-    };
+function sendLogs(apiKey, mode, part, version, items, callback) {
+    var json = {"api_key": apiKey, "part": part, "mode": mode, "version": version, "items": items};
     var params = JSON.stringify(json);
     $.ajax({
         method: "POST",
@@ -142,13 +135,11 @@ function sendOut(mode, report) {
     console.log(report);
     chrome.storage.local.get({
         'appodeal_api_key': null,
-        'appodeal_user_id': null
     }, function (items) {
-        if (items['appodeal_api_key'] && items['appodeal_user_id']) {
+        if (items['appodeal_api_key']) {
             var apiKey = items['appodeal_api_key'];
-            var userId = items['appodeal_user_id'];
             var version = extensionVersion();
-            sendLogs(apiKey, userId, mode, 2, version, [{content: report}])
+            sendLogs(apiKey, mode, 2, version, [{content: report}])
         }
     });
 }
