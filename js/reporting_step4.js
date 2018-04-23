@@ -91,26 +91,21 @@ ReportingStepFourController = (function () {
         }), 1000);
     };
     checkAndSaveClientCredentials = function (clientId, clientSecret) {
-        var account_id, appodeal_api_key, appodeal_user_id, message, webClientLink;
+        var account_id, appodeal_api_key, message, webClientLink;
         if (clientId && clientSecret) {
             chrome.storage.local.set({
                 'client_secret': clientSecret,
                 'client_id': clientId
             });
             appodeal_api_key = null;
-            appodeal_user_id = null;
             account_id = null;
             chrome.storage.local.get({
                 'current_account_id': null,
-                'appodeal_api_key': null,
-                'appodeal_user_id': null
+                'appodeal_api_key': null
             }, function (items) {
-                console.log(items);
                 appodeal_api_key = items['appodeal_api_key'];
-                appodeal_user_id = items['appodeal_user_id'];
                 account_id = items['current_account_id'];
-                console.log(JSON.stringify(items));
-                addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key, appodeal_user_id);
+                addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key);
             });
         } else if (clientId) {
             console.log('Credential client_id found, but client_secret not found. Try to reset.');
@@ -128,7 +123,6 @@ ReportingStepFourController = (function () {
         console.log('fetchCredentials');
         getIdAndSecret(download_links, function (credential) {
             console.log('Credentials fetched');
-            console.log(JSON.stringify(credential));
             if (credential.id && credential.secret) {
                 checkAndSaveClientCredentials(credential['id'], credential['secret']);
             } else {
@@ -136,7 +130,7 @@ ReportingStepFourController = (function () {
             }
         });
     };
-    addAdmobAccount = function (clientId, clientSecret, account_id, appodeal_api_key, appodeal_user_id) {
+    addAdmobAccount = function (clientId, clientSecret, account_id, appodeal_api_key) {
         chrome.storage.local.get({
             'email_credentials': null
         }, function (items) {
@@ -156,10 +150,8 @@ ReportingStepFourController = (function () {
                     'client_id': clientId,
                     'client_secret': clientSecret,
                     'account_id': account_id,
-                    'api_key': appodeal_api_key,
-                    'user_id': appodeal_user_id
+                    'api_key': appodeal_api_key
                 };
-                console.log(JSON.stringify(json));
                 modal.show('Appodeal Chrome Extension', 'Please grant permission to Appodeal to read your Admob reports.<br>You will be automatically redirected in 5 seconds.');
             } catch (err) {
                 airbrake.error.notify(err);
