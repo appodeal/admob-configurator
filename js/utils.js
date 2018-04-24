@@ -115,11 +115,7 @@ function sendLogs(apiKey, mode, part, version, items, callback) {
     var params = JSON.stringify(json);
     $.ajax({
         method: "POST",
-<<<<<<< HEAD
         url: "https://www.appodeal.com/admob_plugin/api/v1/save_extension_logs",
-=======
-        url: "https://api.appodeal.com/api/v2/save_extension_logs",
->>>>>>> b359ab66ee62b8ae15dd690f2034dad8b2ed6e14
         contentType: "application/json",
         dataType: "json",
         data: params
