@@ -13,6 +13,7 @@ var ADMOB_LOGOUT = 'https://accounts.google.com/AddSession?hl=en&continue=' + AD
 var GOOGLE_CLOUD_CONSOLE_CREDENTIAL = 'https://console.developers.google.com/projectselector/apis/credentials';
 var REDIRECT_URI = APPODEAL_URL_SSL + "/admin/oauth2callback";
 var airbrake, projectId = null, projectKey = null, logs = [];
+var compareVersions = require('compare-versions');
 
 chrome.storage.local.get({
     'airbrake_js': null

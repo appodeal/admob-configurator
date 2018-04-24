@@ -27,7 +27,7 @@ AdUnitController = (function () {
                 if (items['appodeal_api_key'] && items['appodeal_admob_account_publisher_id']) {
                     currentVersion = extensionVersion();
                     criticalVersion = items.plugin_critical_version;
-                    if (criticalVersion && (currentVersion >= criticalVersion)) {
+                    if (criticalVersion && compareVersions(currentVersion, criticalVersion) >= 0) {
                         if (window.location.href.match(/apps\.admob\.com\/v2/)) {
                             //New version Admob from 18.05.2017
                             admob = new AdmobV2(

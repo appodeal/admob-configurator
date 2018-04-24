@@ -301,8 +301,9 @@ LoadController = (function() {
     $('#return_link').click(return_link);
     $('#faq_link').click(faq_link);
   };
+
   checking_plugin_version = function(items) {
-    if (extensionVersion() < items.plugin_critical_version) {
+    if (compareVersions(items.plugin_critical_version, extensionVersion()) == 1) {
       chrome.runtime.sendMessage({
         type: "update_plugin",
         info: 'Please update Chrome extension to version ' + items.plugin_critical_version,

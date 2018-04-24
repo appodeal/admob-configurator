@@ -27,6 +27,7 @@
       "js": [
         "js/vendor/jquery.min.js",
         "js/vendor/node_modules/airbrake-js/dist/client.js",
+        "js/bundle.js",
         "js/airbrake.js",
         "js/utils.js",
         "js/login.js"
@@ -39,6 +40,7 @@
       "js": [
         "js/vendor/jquery.min.js",
         "js/vendor/node_modules/airbrake-js/dist/client.js",
+        "js/bundle.js",
         "js/airbrake.js",
         "js/utils.js",
         "js/modal.js"
@@ -54,6 +56,7 @@
       "js": [
         "js/vendor/jquery.min.js",
         "js/vendor/node_modules/airbrake-js/dist/client.js",
+        "js/bundle.js",
         "js/airbrake.js",
         "js/utils.js",
         "js/adunits.js",
@@ -71,6 +74,7 @@
     "scripts": [
       "js/vendor/jquery.min.js",
       "js/vendor/node_modules/airbrake-js/dist/client.js",
+      "js/bundle.js",
       "js/airbrake.js",
       "js/utils.js",
       "js/bg.js"
