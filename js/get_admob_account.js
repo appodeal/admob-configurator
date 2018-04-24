@@ -24,7 +24,7 @@ AdmobAccountController = (function () {
                 setInterval(function () {
                     modal.show('Appodeal Chrome Extension', "Checking Admob account.");
                     try {
-                        if (!criticalVersion || currentVersion >= criticalVersion) {
+                        if (!criticalVersion || compareVersions(currentVersion, criticalVersion) >= 0) {
                             console.log('Get admob account id.');
                             admob_account_id = /pub-\d+/.exec(document.documentElement.innerHTML);
                             if (admob_account_id) {
