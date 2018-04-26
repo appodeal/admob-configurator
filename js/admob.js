@@ -1,6 +1,5 @@
-var Admob = function (apiKey, publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
+var Admob = function (publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
     this.airbrake = airbrake;
-    this.apiKey = apiKey;
     this.publisherId = publisherId;
     this.accountEmail = accountEmail;
     this.accounts = accounts;
@@ -560,7 +559,7 @@ Admob.prototype.getRemoteInventory = function (callback) {
     var json = {};
     console.log("Get remote inventory");
     var self = this;
-    json = {api_key: self.apiKey, account: self.publisherId};
+    json = {account: self.publisherId};
     $.get(Admob.remoteInventoryUrl, json)
         .done(function (data) {
             self.inventory = data.applications;
@@ -783,7 +782,7 @@ Admob.prototype.createAdunits = function (app, callback) {
 Admob.prototype.syncWithServer = function (app, callback) {
     var self = this;
     // make an array of new and different adunits
-    var params = { account: self.accountId, api_key: self.apiKey, apps: []};
+    var params = { account: self.accountId, apps: []};
     var h = {id: app.id, name: app.localApp[2], admob_app_id: app.localApp[1], adunits: self.newAdunitsForServer(app)};
     if (h.admob_app_id !== app.admob_app_id || h.adunits.length) {
         params.apps.push(h);
@@ -1051,7 +1050,7 @@ Admob.prototype.sendReports = function (params, items, callback) {
         }
         return h;
     });
-    sendLogs(self.apiKey, params.mode, 3, self.version, reportItems, function () {
+    sendLogs(params.mode, 3, self.version, reportItems, function () {
         callback();
     })
 };

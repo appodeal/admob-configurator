@@ -1,6 +1,5 @@
-var AdmobV2 = function (apiKey, publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
+var AdmobV2 = function (publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
     this.airbrake = airbrake;
-    this.apiKey = apiKey;
     this.publisherId = publisherId;
     this.accountEmail = accountEmail;
     this.accounts = accounts;
@@ -775,7 +774,7 @@ AdmobV2.prototype.getRemoteInventory = function (callback) {
     var self = this, json = {};
     try {
         console.log("Get remote inventory");
-        json = {api_key: self.apiKey, account: self.publisherId};
+        json = {account: self.publisherId};
         $.get(AdmobV2.remoteInventoryUrl, json)
             .done(function (data) {
                 self.inventory = data.applications;
@@ -1329,7 +1328,7 @@ AdmobV2.prototype.GetCountOS = function (data, self, callback) {
 
 // send information about local apps and adunits to the server
 AdmobV2.prototype.syncWithServer = function (apps, callback) {
-    var self = this, params = {account: this.accountId, api_key: this.apiKey, apps: []};
+    var self = this, params = {account: this.accountId, apps: []};
     try {
         self.report = [];
         if (apps) {
@@ -1533,7 +1532,7 @@ AdmobV2.prototype.sendReports = function (params, items, callback) {
             }
             return h;
         });
-        sendLogs(self.apiKey, params.mode, 3, self.version, reportItems, function () {
+        sendLogs(params.mode, 3, self.version, reportItems, function () {
             callback();
         })
     } catch (err) {

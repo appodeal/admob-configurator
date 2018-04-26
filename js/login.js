@@ -1,20 +1,19 @@
 ﻿var LoginController;
 
 LoginController = (function () {
-    var initOtherLibrary, findEmailAndApiKey;
+    var initOtherLibrary, findEmail;
     initOtherLibrary = function () {};
-    findEmailAndApiKey = function () {
+    findEmail = function () {
         var user, appodeal_email;
         try {
             user = $('.welcome a, .user span');
             if (user.length) {
                 appodeal_email = user.text();
                 chrome.storage.local.get({
-                    'appodeal_email': null,
-                    'appodeal_api_key': null
+                    'appodeal_email': null
                 }, function (items) {
                     if (appodeal_email !== items['appodeal_email']) {
-                        chrome.storage.local.remove(['appodeal_email', 'appodeal_api_key'], function (items) {
+                        chrome.storage.local.remove('appodeal_email', function (items) {
                             var data = {'appodeal_email': appodeal_email};
                             chrome.storage.local.set(data);
                             console.log("You have successfully logged in (Appodeal Chrome Extension).")
@@ -22,7 +21,7 @@ LoginController = (function () {
                     }
                 })
             } else {
-                chrome.storage.local.remove(['appodeal_email', 'appodeal_api_key'])
+                chrome.storage.local.remove('appodeal_email')
             }
         } catch (err) {
             airbrake.error.notify(err)
@@ -31,7 +30,7 @@ LoginController = (function () {
     return {
         init: function () {
             initOtherLibrary();
-            findEmailAndApiKey();
+            findEmail();
         }
     };
 })();

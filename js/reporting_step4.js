@@ -91,21 +91,18 @@ ReportingStepFourController = (function () {
         }), 1000);
     };
     checkAndSaveClientCredentials = function (clientId, clientSecret) {
-        var account_id, appodeal_api_key, message, webClientLink;
+        var account_id, message, webClientLink;
         if (clientId && clientSecret) {
             chrome.storage.local.set({
                 'client_secret': clientSecret,
                 'client_id': clientId
             });
-            appodeal_api_key = null;
             account_id = null;
             chrome.storage.local.get({
-                'current_account_id': null,
-                'appodeal_api_key': null
+                'current_account_id': null
             }, function (items) {
-                appodeal_api_key = items['appodeal_api_key'];
                 account_id = items['current_account_id'];
-                addAdmobAccount(clientId, clientSecret, account_id, appodeal_api_key);
+                addAdmobAccount(clientId, clientSecret, account_id);
             });
         } else if (clientId) {
             console.log('Credential client_id found, but client_secret not found. Try to reset.');
@@ -130,7 +127,7 @@ ReportingStepFourController = (function () {
             }
         });
     };
-    addAdmobAccount = function (clientId, clientSecret, account_id, appodeal_api_key) {
+    addAdmobAccount = function (clientId, clientSecret, account_id) {
         chrome.storage.local.get({
             'email_credentials': null
         }, function (items) {
@@ -149,8 +146,7 @@ ReportingStepFourController = (function () {
                     'email': email,
                     'client_id': clientId,
                     'client_secret': clientSecret,
-                    'account_id': account_id,
-                    'api_key': appodeal_api_key
+                    'account_id': account_id
                 };
                 modal.show('Appodeal Chrome Extension', 'Please grant permission to Appodeal to read your Admob reports.<br>You will be automatically redirected in 5 seconds.');
             } catch (err) {

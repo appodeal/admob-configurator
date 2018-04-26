@@ -129,7 +129,6 @@ LoadController = (function() {
     console.log('storage_local_get');
     chrome.storage.local.get({
       'appodeal_email': null,
-      'appodeal_api_key': null,
       'appodeal_admob_account_id': null
     }, function(items) {
       console.log(items);
@@ -140,11 +139,6 @@ LoadController = (function() {
   };
   updateAppodealCredentials = function(result, callback) {
     localCredentials = {};
-    if (result['api_key']) {
-      localCredentials['appodeal_api_key'] = result['api_key'];
-    } else {
-      chrome.storage.local.remove('appodeal_api_key');
-    }
     if (result['plugin_status']['account']) {
       localCredentials['appodeal_admob_account_id'] = result['plugin_status']['account'];
     } else {
