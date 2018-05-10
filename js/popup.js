@@ -273,6 +273,9 @@ LoadController = (function() {
               $('#reporting_link').click(reporting_link);
               return null;
             }
+            if (data['many_user_admob_accounts']['ad_units_limit_reached'].length > 0) {
+              alert('You have reached ad units limit for AdMob Accounts: ' + data['many_user_admob_accounts']['ad_units_limit_reached']);       
+            }
             if (leftNum) {
               addCountApps($('#admob'), leftNum);
             } else if (data['total']) {
@@ -280,6 +283,7 @@ LoadController = (function() {
             } else {
               addNoApps($('#admob'));
             }
+
             $('#reporting_link').click(reporting_link);
             $('#admob_link').click(admob_link);
           });
