@@ -324,7 +324,7 @@ Admob.prototype.isPublisherIdRight = function () {
 Admob.prototype.defaultAppName = function (app) {
     var self = this;
     var maxLength = 80;
-    var name = 'Appodeal/' + app.id + "/" + app.appName;
+    var name = 'Appodeal/' + app.id + "/" + app.app_name;
     return name.substring(0, maxLength);
 };
 
@@ -627,7 +627,7 @@ Admob.prototype.mapApps = function (callback) {
                 }
                 // move local app to inventory array
                 if (mappedLocalApp) {
-                    console.log(remoteApp.appName + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
+                    console.log(remoteApp.app_name + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
                     var localAppIndex = $.inArray(mappedLocalApp, self.localApps);
                     if (localAppIndex > -1) {
                         self.localApps.splice(localAppIndex, 1);
@@ -801,7 +801,7 @@ Admob.prototype.syncWithServer = function (app, callback) {
             self.sendReports({
                 mode: 0
             }, [items.join("/n")], function () {
-                console.log("Sent reports from " + app.appName);
+                console.log("Sent reports from " + app.app_name);
             });
             callback(params);
         })
