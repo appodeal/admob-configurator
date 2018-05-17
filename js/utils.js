@@ -3,9 +3,9 @@ var APPODEAL_URL = "http://www.appodeal.com";
 var APPODEAL_URL_NOT_WWW = "http://appodeal.com";
 var APPODEAL_URL_SSL = "https://www.appodeal.com";
 var APPODEAL_URL_SSL_NOT_WWW = "https://appodeal.com";
-var APPODEAL_API_URL = "https://api.appodeal.com"
+var APPODEAL_API_URL = "https://api.appodeal.com";
 var APPODEAL_URL_SSL_SIGN = APPODEAL_URL_SSL + "/signin";
-var APPODEAL_STATUS_URL = APPODEAL_API_URL + "/api/v2/get_api_key";
+var APPODEAL_STATUS_URL = APPODEAL_API_URL + "/admob_plugin/api/v1/appodeal_credentials";
 var FAQ_LINK = 'https://github.com/appodeal/admob-configurator/wiki/FAQ';
 var GOOGLE_CLOUD_CONSOLE = 'https://apps.admob.com/logout?continue=https://apps.admob.com/#home';
 var ADMOB_LINK = "https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD";
@@ -111,19 +111,12 @@ function waitForElement(selector, numberRequests, callback) {
 }
 
 // base send logs
-function sendLogs(apiKey, userId, mode, part, version, items, callback) {
-    var json = {
-        "api_key": apiKey,
-        "user_id": userId,
-        "part": part,
-        "mode": mode,
-        "version": version,
-        "items": items
-    };
+function sendLogs(mode, part, version, items, callback) {
+    var json = {"part": part, "mode": mode, "version": version, "items": items};
     var params = JSON.stringify(json);
     $.ajax({
         method: "POST",
-        url: "https://api.appodeal.com/api/v2/save_extension_logs",
+        url: "https://api.appodeal.com/admob_plugin/api/v1/save_extension_logs",
         contentType: "application/json",
         dataType: "json",
         data: params
@@ -141,17 +134,8 @@ function sendLogs(apiKey, userId, mode, part, version, items, callback) {
 // handy way to send logs from step 2 (items: chrome.storage, reports: array of strings)
 function sendOut(mode, report) {
     console.log(report);
-    chrome.storage.local.get({
-        'appodeal_api_key': null,
-        'appodeal_user_id': null
-    }, function (items) {
-        if (items['appodeal_api_key'] && items['appodeal_user_id']) {
-            var apiKey = items['appodeal_api_key'];
-            var userId = items['appodeal_user_id'];
-            var version = extensionVersion();
-            sendLogs(apiKey, userId, mode, 2, version, [{content: report}])
-        }
-    });
+    var version = extensionVersion();
+    sendLogs(mode, 2, version, [{content: report}]);
 }
 
 // hash with the latest critical updates for 2 and 3 steps

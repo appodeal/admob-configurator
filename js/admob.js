@@ -1,17 +1,14 @@
-var Admob = function (userId, apiKey, publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
-    console.log("Initialize admob" + " (" + userId + ", " + apiKey + ", " + publisherId + ", " + accountEmail + ")");
+var Admob = function (publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
     this.airbrake = airbrake;
-    this.userId = userId;
-    this.apiKey = apiKey;
     this.publisherId = publisherId;
     this.accountEmail = accountEmail;
     this.accounts = accounts;
     // internal admob request url
     Admob.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
     // get all current user's apps and adunits from server
-    Admob.remoteInventoryUrl = APPODEAL_API_URL + "/api/v2/apps_with_ad_units";
+    Admob.remoteInventoryUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/apps_with_ad_units";
     // sync local adunits with the server
-    Admob.syncUrl = APPODEAL_API_URL + "/api/v2/sync_inventory";
+    Admob.syncUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/sync_inventory";
     // internal admob params
     Admob.types = {text: 0, image: 1, video: 2};
     // appodeal ad unit params
@@ -327,7 +324,7 @@ Admob.prototype.isPublisherIdRight = function () {
 Admob.prototype.defaultAppName = function (app) {
     var self = this;
     var maxLength = 80;
-    var name = 'Appodeal/' + app.id + "/" + app.appName;
+    var name = 'Appodeal/' + app.id + "/" + app.app_name;
     return name.substring(0, maxLength);
 };
 
@@ -562,18 +559,7 @@ Admob.prototype.getRemoteInventory = function (callback) {
     var json = {};
     console.log("Get remote inventory");
     var self = this;
-    if (self.accounts.length >= 2) {
-        json = {
-            user_id: self.userId,
-            api_key: self.apiKey,
-            account: self.publisherId
-        };
-    } else {
-        json = {
-            user_id: self.userId,
-            api_key: self.apiKey
-        };
-    }
+    json = {account: self.publisherId};
     $.get(Admob.remoteInventoryUrl, json)
         .done(function (data) {
             self.inventory = data.applications;
@@ -641,7 +627,7 @@ Admob.prototype.mapApps = function (callback) {
                 }
                 // move local app to inventory array
                 if (mappedLocalApp) {
-                    console.log(remoteApp.appName + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
+                    console.log(remoteApp.app_name + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
                     var localAppIndex = $.inArray(mappedLocalApp, self.localApps);
                     if (localAppIndex > -1) {
                         self.localApps.splice(localAppIndex, 1);
@@ -796,18 +782,8 @@ Admob.prototype.createAdunits = function (app, callback) {
 Admob.prototype.syncWithServer = function (app, callback) {
     var self = this;
     // make an array of new and different adunits
-    var params = {
-        account: self.accountId,
-        api_key: self.apiKey,
-        user_id: self.userId,
-        apps: []
-    };
-    var h = {
-        id: app.id,
-        name: app.localApp[2],
-        admob_app_id: app.localApp[1],
-        adunits: self.newAdunitsForServer(app)
-    };
+    var params = { account: self.accountId, apps: []};
+    var h = {id: app.id, name: app.localApp[2], admob_app_id: app.localApp[1], adunits: self.newAdunitsForServer(app)};
     if (h.admob_app_id !== app.admob_app_id || h.adunits.length) {
         params.apps.push(h);
     }
@@ -825,7 +801,7 @@ Admob.prototype.syncWithServer = function (app, callback) {
             self.sendReports({
                 mode: 0
             }, [items.join("/n")], function () {
-                console.log("Sent reports from " + app.appName);
+                console.log("Sent reports from " + app.app_name);
             });
             callback(params);
         })
@@ -1074,7 +1050,7 @@ Admob.prototype.sendReports = function (params, items, callback) {
         }
         return h;
     });
-    sendLogs(self.apiKey, self.userId, params.mode, 3, self.version, reportItems, function () {
+    sendLogs(params.mode, 3, self.version, reportItems, function () {
         callback();
     })
 };

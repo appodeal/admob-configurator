@@ -1,8 +1,5 @@
-var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
-    console.log("Initialize admob" + " (" + userId + ", " + apiKey + ", " + publisherId + ", " + accountEmail + ")");
+var AdmobV2 = function (publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
     this.airbrake = airbrake;
-    this.userId = userId;
-    this.apiKey = apiKey;
     this.publisherId = publisherId;
     this.accountEmail = accountEmail;
     this.accounts = accounts;
@@ -10,9 +7,9 @@ var AdmobV2 = function (userId, apiKey, publisherId, accountEmail, accounts, int
     // internal admob request url
     AdmobV2.inventoryUrl = "https://apps.admob.com/tlcgwt/inventory";
     // get all current user's apps and adunits from server
-    AdmobV2.remoteInventoryUrl = APPODEAL_API_URL + "/api/v2/apps_with_ad_units";
+    AdmobV2.remoteInventoryUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/apps_with_ad_units";
     // sync local adunits with the server
-    AdmobV2.syncUrl = APPODEAL_API_URL + "/api/v2/sync_inventory";
+    AdmobV2.syncUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/sync_inventory";
     // internal admob params
     AdmobV2.types = {text: 0, image: 1, video: 2};
     // appodeal ad unit params
@@ -161,6 +158,13 @@ AdmobV2.prototype.showErrorDialog = function (content) {
         note: "json"
     }, [serializedAdmob], function () {
     });
+    throw new Error(message);
+};
+
+AdmobV2.prototype.showLimitWarning = function (content) {
+    var self = this, message;
+    message = "<h4>" + content + "</h4>";
+    self.modal.show("Appodeal Chrome Extension", message);
     throw new Error(message);
 };
 
@@ -407,7 +411,7 @@ AdmobV2.prototype.defaultAppName = function (app) {
     var self = this;
     try {
         var maxLength = 80;
-        var name = 'Appodeal/' + app.id + "/" + app.appName;
+        var name = 'Appodeal/' + app.id + "/" + app.app_name;
         return name.substring(0, maxLength);
     } catch (err) {
         self.airbrake.error.notify(err);
@@ -777,11 +781,7 @@ AdmobV2.prototype.getRemoteInventory = function (callback) {
     var self = this, json = {};
     try {
         console.log("Get remote inventory");
-        if (self.accounts.length >= 2) {
-            json = {user_id: self.userId, api_key: self.apiKey, account: self.publisherId};
-        } else {
-            json = {user_id: self.userId, api_key: self.apiKey};
-        }
+        json = {account: self.publisherId};
         $.get(AdmobV2.remoteInventoryUrl, json)
             .done(function (data) {
                 self.inventory = data.applications;
@@ -812,11 +812,22 @@ AdmobV2.prototype.getLocalInventory = function (callback) {
         }, function (data) {
             self.localApps = data.result[1][1];
             self.localAdunits = data.result[1][2];
+            self.checkLimits();
             self.allAdunits = data.result[1][2];
             callback(data.result);
         })
     } catch (err) {
         self.airbrake.error.notify(err);
+    }
+};
+
+AdmobV2.prototype.checkLimits = function () {
+    var self = this;
+    self.selectLocalActiveApps();
+    self.selectLocalActiveAdunits();
+    if (self.localActiveApps.length > 9999 || self.localActiveAdunits.length > 19999) {
+        console.log('You have reached Admob limit, apps count: ' + self.localActiveApps.length + ' adunits count: ' + self.localActiveAdunits.length);
+        self.showLimitWarning('You have reached Admob limit, apps count: ' + self.localActiveApps.length + ' adunits count: ' + self.localActiveAdunits.length);
     }
 };
 
@@ -849,7 +860,7 @@ AdmobV2.prototype.mapApps = function (callback) {
                     }
                     // move local app to inventory array
                     if (mappedLocalApp) {
-                        console.log(remoteApp.appName + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
+                        console.log(remoteApp.app_name + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
                         localAppIndex = $.inArray(mappedLocalApp, self.localApps);
                         if (localAppIndex > -1) {
                             self.localApps.splice(localAppIndex, 1);
@@ -893,6 +904,34 @@ AdmobV2.prototype.filterHiddenLocalApps = function () {
         if (self.localApps) {
             self.localApps = $.grep(self.localApps, function (localApp, i) {
                 return (localApp[19] === 0);
+            });
+        }
+    } catch (err) {
+        self.airbrake.error.notify(err);
+    }
+};
+
+AdmobV2.prototype.selectLocalActiveApps = function () {
+    var self = this;
+    try {
+        console.log("Select active local apps");
+        if (self.localApps) {
+            self.localActiveApps = $.grep(self.localApps, function (localApp, i) {
+                return (localApp[19] === 0);
+            });
+        }
+    } catch (err) {
+        self.airbrake.error.notify(err);
+    }
+};
+
+AdmobV2.prototype.selectLocalActiveAdunits = function () {
+    var self = this;
+    try {
+        console.log("Select active ad units");
+        if (self.localAdunits) {
+            self.localActiveAdunits = $.grep(self.localAdunits, function (adunit, i) {
+                return (adunit[9] !== 1);
             });
         }
     } catch (err) {
@@ -1222,7 +1261,6 @@ AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeM
                             "x-framework-xsrf-token": self.token
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
-                            console.log('UserID' + self.user_id);
                             console.log(ar);
                             if (jqXHR.status === 500) {
                                 self.showErrorDialog('Internal error: ' + jQuery.parseJSON(jqXHR.responseText));
@@ -1303,8 +1341,6 @@ AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeM
                             "x-framework-xsrf-token": self.token
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
-                            console.log('UserID' + self.user_id);
-                            console.log(ar);
                             if (jqXHR.status === 500) {
                                 self.showErrorDialog('Internal error: ' + jQuery.parseJSON(jqXHR.responseText));
                             } else {
@@ -1338,7 +1374,7 @@ AdmobV2.prototype.GetCountOS = function (data, self, callback) {
 
 // send information about local apps and adunits to the server
 AdmobV2.prototype.syncWithServer = function (apps, callback) {
-    var self = this, params = {account: this.accountId, api_key: this.apiKey, user_id: this.userId, apps: []};
+    var self = this, params = {account: this.accountId, apps: []};
     try {
         self.report = [];
         if (apps) {
@@ -1542,7 +1578,7 @@ AdmobV2.prototype.sendReports = function (params, items, callback) {
             }
             return h;
         });
-        sendLogs(self.apiKey, self.userId, params.mode, 3, self.version, reportItems, function () {
+        sendLogs(params.mode, 3, self.version, reportItems, function () {
             callback();
         })
     } catch (err) {

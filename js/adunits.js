@@ -12,10 +12,8 @@ AdUnitController = (function () {
     startInventorySync = function () {
         var admob, criticalVersion, currentVersion, message;
         try {
-            // get api key and user id from storage and sync inventory
+            // get user id from storage and sync inventory
             chrome.storage.local.get({
-                'appodeal_api_key': null,
-                'appodeal_user_id': null,
                 'appodeal_admob_account_publisher_id': null,
                 'appodeal_admob_account_email': null,
                 'accounts': null,
@@ -25,15 +23,13 @@ AdUnitController = (function () {
                 'rewarded_videoBids': null,
                 'plugin_critical_version': null
             }, function (items) {
-                if (items['appodeal_api_key'] && items['appodeal_user_id'] && items['appodeal_admob_account_publisher_id']) {
+                if (items['appodeal_admob_account_publisher_id']) {
                     currentVersion = extensionVersion();
                     criticalVersion = items.plugin_critical_version;
                     if (criticalVersion && compareVersions(currentVersion, criticalVersion) >= 0) {
                         if (window.location.href.match(/apps\.admob\.com\/v2/)) {
                             //New version Admob from 18.05.2017
                             admob = new AdmobV2(
-                                items['appodeal_user_id'],
-                                items['appodeal_api_key'],
                                 items['appodeal_admob_account_publisher_id'],
                                 items['appodeal_admob_account_email'],
                                 items['accounts'],
@@ -45,8 +41,6 @@ AdUnitController = (function () {
                         } else {
                             //Old version Admob
                             admob = new Admob(
-                                items['appodeal_user_id'],
-                                items['appodeal_api_key'],
                                 items['appodeal_admob_account_publisher_id'],
                                 items['appodeal_admob_account_email'],
                                 items['accounts'],
