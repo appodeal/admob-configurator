@@ -161,6 +161,13 @@ AdmobV2.prototype.showErrorDialog = function (content) {
     throw new Error(message);
 };
 
+AdmobV2.prototype.showLimitWarning = function (content) {
+    var self = this, message;
+    message = "<h4>" + content + "</h4>";
+    self.modal.show("Appodeal Chrome Extension", message);
+    throw new Error(message);
+};
+
 // show information modal window
 AdmobV2.prototype.showInfoDialog = function (content) {
     var self = this;
@@ -805,11 +812,22 @@ AdmobV2.prototype.getLocalInventory = function (callback) {
         }, function (data) {
             self.localApps = data.result[1][1];
             self.localAdunits = data.result[1][2];
+            self.checkLimits();
             self.allAdunits = data.result[1][2];
             callback(data.result);
         })
     } catch (err) {
         self.airbrake.error.notify(err);
+    }
+};
+
+AdmobV2.prototype.checkLimits = function () {
+    var self = this;
+    self.selectLocalActiveApps();
+    self.selectLocalActiveAdunits();
+    if (self.localActiveApps.length > 9999 || self.localActiveAdunits.length > 19999) {
+        console.log('You have reached Admob limit, apps count: ' + self.localActiveApps.length + ' adunits count: ' + self.localActiveAdunits.length);
+        self.showLimitWarning('You have reached Admob limit, apps count: ' + self.localActiveApps.length + ' adunits count: ' + self.localActiveAdunits.length);
     }
 };
 
@@ -886,6 +904,34 @@ AdmobV2.prototype.filterHiddenLocalApps = function () {
         if (self.localApps) {
             self.localApps = $.grep(self.localApps, function (localApp, i) {
                 return (localApp[19] === 0);
+            });
+        }
+    } catch (err) {
+        self.airbrake.error.notify(err);
+    }
+};
+
+AdmobV2.prototype.selectLocalActiveApps = function () {
+    var self = this;
+    try {
+        console.log("Select active local apps");
+        if (self.localApps) {
+            self.localActiveApps = $.grep(self.localApps, function (localApp, i) {
+                return (localApp[19] === 0);
+            });
+        }
+    } catch (err) {
+        self.airbrake.error.notify(err);
+    }
+};
+
+AdmobV2.prototype.selectLocalActiveAdunits = function () {
+    var self = this;
+    try {
+        console.log("Select active ad units");
+        if (self.localAdunits) {
+            self.localActiveAdunits = $.grep(self.localAdunits, function (adunit, i) {
+                return (adunit[9] !== 1);
             });
         }
     } catch (err) {
