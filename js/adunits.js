@@ -30,13 +30,7 @@ AdUnitController = (function () {
                         if (window.location.href.match(/apps\.admob\.com\/v2/)) {
                             //New version Admob from 18.05.2017
                             admob = new AdmobV2(
-                                items['appodeal_admob_account_publisher_id'],
-                                items['appodeal_admob_account_email'],
-                                items['accounts'],
-                                items['interstitialBids'],
-                                items['bannerBids'],
-                                items['mrecBids'],
-                                items['rewarded_videoBids']
+                                items['appodeal_admob_account_publisher_id']
                             );
                         } else {
                             //Old version Admob
