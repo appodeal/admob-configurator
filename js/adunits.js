@@ -17,10 +17,6 @@ AdUnitController = (function () {
                 'appodeal_admob_account_publisher_id': null,
                 'appodeal_admob_account_email': null,
                 'accounts': null,
-                'interstitialBids': null,
-                'bannerBids': null,
-                'mrecBids': null,
-                'rewarded_videoBids': null,
                 'plugin_critical_version': null
             }, function (items) {
                 if (items['appodeal_admob_account_publisher_id']) {
@@ -31,23 +27,18 @@ AdUnitController = (function () {
                             //New version Admob from 18.05.2017
                             admob = new AdmobV2(
                                 items['appodeal_admob_account_publisher_id'],
-                                items['appodeal_admob_account_email'],
-                                items['accounts'],
-                                items['interstitialBids'],
-                                items['bannerBids'],
-                                items['mrecBids'],
-                                items['rewarded_videoBids']
+                                items['accounts']
                             );
                         } else {
                             //Old version Admob
                             admob = new Admob(
                                 items['appodeal_admob_account_publisher_id'],
                                 items['appodeal_admob_account_email'],
-                                items['accounts'],
                                 items['interstitialBids'],
                                 items['bannerBids'],
                                 items['mrecBids'],
-                                items['rewarded_videoBids']
+                                items['rewarded_videoBids'],
+                                items['accounts']
                             );
                         }
                         admob.syncInventory(function () {
