@@ -919,6 +919,8 @@ AdmobV2.prototype.selectLocalActiveApps = function () {
             self.localActiveApps = $.grep(self.localApps, function (localApp, i) {
                 return (localApp[19] === 0);
             });
+        } else {
+          self.localActiveApps = [];
         }
     } catch (err) {
         self.airbrake.error.notify(err);
@@ -933,6 +935,8 @@ AdmobV2.prototype.selectLocalActiveAdunits = function () {
             self.localActiveAdunits = $.grep(self.localAdunits, function (adunit, i) {
                 return (adunit[9] !== 1);
             });
+        } else {
+          self.localActiveAdunits = [];
         }
     } catch (err) {
         self.airbrake.error.notify(err);
