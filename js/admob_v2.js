@@ -7,6 +7,7 @@ var AdmobV2 = function (publisherId, accounts) {
   AdmobV2.syncUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/sync_inventory";
   AdmobV2.appodealAppsUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/apps_with_ad_units";
   AdmobV2.adunitsSchemeUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/adunits_for_admob";
+  AdmobV2.deletedAppsUrl = APPODEAL_API_URL + '/admob_plugin/api/v1/deleted_admob_app_ids';
 
   AdmobV2.prototype.getXsrf = function () {
     var self = this;
@@ -435,6 +436,114 @@ var AdmobV2 = function (publisherId, accounts) {
     });
   };
 
+  AdmobV2.prototype.getDeletedAppIds = function(callback) {
+    var self = this;
+    console.log('Getting removed apps')
+    $.ajax({
+      method: "GET",
+      url: AdmobV2.deletedAppsUrl,
+      data: { account: self.publisherId },
+      async: false
+    })
+      .done(function (data) {
+        if (data.app_ids) {
+          self.deletedAppIds = data.app_ids
+          callback();
+        } else {
+          console.log("Removed apps not found");
+          callback();
+        }
+      })
+      .fail(function (data) {
+        console.log("Failed to get removed apps")
+      });
+  };
+
+  AdmobV2.prototype.removeOldAppsAndAdunits = function(callback) {
+    var self = this;
+    chrome.storage.local.get({
+      'admob_adunits': null,
+      'admob_apps': null
+    }, function(items) {
+      self.deletedApps = [];
+      self.adunitsToDelete = [];
+      self.deletedAppIds.forEach(function (deleted_id) {
+        deletedApp = items['admob_apps'].findByProperty(function(admob_app) {
+          return (deleted_id === admob_app[1])
+        }).element
+        if (deletedApp) {
+          self.deletedApps.push(deleted_id);
+        } else {
+          return;
+        }
+      });
+      self.deletedApps.forEach(function (deleted_app) {
+        deleted_app_adunits = items['admob_adunits'].filter(function (adunit) {
+          return (adunit[2] === deleted_app[1])
+        })
+        if (deleted_app_adunits) {
+          deleted_app_adunits = $.map(deleted_app_adunits, function(adunit) { return adunit[1]; })
+          self.adunitsToDelete = self.adunitsToDelete.concat(deleted_app_adunits)  
+        } else {
+          return;
+        }
+      })
+      console.log('Start hiding removed apps');
+      if (self.deletedApps) {
+        self.hideRemovedApps(self.deletedApps);
+      }
+      if (self.adunitsToDelete) {
+        self.deletedOldAdunits(self.adunitsToDelete);
+      }
+      callback();
+    })
+  };
+
+  AdmobV2.prototype.hideRemovedApps = function(apps_ids) {
+    var self = this;
+    params = {
+      "method": "updateMobileApplicationVisibility",
+      "params": {
+        "2": apps_ids,
+        "3": false
+      },
+      "xsrf": self.token
+    };
+    $.ajax({
+      method: 'POST',
+      url: AdmobV2.admobAppsUrl,
+      data: params,
+      async: false
+    })
+      .done(function (data) {
+        console.log('Finished hiding apps');
+      })
+      .fail(function (data) {
+        console.log("Failed to hide apps")
+      });
+  };
+
+  AdmobV2.prototype.deleteOldAdunits = function (adunits_ids) {
+    var self = this;
+    params = {
+      "method": "archiveInventory",
+      "params": { '3': adunits_ids },
+      "xsrf": self.token
+    };
+    $.ajax({
+      method: "GET",
+      url: AdmobV2.admobAppsUrl,
+      data: params,
+      async: false
+    })
+      .done(function (data) {
+        console.log('Finish removing old adunits');
+      })
+      .fail(function (data) {
+        console.log('Failed to remove old adunits');
+      });
+  };
+
   AdmobV2.prototype.createLocalAdunits = function(callback) {
     var self = this;
     console.log('Start Creating Local Adunits');
@@ -463,7 +572,7 @@ var AdmobV2 = function (publisherId, accounts) {
         self.progressBar = new ProgressBar(self.needCreatedAdunits.length);
         self.needCreatedAdunits.forEach(function(adunit) {
           self.createAdunit(adunit);
-        })
+        });
         console.log('Finished creating adunits')
         callback();
       } else {
@@ -771,29 +880,31 @@ var AdmobV2 = function (publisherId, accounts) {
         }
         self.getAppodealApps(function() {
           self.getAdmobApps(function() {
-            self.selectStoreIds(function() {
-              self.filterApps(function() {
-                self.createMissingApps(function() {
-                  self.linkApps(function() {
-                    self.storeApps(function() {
-                      self.getAdunitsScheme(function() {
-                        self.createLocalAdunits(function() {
-                          self.syncApps(function() {
-                            self.finishDialog();
-                            self.sendReports({
-                              mode: 0,
-                              note: "json"
-                            }, [JSON.stringify({message: "Finish", admob: self})], function () {
-                              console.log("Sent finish inventory report");
+            self.removeOldAppsAndAdunits(function(){
+              self.selectStoreIds(function() {
+                self.filterApps(function() {
+                  self.createMissingApps(function() {
+                    self.linkApps(function() {
+                      self.storeApps(function() {
+                        self.getAdunitsScheme(function() {
+                          self.createLocalAdunits(function() {
+                            self.syncApps(function() {
+                              self.finishDialog();
+                              self.sendReports({
+                                mode: 0,
+                                note: "json"
+                              }, [JSON.stringify({message: "Finish", admob: self})], function () {
+                                console.log("Sent finish inventory report");
+                              });
                             });
                           });
                         });
                       });
                     });
-                  })
-                })
-              })
-            })
+                  });
+                });
+              });
+            });
           });
         });
       }
