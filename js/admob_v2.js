@@ -520,7 +520,6 @@ AdmobV2.prototype.localAdunitsToScheme = function (app) {
                         console.log(hash);
                         Object.assign(hash, {reward_settings: {"1": 1, "2": "Reward", "3": true}});
                     }
-
                     if (typeof adunit[21] !== 'undefined') {
                         Object.assign(hash, {google_optimized: adunit[21] === 1});
                     }
@@ -845,7 +844,7 @@ AdmobV2.prototype.mapApps = function (callback) {
                 if (self.localApps) {
                     // find by admob app id
                     mappedLocalApp = self.localApps.findByProperty(function (localApp) {
-                        return (remoteApp.AdmobV2_app_id === localApp[1]);
+                        return (remoteApp.admob_app_id === localApp[1]);
                     }).element;
                     // find by package name and os or default app name
                     if (!mappedLocalApp) {
@@ -994,7 +993,7 @@ AdmobV2.prototype.linkApps = function (callback) {
         console.log("Link apps with Play Market and App Store");
         // select not linked apps (without amazon)
         notLinkedApps = $.grep(self.inventory, function (app, i) {
-            return (app.search_in_store && app.store_name && app.localApp && !app.localApp[4]);
+            return (app.search_in_store && app.localApp && !app.localApp[4]);
         });
         // link not linked local apps
         self.synchronousEach(notLinkedApps, function (app, next) {
@@ -1006,6 +1005,7 @@ AdmobV2.prototype.linkApps = function (callback) {
         })
     } catch (err) {
         self.airbrake.error.notify(err);
+        callback();
     }
 };
 
@@ -1448,6 +1448,7 @@ AdmobV2.prototype.linkLocalApp = function (app, callback) {
         }
     } catch (err) {
         self.airbrake.error.notify(err);
+        callback();
     }
 };
 
@@ -1521,6 +1522,7 @@ AdmobV2.prototype.updateAppStoreHash = function (app, storeApp, callback) {
         })
     } catch (err) {
         self.airbrake.error.notify(err);
+        callback();
     }
 };
 
@@ -1633,13 +1635,14 @@ AdmobV2.prototype.removeOldAdunits = function (callback) {
     }
 };
 
+
 AdmobV2.prototype.removeAdunits = function (app, callback) {
     var self = this, adunits = [], localAdunits = []; adunits_ids = [];
     try {
         if (app.localAdunits && app.localAdunits.length > 0) {
             localAdunits = $.grep(self.allAdunits, function (adunit) {
-                return (adunit[2] === app.admob_app_id && adunit[9] === 0);
-            });
+                return (adunit[2] === app.localApp[1] && adunit[9] === 0);
+            })
 
             adunits = $.grep(localAdunits, function (adunit) {
                 if (adunit[3]) {
