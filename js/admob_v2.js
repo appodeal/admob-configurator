@@ -7,7 +7,7 @@ var AdmobV2 = function (publisherId, accounts) {
   AdmobV2.syncUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/sync_inventory";
   AdmobV2.appodealAppsUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/apps_with_ad_units";
   AdmobV2.adunitsSchemeUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/adunits_for_admob";
-  AdmobV2.deletedAppsUrl = APPODEAL_API_URL + '/admob_plugin/api/v1/deleted_admob_app_ids';
+  AdmobV2.deletedAppsUrl = APPODEAL_API_URL + '/admob_plugin/api/v1/deleted_admob_apps_ids';
 
   AdmobV2.prototype.getXsrf = function () {
     var self = this;
@@ -168,14 +168,6 @@ var AdmobV2 = function (publisherId, accounts) {
     console.log(self.activeAdmobApps);
   };
 
-  AdmobV2.prototype.appodealAppName = function(app) {
-    if (app.store_name) {
-      return app.store_name;
-    } else {
-      return app.app_name;
-    }
-  };
-
   AdmobV2.prototype.admobAppName = function(app) {
     appName = app[2].match(/(\d+)\/(.*)/);
     if (appName) {
@@ -197,8 +189,7 @@ var AdmobV2 = function (publisherId, accounts) {
           if (self.activeAdmobApps) {
             mappedApp = self.activeAdmobApps.findByProperty(function(admobApp) {
               admobAppName = self.admobAppName(admobApp)
-              appodealAppName = self.appodealAppName(appodealApp)
-              return (admobAppName === appodealAppName && admobApp[3] === appodealApp.os);
+              return (admobAppName === appodealApp.app_name && admobApp[3] === appodealApp.os || admobApp[4] === appodealApp.package_name);
             }).element;
             if (mappedApp) {
               appodealApp.localApp = mappedApp;
@@ -223,7 +214,6 @@ var AdmobV2 = function (publisherId, accounts) {
 
   AdmobV2.prototype.defaultAppName = function (app, callback) {
     var self = this;
-    var maxLength = 80;
     var name = 'Appodeal/' + app.id + "/" + app.app_name;
     return name.substring(0, maxLength);
   };
@@ -396,6 +386,7 @@ var AdmobV2 = function (publisherId, accounts) {
   AdmobV2.prototype.createAdunit = function(adunit) {
     var self = this;
     var message = "Create adunit " + adunit.name;
+    var maxLength
     console.log(message);
     params = {
       "method": "insertInventory",
@@ -411,7 +402,6 @@ var AdmobV2 = function (publisherId, accounts) {
       },
       "xsrf": self.token
     };
-
     if (adunit.bid) {
       params.params[3][23] =  {"1":3, "3":{"1":{"1":adunit.bid, "2":"USD"}}};
     }
@@ -465,75 +455,53 @@ var AdmobV2 = function (publisherId, accounts) {
       'admob_adunits': null,
       'admob_apps': null
     }, function(items) {
-      self.deletedApps = [];
-      self.adunitsToDelete = [];
-      self.deletedAppIds.forEach(function (deleted_id) {
-        deletedApp = items['admob_apps'].findByProperty(function(admob_app) {
-          return (deleted_id === admob_app[1])
-        }).element
-        if (deletedApp) {
-          self.deletedApps.push(deleted_id);
-        } else {
-          return;
-        }
-      });
-      self.deletedApps.forEach(function (deleted_app) {
-        deleted_app_adunits = items['admob_adunits'].filter(function (adunit) {
-          return (adunit[2] === deleted_app[1])
+      self.getDeletedAppIds(function() {
+        self.deletedApps = [];
+        self.adunitsToDelete = [];
+        self.deletedAppIds.forEach(function (deleted_id) {
+          deletedApp = items['admob_apps'].findByProperty(function(admob_app) {
+            return (deleted_id === admob_app[1])
+          }).element
+          if (deletedApp) {
+            self.deletedApps.push(deleted_id);
+          } else {
+            return;
+          }
+        });
+        self.deletedApps.forEach(function (deleted_app) {
+          deleted_app_adunits = items['admob_adunits'].filter(function (adunit) {
+            return (adunit[2] === deleted_app && adunit[9] === 0 && adunit[3].indexOf('Appodeal') !== -1)
+          })
+          if (deleted_app_adunits) {
+            deleted_app_adunits = $.map(deleted_app_adunits, function(adunit) { return adunit[1]; })
+            self.adunitsToDelete = self.adunitsToDelete.concat(deleted_app_adunits)  
+          } else {
+            return;
+          }
         })
-        if (deleted_app_adunits) {
-          deleted_app_adunits = $.map(deleted_app_adunits, function(adunit) { return adunit[1]; })
-          self.adunitsToDelete = self.adunitsToDelete.concat(deleted_app_adunits)  
-        } else {
-          return;
+        if (self.adunitsToDelete.length > 0) {
+          console.log('Start removing adunits');
+          self.deleteOldAdunits(self.adunitsToDelete);
         }
-      })
-      console.log('Start hiding removed apps');
-      if (self.deletedApps) {
-        self.hideRemovedApps(self.deletedApps);
-      }
-      if (self.adunitsToDelete) {
-        self.deletedOldAdunits(self.adunitsToDelete);
-      }
-      callback();
+        callback(); 
+      })     
     })
-  };
-
-  AdmobV2.prototype.hideRemovedApps = function(apps_ids) {
-    var self = this;
-    params = {
-      "method": "updateMobileApplicationVisibility",
-      "params": {
-        "2": apps_ids,
-        "3": false
-      },
-      "xsrf": self.token
-    };
-    $.ajax({
-      method: 'POST',
-      url: AdmobV2.admobAppsUrl,
-      data: params,
-      async: false
-    })
-      .done(function (data) {
-        console.log('Finished hiding apps');
-      })
-      .fail(function (data) {
-        console.log("Failed to hide apps")
-      });
   };
 
   AdmobV2.prototype.deleteOldAdunits = function (adunits_ids) {
     var self = this;
-    params = {
-      "method": "archiveInventory",
-      "params": { '3': adunits_ids },
-      "xsrf": self.token
+    json = {
+      method: "archiveInventory",
+      params: { 3: adunits_ids },
+      xsrf: self.token
     };
+    params = JSON.stringify(json);
     $.ajax({
-      method: "GET",
+      method: "POST",
       url: AdmobV2.admobAppsUrl,
       data: params,
+      contentType: "application/javascript; charset=UTF-8",
+      dataType: "json",
       async: false
     })
       .done(function (data) {
@@ -701,9 +669,6 @@ var AdmobV2 = function (publisherId, accounts) {
     });
     notLinkedApps.forEach(function (app) {
       self.linkLocalApp(app);
-    });
-    self.mappedApps = $.grep(self.mappedApps, function (app, i) {
-      return (app.localApp[4]);
     });
     callback();
   };
