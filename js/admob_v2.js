@@ -1057,9 +1057,7 @@ AdmobV2.prototype.createAdunits = function (app, callback) {
               }
               callback();
             });
-        })
-        //Send AdUnit to Server
-        
+        });   
     } catch (err) {
         self.airbrake.error.notify(err);
     }
