@@ -456,9 +456,9 @@ AdmobV2.prototype.adUnitRegex = function (name) {
 AdmobV2.prototype.adunitBid = function (adunit) {
     var self = this, matchedType;
     try {
-        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)\//.exec(adunit[3]);
+        matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\/(\d+|\d.+)$/.exec(adunit[3]);
         if (!matchedType) {
-            matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\//.exec(adunit[3]);
+            matchedType = /^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)$/.exec(adunit[3]);
         }
         if (matchedType) {
             if (matchedType[4]) {
