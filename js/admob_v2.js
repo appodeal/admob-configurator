@@ -723,16 +723,11 @@ AdmobV2.prototype.missingAdunits = function (app) {
 
 // generate adunit name
 AdmobV2.prototype.adunitName = function (app, adName, typeName, bidFloor) {
-    var self = this, name, bundleLength, schema_data;
+    var self = this, name, schema_data;
     try {
         name = "Appodeal/" + app.id + "/" + adName + "/" + typeName;
         if (bidFloor) {
             name += "/" + bidFloor;
-        }
-        // max adunit name length equals 80, allocate the rest of name to bundle id
-        bundleLength = 80 - name.length - 1;
-        if (bundleLength > 0) {
-            name += "/" + app.bundle_id.substring(0, bundleLength);
         }
         schema_data = AdmobV2.schema_data;
         return (name);
