@@ -70,17 +70,15 @@ AdmobV2.prototype.syncInventory = function (callback) {
                                     self.removeOldAdunits(function () {
                                         self.makeMissingAdunitsLists(function () {
                                             self.createMissingAdunits(function () {
-                                                self.CreateOrUpdateMediationGroup(function () {
-                                                    chrome.storage.local.remove("admob_processing");
-                                                    self.finishDialog();
-                                                    self.sendReports({
-                                                        mode: 0,
-                                                        note: "json"
-                                                    }, [JSON.stringify({message: "Finish", admob: self})], function () {
-                                                        console.log("Sent finish inventory report");
-                                                    });
-                                                    callback();
-                                                });
+                                              chrome.storage.local.remove("admob_processing");
+                                              self.finishDialog();
+                                              self.sendReports({
+                                                  mode: 0,
+                                                  note: "json"
+                                              }, [JSON.stringify({message: "Finish", admob: self})], function () {
+                                                  console.log("Sent finish inventory report");
+                                              });
+                                              callback();
                                             })
                                         })
                                     })
@@ -588,33 +586,6 @@ AdmobV2.prototype.createLocalAdunit = function (s, os, callback) {
     }
 };
 
-AdmobV2.prototype.GetMediationGroupList = function (callback) {
-    console.log("Get Mediation Group List");
-    var self = this;
-    try {
-        $.ajax({
-            type: 'POST',
-            url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/List?rpcTrackingId=MediationGroupService.List:1',
-            data: {
-                __ar: '{"1":true}'
-            },
-            async: false,
-            contentType: 'application/x-www-form-urlencoded',
-            headers: {
-                "x-framework-xsrf-token": self.token
-            },
-            complete: function (response) {
-                callback(response);
-            },
-            error: function (response) {
-                self.showErrorDialog("Error result in list all Mediation Group." + response.responseText);
-            }
-        });
-    } catch (err) {
-        self.airbrake.error.notify(err);
-    }
-};
-
 // Find all missing adunits for app in inventory
 AdmobV2.prototype.adunitsScheme = function (app, bid_floors) {
     var self = this, scheme = [];
@@ -752,13 +723,11 @@ AdmobV2.prototype.missingAdunits = function (app) {
 
 // generate adunit name
 AdmobV2.prototype.adunitName = function (app, adName, typeName, bidFloor) {
-    var self = this, name, nameMediationGroup, bundleLength, schema_data;
+    var self = this, name, bundleLength, schema_data;
     try {
         name = "Appodeal/" + app.id + "/" + adName + "/" + typeName;
-        nameMediationGroup = "Appodeal/" + adName + "/" + typeName;
         if (bidFloor) {
             name += "/" + bidFloor;
-            nameMediationGroup += "/" + bidFloor;
         }
         // max adunit name length equals 80, allocate the rest of name to bundle id
         bundleLength = 80 - name.length - 1;
@@ -766,9 +735,6 @@ AdmobV2.prototype.adunitName = function (app, adName, typeName, bidFloor) {
             name += "/" + app.bundle_id.substring(0, bundleLength);
         }
         schema_data = AdmobV2.schema_data;
-        if (schema_data && Array.isArray(schema_data)) {
-            if (!schema_data.includes(nameMediationGroup)) schema_data.push(nameMediationGroup);
-        }
         return (name);
     } catch (err) {
         self.airbrake.error.notify(err);
@@ -1070,292 +1036,30 @@ AdmobV2.prototype.createAdunits = function (app, callback) {
                 next();
             })
         }, function () {
-            callback();
+            self.syncWithServer([app], function (params) {
+              if (params.apps.length) {
+                  self.syncPost(params, function (data) {
+                      params.apps.forEach(function (app) {
+                          var items = [];
+                          // collect and send reports to server
+                          items.push("<h4>" + app.name + "</h4>");
+                          if (app.adunits) {
+                              app.adunits.forEach(function (adunit) {
+                                  items.push(adunit.name);
+                              });
+                          }
+                          self.report.push.apply(self.report, items);
+                          self.sendReports({mode: 0}, [items.join("\n ")], function () {
+                              console.log("Sent reports from -> " + app.name);
+                          });
+                      });
+                  });
+              }
+              callback();
+            });
         })
-    } catch (err) {
-        self.airbrake.error.notify(err);
-    }
-};
-
-AdmobV2.prototype.FindAndDeleteOldMediationGroup = function (data, self, callback) {
-    var ids_group = [];
-    try {
-        if (data) {
-            data.forEach(function (item, i, arr) {
-                if (item[3] === 1 && item[2].includes('Appodeal') && !(item[2].includes('/android') || item[2].includes('/ios'))) {
-                    ids_group.push(item[1]);
-                }
-            });
-        }
-        if (ids_group.length > 0) {
-            $.ajax({
-                type: 'POST',
-                url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/BulkStatusChange?rpcTrackingId=MediationGroupService.BulkStatusChange:1',
-                data: {
-                    __ar: JSON.stringify({"1": ids_group, "2": 3})
-                },
-                async: false,
-                contentType: 'application/x-www-form-urlencoded',
-                headers: {
-                    "x-framework-xsrf-token": self.token
-                },
-                error: function (response) {
-                    self.showErrorDialog(response.responseText);
-                }
-            });
-        }
-        callback();
-    } catch (err) {
-        self.airbrake.error.notify(err);
-    }
-};
-
-AdmobV2.prototype.CreateOrUpdateMediationGroup = function (callback) {
-    var self = this;
-    try {
-        console.log("Create or Update Mediation Group");
-        self.modal.show("Appodeal Chrome Extension", "Please allow several minutes to sync your adunit to Mediation Group.");
-        self.getLocalInventory(function () {
-            //CreateMediationGroup
-            self.GetMediationGroupList(function (response) {
-                if (response.readyState === 4 && response.status === 200) {
-                    var data = JSON.parse(response.responseText);
-                    if (data && data[1].length > 0) {
-                        AdmobV2.prototype.GetCountOS(data, self, function (os, data) {
-                            var OperationSystemMissingSchemeMediationGroup = os.reduce(function (result, item) {
-
-                                var LocalScheme = $.grep(data[1], function (local_schema) {
-                                    return (local_schema[3] === 1 && local_schema[4][1] === item)
-                                });
-
-                                result[item] = $.grep(AdmobV2.schema_data, function (GroupSchema) {
-                                    return !Object.keys(LocalScheme).map(function (e) {
-                                        var name = LocalScheme[e][2];
-                                        name = name.replace('/android', '');
-                                        name = name.replace('/ios', '');
-                                        return name
-                                    }).includes(GroupSchema)
-                                });
-
-                                return result;
-                            }, {});
-                            self.FindAndDeleteOldMediationGroup(data[1], self, function () {
-                                if (OperationSystemMissingSchemeMediationGroup) self.CreateMediationGroup(OperationSystemMissingSchemeMediationGroup, self);
-                            });
-                        });
-                    }
-                }
-            });
-            //UpdateMediationGroup
-            self.GetMediationGroupList(function (response) {
-                if (response.readyState === 4 && response.status === 200) {
-                    var data = JSON.parse(response.responseText);
-                    if (data && data[1].length > 0) {
-                        AdmobV2.prototype.GetCountOS(data, self, function (os, data) {
-                            var OperationSystemMissingSchemeMediationGroup = os.reduce(function (result, item) {
-                                //get all created Mediation Groups
-                                var LocalScheme = $.grep(data[1], function (local_schema) {
-                                    return (local_schema[3] === 1 && local_schema[4][1] === item)
-                                });
-                                //filter Mediation Groups if included Appodeal scheme
-                                result[item] = $.grep(AdmobV2.schema_data, function (GroupSchema) {
-                                    return !Object.keys(LocalScheme).map(function (e) {
-                                        var name = LocalScheme[e][2];
-                                        name = name.replace('/android', '');
-                                        name = name.replace('/ios', '');
-                                        return name
-                                    }).includes(GroupSchema)
-                                });
-
-                                return result;
-                            }, {});
-                            self.UpdateMediationGroup(OperationSystemMissingSchemeMediationGroup, data[1], self, os, function () {
-                                callback();
-                            });
-                        });
-                    }
-                }
-            });
-        });
-    } catch (err) {
-        self.airbrake.error.notify(err);
-    }
-};
-
-AdmobV2.prototype.UpdateMediationGroup = function (OperationSystemMissingSchemeMediationGroup, data, self, os, callback) {
-    try {
-        console.log("Update Mediation Group");
-        var schema = os.reduce(function (result, item) {
-            result[item] = $.grep(data, function (local_schema) {
-                if (local_schema[3] === 1 && local_schema[4][1] === item) {
-                    var res = local_schema;
-                    var apps = self.inventory;
-                    var need_adunits = apps.map(function (app) {
-                        var local_schema_name = local_schema[2];
-                        if (app.os === item) {
-                            var localAdunits = app.localAdunits.map(function (localAdunit) {
-                                var ad_unit_name = localAdunit[3];
-                                return {'id': localAdunit[1], 'ad_unit_name': ad_unit_name.replace('/' + app.id, '')}
-                            });
-                            //Clear name Mediation Group
-                            local_schema_name = local_schema_name.replace('android', '');
-                            local_schema_name = local_schema_name.replace('ios', '');
-
-                            return localAdunits.reduce(function (result, item) {
-                                // local_schema_name == item.ad_unit_name
-                                var arr = item.ad_unit_name.split('/');
-                                // delete package_name
-                                delete arr[arr.length - 1];
-                                var ad_unit_name = arr.join('/');
-                                if (ad_unit_name === local_schema_name) {
-                                    result = item.id
-                                }
-                                return result;
-                            }, []);
-                        }
-                    });
-                    // Clear undefined or Array. Only string words
-                    need_adunits = need_adunits.filter(function (item) {
-                        if (item !== undefined && !Array.isArray(item)) {
-                            return item;
-                        }
-                    });
-                    var approve_push = false;
-                    if (need_adunits) {
-                        need_adunits.forEach(function (item, i, arr) {
-                            if (res[4][3] === undefined) {
-                                approve_push = true;
-                            } else if (!res[4][3].includes(item)) {
-                                approve_push = true;
-                            }
-                        });
-                    }
-                    if (approve_push) {
-                        res[4][3] = need_adunits
-                    } else {
-                        res[4][3] = [];
-                    }
-                    return res
-                }
-                return null
-            });
-            return result;
-        }, {});
-        $.each(schema, function (index, value) {
-            var osName = 'android';
-            if (index === '1') osName = 'ios';
-            value = value.filter(function (item) {
-                if (item[4][3] && item[4][3].length > 0) {
-                    return item;
-                }
-            });
-            if (value.length > 0) {
-                self.progressBar = new ProgressBar(value.length, 'Please allow several minutes to sync ' + osName + ' your Update Mediation Group.');
-                value.forEach(function (item, i, arr) {
-                    var ar = JSON.stringify({"1": item});
-                    $.ajax({
-                        type: 'POST',
-                        url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Update?rpcTrackingId=MediationGroupService.Update:1',
-                        data: {
-                            __ar: ar
-                        },
-                        async: false,
-                        contentType: 'application/x-www-form-urlencoded',
-                        headers: {
-                            "x-framework-xsrf-token": self.token
-                        },
-                        error: function (jqXHR, textStatus, errorThrown) {
-                            console.log(ar);
-                            if (jqXHR.status === 500) {
-                                self.showErrorDialog('Internal error: ' + jQuery.parseJSON(jqXHR.responseText));
-                            } else {
-                                self.showErrorDialog('Unexpected error.');
-                            }
-                        }
-                    });
-                    self.progressBar.increase();
-                });
-            }
-        });
         //Send AdUnit to Server
-        self.syncWithServer(self.inventory, function (params) {
-            if (params.apps.length) {
-                self.syncPost(params, function (data) {
-                    params.apps.forEach(function (app) {
-                        var items = [];
-                        // collect and send reports to server
-                        items.push("<h4>" + app.name + "</h4>");
-                        if (app.adunits) {
-                            app.adunits.forEach(function (adunit) {
-                                items.push(adunit.name);
-                            });
-                        }
-                        self.report.push.apply(self.report, items);
-                        self.sendReports({mode: 0}, [items.join("\n ")], function () {
-                            console.log("Sent reports from -> " + app.name);
-                        });
-                    });
-                });
-            }
-            callback();
-        });
-    } catch (err) {
-        self.airbrake.error.notify(err);
-    }
-};
-
-AdmobV2.prototype.CreateMediationGroup = function (OperationSystemMissingSchemeMediationGroup, self) {
-    try {
-        console.log("Create Mediation Group");
-        $.each(OperationSystemMissingSchemeMediationGroup, function (index, value) {
-            if (value.length > 0) {
-
-                var osId = index;
-                var osName = 'android';
-                if (osId === '1') osName = 'ios';
-
-                self.progressBar = new ProgressBar(value.length, 'Please allow several minutes to sync ' + osName + ' your Create Mediation Group.');
-                value.forEach(function (item) {
-                    // Each of Scheme Adunit
-                    var type = 0;
-                    var s6 = true;
-                    var s4 = 2;
-                    var bidflor = "10000";
-                    var matchedType = item.replace(/^Appodeal(\/\d+)?\/(banner|interstitial|mrec|rewarded_video)\/(image|text|image_and_text|rewarded)\//, "");
-                    if (!isNaN(matchedType)) bidflor = (parseFloat(matchedType) * 1000000).toString();
-                    if (matchedType === 'Appodeal/banner/image_and_text') {
-                        //google optimization
-                        s6 = false;
-                        s4 = 1;
-                    }
-                    var adTypeName = self.adUnitRegex(item).adType;
-                    if (adTypeName === 'banner') type = 0;
-                    if (adTypeName === 'interstitial') type = 1;
-                    if (adTypeName === 'rewarded_video') type = 5;
-                    var ar = '{"1":"' + item + '/' + osName + '","2": 1,"3": {"1": ' + osId + ', "2": ' + type + ', "3": []},"4": [{"2": 1, "3": 1, "4": ' + s4 + ', "5": {"1": "' + bidflor + '", "2": "USD"}, "6": ' + s6 + '}]}';
-                    $.ajax({
-                        type: 'POST',
-                        url: 'https://apps.admob.com/inventory/_/rpc/MediationGroupService/Create?rpcTrackingId=MediationGroupService.Create:1',
-                        data: {
-                            __ar: ar
-                        },
-                        async: false,
-                        contentType: 'application/x-www-form-urlencoded',
-                        headers: {
-                            "x-framework-xsrf-token": self.token
-                        },
-                        error: function (jqXHR, textStatus, errorThrown) {
-                            if (jqXHR.status === 500) {
-                                self.showErrorDialog('Internal error: ' + jQuery.parseJSON(jqXHR.responseText));
-                            } else {
-                                self.showErrorDialog('Unexpected error.');
-                            }
-                        }
-                    });
-                    self.progressBar.increase();
-                });
-            }
-        });
+        
     } catch (err) {
         self.airbrake.error.notify(err);
     }
