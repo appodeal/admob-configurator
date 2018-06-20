@@ -19,10 +19,10 @@
   "content_scripts": [
     {
       "matches": [
-        "*://www.local.appodeal.com/profile*",
-        "*://www.local.appodeal.com/dashboard*",
-        "*://www.local.appodeal.com/internal_dashboard*",
-        "*://www.local.appodeal.com/apps*"
+        "*://www.appodeal.com/profile*",
+        "*://www.appodeal.com/dashboard*",
+        "*://www.appodeal.com/internal_dashboard*",
+        "*://www.appodeal.com/apps*"
       ],
       "js": [
         "js/vendor/jquery.min.js",
@@ -93,7 +93,7 @@
     "notifications",
     "webNavigation",
     "identity",
-    "*://*.local.appodeal.com/*",
+    "*://*.appodeal.com/*",
     "*://*.admob.com/*",
     "*://console.developers.google.com/*",
     "*://chrome.google.com/webstore/detail/appodeal/*"

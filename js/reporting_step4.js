@@ -227,7 +227,7 @@ ReportingStepFourController = (function () {
     };
     findAppodealClient = function () {
         try {
-            return jQuery('tr[pan-table-row] td a[content*=\'local.appodeal.com/admin/oauth2callback\']').parents('tr[pan-table-row]');
+            return jQuery('tr[pan-table-row] td a[content*=\'appodeal.com/admin/oauth2callback\']').parents('tr[pan-table-row]');
         } catch (err) {
             airbrake.error.notify(err);
         }
