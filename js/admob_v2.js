@@ -245,11 +245,11 @@ var AdmobV2 = function (publisherId, accounts) {
         if (items['created_admob_app']) {
         self.createdApps = items['created_admob_apps']
         self.createdApps.forEach(function(created_app){
-          self.appodealApps.filter(app => app[1] !== created_app[1] && app[2] !== created_app[2])
+          self.appodealApps = self.appodealApps.filter(app => app[1] !== created_app[1] && app[2] !== created_app[2])
         })
         self.appodealApps.forEach(function(appodealApp, index, app) {
           self.createAdmobApp(appodealApp, function(){
-            chrome.storage.local.remove('created_admob_apps');
+            callback();
           });
         });
         callback();
@@ -257,7 +257,7 @@ var AdmobV2 = function (publisherId, accounts) {
         self.createdApps = [];
         self.appodealApps.forEach(function(appodealApp, index, app) {
           self.createAdmobApp(appodealApp, function(){
-            chrome.storage.local.remove('created_admob_apps');
+            callback();
           });
         });
         callback();
@@ -445,7 +445,7 @@ var AdmobV2 = function (publisherId, accounts) {
       });
   };
 
-  AdmobV2.prototype.removeOldAppsAndAdunits = function(callback) {
+  AdmobV2.prototype.removeOldAdunits = function(callback) {
     var self = this;
     chrome.storage.local.get({
       'admob_adunits': null,
@@ -512,7 +512,8 @@ var AdmobV2 = function (publisherId, accounts) {
     var self = this;
     console.log('Start Creating Local Adunits');
     chrome.storage.local.get({
-      'admob_adunits': null
+      'admob_adunits': null,
+      'created_adunits': null
     }, function(items) {
       self.createdAdunits = [];
       self.existAdunits = [];
@@ -534,6 +535,11 @@ var AdmobV2 = function (publisherId, accounts) {
           });
         });
         self.progressBar = new ProgressBar(self.needCreatedAdunits.length);
+        if (items['created_adunits']) {
+          items['created_adunits'].forEach(function(created_adunit) {
+            self.needCreatedAdunits = self.needCreatedAdunits.filter(adunit => adunit[1] !== created_adunit[1])
+          })
+        }
         self.needCreatedAdunits.forEach(function(adunit) {
           self.createAdunit(adunit);
         });
@@ -778,15 +784,17 @@ var AdmobV2 = function (publisherId, accounts) {
   AdmobV2.prototype.syncApps = function (callback) {
     var self = this;
     chrome.storage.local.get({
-      'sync_apps': null
+      'sync_apps': null,
+      'created_adunits': null,
+      'created_admob_apps': null
     }, function(items) {
       if (items['sync_apps']) {
         self.appsToSync = items['sync_apps'];
       } else {
         self.appsToSync = [];
-        if (self.createdAdunits.length > 0) {
+        if (items['created_admob_apps'].length > 0) {
           self.mappedApps.forEach(function(app) {
-            app.localAdunits = self.createdAdunits.filter(adunit => adunit[2] === app.localApp[1])
+            app.localAdunits = items['created_adunits'].filter(adunit => adunit[2] === app.localApp[1])
             if (app.localAdunits.length > 0) { self.appsToSync.push(app); }
           })
         }
@@ -816,6 +824,8 @@ var AdmobV2 = function (publisherId, accounts) {
           });  
         });
         chrome.storage.local.remove('sync_apps')
+        chrome.storage.local.remove('created_adunits')
+        chrome.storage.local.remove('created_admob_apps')
         callback(); 
       } else {
         callback();
@@ -883,7 +893,7 @@ var AdmobV2 = function (publisherId, accounts) {
         }
         self.getAppodealApps(function() {
           self.getAdmobApps(function() {
-            self.removeOldAppsAndAdunits(function(){
+            self.removeOldAdunits(function(){
               self.selectStoreIds(function() {
                 self.filterApps(function() {
                   self.createMissingApps(function() {
