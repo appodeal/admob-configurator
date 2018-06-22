@@ -295,6 +295,7 @@ var AdmobV2 = function (publisherId, accounts) {
       });
       callback();
     }
+    callback();
   };
 
   AdmobV2.prototype.updateAppStoreHash = function (app, storeApp, callback) {
@@ -381,9 +382,7 @@ var AdmobV2 = function (publisherId, accounts) {
 
   AdmobV2.prototype.createAdunit = function(adunit) {
     var self = this;
-    var message = "Create adunit " + adunit.name;
-    var maxLength
-    console.log(message);
+    console.log('Create adunit ' + adunit.name);
     params = {
       "method": "insertInventory",
       "params": {
@@ -452,34 +451,37 @@ var AdmobV2 = function (publisherId, accounts) {
       'admob_apps': null
     }, function(items) {
       self.getDeletedAppIds(function() {
-        self.deletedApps = [];
-        self.adunitsToDelete = [];
-        self.deletedAppIds.forEach(function (deleted_id) {
-          deletedApp = items['admob_apps'].findByProperty(function(admob_app) {
-            return (deleted_id === admob_app[1])
-          }).element
-          if (deletedApp) {
-            self.deletedApps.push(deleted_id);
-          } else {
-            return;
-          }
-        });
-        self.deletedApps.forEach(function (deleted_app) {
-          deleted_app_adunits = items['admob_adunits'].filter(function (adunit) {
-            return (adunit[2] === deleted_app && adunit[9] === 0 && adunit[3].indexOf('Appodeal') !== -1)
+        if (items['admob_apps']) {
+          self.deletedApps = [];
+          self.adunitsToDelete = [];
+          self.deletedAppIds.forEach(function (deleted_id) {
+            deletedApp = items['admob_apps'].findByProperty(function(admob_app) {
+              return (deleted_id === admob_app[1])
+            }).element
+            if (deletedApp) {
+              self.deletedApps.push(deleted_id);
+            } else {
+              return;
+            }
+          });
+          self.deletedApps.forEach(function (deleted_app) {
+            deleted_app_adunits = items['admob_adunits'].filter(function (adunit) {
+              return (adunit[2] === deleted_app && adunit[9] === 0 && adunit[3].indexOf('Appodeal') !== -1)
+            })
+            if (deleted_app_adunits) {
+              deleted_app_adunits = $.map(deleted_app_adunits, function(adunit) { return adunit[1]; })
+              self.adunitsToDelete = self.adunitsToDelete.concat(deleted_app_adunits)  
+            } else {
+              return;
+            }
           })
-          if (deleted_app_adunits) {
-            deleted_app_adunits = $.map(deleted_app_adunits, function(adunit) { return adunit[1]; })
-            self.adunitsToDelete = self.adunitsToDelete.concat(deleted_app_adunits)  
-          } else {
-            return;
+          if (self.adunitsToDelete.length > 0) {
+            console.log('Start removing adunits');
+            self.deleteOldAdunits(self.adunitsToDelete);
           }
-        })
-        if (self.adunitsToDelete.length > 0) {
-          console.log('Start removing adunits');
-          self.deleteOldAdunits(self.adunitsToDelete);
+          callback();
         }
-        callback(); 
+        callback();
       })     
     })
   };
@@ -510,7 +512,8 @@ var AdmobV2 = function (publisherId, accounts) {
 
   AdmobV2.prototype.createLocalAdunits = function(callback) {
     var self = this;
-    console.log('Start Creating Local Adunits');
+    console.log('Start creating adunits');
+    self.modal.show("Appodeal Chrome Extension", 'Start creating adunits');
     chrome.storage.local.get({
       'admob_adunits': null,
       'created_adunits': null
@@ -549,6 +552,12 @@ var AdmobV2 = function (publisherId, accounts) {
         });
       } else {
         keys = Object.keys(self.adunitsScheme);
+        adunits_length = 0
+        keys.forEach(function(key) {
+          adunits_length += self.adunitsScheme[key].length
+        });
+        debugger;
+        self.progressBar = new ProgressBar(adunits_length)
         keys.forEach(function(key) {
           self.adunitsScheme[key].forEach(function(adunit) {
             self.createAdunit(adunit);
@@ -794,7 +803,7 @@ var AdmobV2 = function (publisherId, accounts) {
         })
       } else {
         self.appsToSync = [];
-        if (items['created_admob_apps'].length > 0) {
+        if (items['created_admob_apps'] || items['created_adunits']) {
           self.mappedApps.forEach(function(app) {
             app.localAdunits = items['created_adunits'].filter(adunit => adunit[2] === app.localApp[1])
             if (app.localAdunits.length > 0) { self.appsToSync.push(app); }
@@ -833,7 +842,7 @@ var AdmobV2 = function (publisherId, accounts) {
     })
   };
 
-  AdmobV2.prototype.humanReport = function () {
+  AdmobV2.prototype.humanReport = function (callback) {
     var self = this, report_human;
     chrome.storage.local.get({
       'created_admob_apps': null,
@@ -841,8 +850,8 @@ var AdmobV2 = function (publisherId, accounts) {
     }, function(items) {
       try {
         report_human = [];
-        if (items['created_admob_apps'].length === 0) {
-          if (items['created_adunits'].length === 0) {
+        if (items['created_admob_apps'] === null) {
+          if (items['created_adunits'] === null) {
             noAppsMsg = "New apps not found.";
             report_human.push("<h4>" + noAppsMsg + "</h4>");
           } else {
@@ -850,7 +859,7 @@ var AdmobV2 = function (publisherId, accounts) {
             app_ids = new Set($.map(items['created_adunits'], function(adunit) { return (adunit[2]) }))
             app_ids.forEach(function(app_id) {
               app = self.mappedApps.findByProperty(function(app) {
-                return (app.localApp[1] === app_id)
+                  return (app.localApp[1] === app_id)
               }).element
               report_human.push("<h4>" + app.localApp[2] + "</h4>");
               app_adunits = items['created_adunits'].filter(adunit => adunit[2] === app.localApp[1])
@@ -872,7 +881,7 @@ var AdmobV2 = function (publisherId, accounts) {
         }
         chrome.storage.local.remove('created_admob_apps')
         chrome.storage.local.remove('created_adunits')
-        return report_human;
+        callback(report_human);
       } catch (err) {
         console.log(err);
       }
@@ -891,12 +900,14 @@ var AdmobV2 = function (publisherId, accounts) {
         items.push("<h4>" + noAppsMsg + "</h4>");
       }
       items.push('Admob is synced with Appodeal now.');
-      self.modal.show("Congratulations! Sync complete!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps and also you need to check and fill completely all payment details in Admob to start show ads. <br> Please click this <a href='https://apps.admob.com/v2/apps/list'>link</a> to reload and go to url Admob apps. <br> <h3>Synchronized inventory</h3>" + self.humanReport().join(""));
-      self.sendReports({
-        mode: 0,
-        timeShift: 1000
-      }, [items.join("")], function () {
-        console.log("Sent finish reports");
+      self.humanReport(function(report) {
+        self.modal.show("Congratulations! Sync complete!", "Admob is synced with Appodeal now. You can run step 3 again if you add new apps and also you need to check and fill completely all payment details in Admob to start show ads. <br> Please click this <a href='https://apps.admob.com/v2/apps/list'>link</a> to reload and go to url Admob apps. <br> <h3>Synchronized inventory</h3>" + report.join(""));
+        self.sendReports({
+          mode: 0,
+          timeShift: 1000
+        }, [items.join("")], function () {
+          console.log("Sent finish reports");
+        });
       });
     } catch (err) {
       console.log(err);
