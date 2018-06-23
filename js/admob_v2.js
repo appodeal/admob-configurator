@@ -54,7 +54,6 @@ var AdmobV2 = function (publisherId, accounts) {
       .done(function (data) {
         if (data.applications && data.applications.length) {
           console.log('Syncing Appodeal inventory')
-          console.log('Appodeal Apps: ' + data.applications)
           chrome.storage.local.set({
             "appodeal_apps": data.applications
           });
@@ -92,10 +91,10 @@ var AdmobV2 = function (publisherId, accounts) {
         if (data.result) {
           self.filterAdmobApps(data.result[1][1]);
           self.admobApps = self.activeAdmobApps;
-          self.admobAdunits = data.result[1][2];
+          self.admobAdunits = data.result[1][2].filter(adunit => adunit[9] === 0 && adunit[3].indexOf('Appodeal') !== -1);
           chrome.storage.local.set({
             "admob_apps": self.activeAdmobApps,
-            "admob_adunits": data.result[1][2]
+            "admob_adunits": self.admobAdunits
           });
           callback();
         } else {
@@ -241,7 +240,7 @@ var AdmobV2 = function (publisherId, accounts) {
       'appodeal_apps': null
     }, function(items) {
       console.log('Start creating apps');
-      if (items['appodeal_apps']) {
+      if (self.appodealApps) {
         if (items['created_admob_app']) {
         self.createdApps = items['created_admob_apps']
         self.createdApps.forEach(function(created_app){
@@ -444,6 +443,19 @@ var AdmobV2 = function (publisherId, accounts) {
       });
   };
 
+  AdmobV2.prototype.chunkArray = function(myArray, chunk_size){
+    var index = 0;
+    var arrayLength = myArray.length;
+    var tempArray = [];
+      
+    for (index = 0; index < arrayLength; index += chunk_size) {
+      myChunk = myArray.slice(index, index+chunk_size);
+      // Do something if you want with the group
+      tempArray.push(myChunk);
+    }
+    return tempArray;
+  }
+
   AdmobV2.prototype.removeOldAdunits = function(callback) {
     var self = this;
     chrome.storage.local.get({
@@ -451,11 +463,11 @@ var AdmobV2 = function (publisherId, accounts) {
       'admob_apps': null
     }, function(items) {
       self.getDeletedAppIds(function() {
-        if (items['admob_apps']) {
+        if (self.activeAdmobApps) {
           self.deletedApps = [];
           self.adunitsToDelete = [];
           self.deletedAppIds.forEach(function (deleted_id) {
-            deletedApp = items['admob_apps'].findByProperty(function(admob_app) {
+            deletedApp = self.activeAdmobApps.findByProperty(function(admob_app) {
               return (deleted_id === admob_app[1])
             }).element
             if (deletedApp) {
@@ -465,7 +477,7 @@ var AdmobV2 = function (publisherId, accounts) {
             }
           });
           self.deletedApps.forEach(function (deleted_app) {
-            deleted_app_adunits = items['admob_adunits'].filter(function (adunit) {
+            deleted_app_adunits = self.admobAdunits.filter(function (adunit) {
               return (adunit[2] === deleted_app && adunit[9] === 0 && adunit[3].indexOf('Appodeal') !== -1)
             })
             if (deleted_app_adunits) {
@@ -476,8 +488,17 @@ var AdmobV2 = function (publisherId, accounts) {
             }
           })
           if (self.adunitsToDelete.length > 0) {
+            if (self.adunitsToDelete.length > 50) {
+              console.log('Start removing adunits');
+              splitted_array = self.chunkArray(self.adunitsToDelete, 45);
+              debugger;
+              splitted_array.forEach(function(array) {
+                self.deleteOldAdunits(array)
+              });
+            } else {
             console.log('Start removing adunits');
             self.deleteOldAdunits(self.adunitsToDelete);
+            }
           }
           callback();
         }
@@ -521,13 +542,12 @@ var AdmobV2 = function (publisherId, accounts) {
       self.createdAdunits = [];
       self.existAdunits = [];
       self.needCreatedAdunits = [];
-      if (items['admob_adunits']) {
-        console.log(items['admob_adunits']);
+      if (self.admobAdunits) {
         keys = Object.keys(self.adunitsScheme);
         keys.forEach(function(key) {
           self.adunitsScheme[key].forEach(function(adunit) {
             appodealAdunit = adunit;
-            adunit = items['admob_adunits'].findByProperty(function(localAdunit) {
+            adunit = self.admobAdunits.findByProperty(function(localAdunit) {
               return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && localAdunit[9] === 0);
             }).element
             if (adunit) {
@@ -556,7 +576,6 @@ var AdmobV2 = function (publisherId, accounts) {
         keys.forEach(function(key) {
           adunits_length += self.adunitsScheme[key].length
         });
-        debugger;
         self.progressBar = new ProgressBar(adunits_length)
         keys.forEach(function(key) {
           self.adunitsScheme[key].forEach(function(adunit) {
@@ -578,7 +597,7 @@ var AdmobV2 = function (publisherId, accounts) {
       'admob_adunits': null
     }, function(items) {
       badUnits = [];
-      appodeal_admob_adunits = items['admob_adunits'].filter(adunit => adunit[3].indexOf('Appodeal') !== -1 && adunit[9] === 0)
+      appodeal_admob_adunits = self.admobAdunits.filter(adunit => adunit[3].indexOf('Appodeal') !== -1 && adunit[9] === 0)
       keys = Object.keys(self.adunitsScheme)
       keys.forEach(function(key) {
         app_admob_adunits = appodeal_admob_adunits.filter(adunit => adunit[2] === key)
@@ -594,8 +613,16 @@ var AdmobV2 = function (publisherId, accounts) {
         })
       })
       if (badUnits) {
+        if (badUnits.length > 50) {
+          chunked_array = self.chunkArray(badUnits, 45)
+          chunked_array.forEach(function (array) {
+            self.deleteOldAdunits(array);
+            console.log('Bad ad units was remove: ' + array);
+          })
+        } else {
         self.deleteOldAdunits(badUnits);
         console.log('Bad ad units was removed: ' + badUnits)
+        }
       }
       callback();
     })
