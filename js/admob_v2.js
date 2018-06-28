@@ -62,7 +62,6 @@ AdmobV2.prototype.syncInventory = function (callback) {
                 sendOut(0, 'User using apps.admob.com/v2');
                 self.getRemoteInventory(function () {
                     self.getLocalInventory(function () {
-                        self.selectStoreIds();
                         self.filterHiddenLocalApps();
                         self.mapApps(function () {
                             self.createMissingApps(function () {
@@ -791,6 +790,21 @@ AdmobV2.prototype.checkLimits = function () {
     }
 };
 
+AdmobV2.prototype.hideApp = function(app_id, callback) {
+  var self = this
+  try {
+    self.inventoryPost({
+      method: "updateMobileApplicationVisibility",
+      params: {"2":[app_id], "3":false},
+      xsrf: self.token
+    }, function (data) {
+      callback();
+    });
+  } catch (err) {
+    self.airbrake.error.notify(err);
+  }
+};
+
 // map apps between appodeal and admob
 // for each appodeal app find admob app and select local adunits
 AdmobV2.prototype.mapApps = function (callback) {
@@ -820,14 +834,20 @@ AdmobV2.prototype.mapApps = function (callback) {
                     }
                     // move local app to inventory array
                     if (mappedLocalApp) {
+                      if (remoteApp.os !== mappedLocalApp[3]) {
+                        self.hideApp(mappedLocalApp[1], function() {
+                          console.log('App with changed platform hidden')
+                        })
+                      } else {
                         console.log(remoteApp.app_name + " (" + mappedLocalApp[2] + ") has been mapped " + remoteApp.id + " -> " + mappedLocalApp[1]);
                         localAppIndex = $.inArray(mappedLocalApp, self.localApps);
                         if (localAppIndex > -1) {
-                            self.localApps.splice(localAppIndex, 1);
-                            remoteApp.localApp = mappedLocalApp;
-                            // map local adunits
-                            remoteApp.localAdunits = self.selectLocalAdunits(mappedLocalApp[1]);
+                          self.localApps.splice(localAppIndex, 1);
+                          remoteApp.localApp = mappedLocalApp;
+                          // map local adunits
+                          remoteApp.localAdunits = self.selectLocalAdunits(mappedLocalApp[1]);
                         }
+                      }
                     }
                 }
             });
@@ -838,21 +858,6 @@ AdmobV2.prototype.mapApps = function (callback) {
         callback();
     } catch (e) {
         self.showErrorDialog("Map apps: " + e.message);
-    }
-};
-
-// store all existing store ids
-AdmobV2.prototype.selectStoreIds = function () {
-    var self = this;
-    try {
-        console.log("Select store ids");
-        if (self.localApps) {
-            self.storeIds = $.map(self.localApps, function (localApp, i) {
-                return (localApp[4]);
-            });
-        }
-    } catch (err) {
-        self.airbrake.error.notify(err);
     }
 };
 
@@ -1125,24 +1130,20 @@ AdmobV2.prototype.linkLocalApp = function (app, callback) {
         // check if there is no linked local app with a current package name
         // include hidden and not appodeal apps
         // admob allow only one app with unique package name to be linked to store
-        if (self.storeIds && self.storeIds.length > 0 && !self.storeIds.includes(app.package_name)) {
-            self.searchAppInStores(app, function (storeApp) {
-                if (storeApp) {
-                    self.updateAppStoreHash(app, storeApp, function (localApp) {
-                        // update inventory array with new linked local app
-                        if (localApp) {
-                            app.localApp = localApp;
-                            console.log("App #" + app.id + " has been linked to store");
-                        }
-                        callback();
-                    })
-                } else {
+        self.searchAppInStores(app, function (storeApp) {
+            if (storeApp) {
+                self.updateAppStoreHash(app, storeApp, function (localApp) {
+                    // update inventory array with new linked local app
+                    if (localApp) {
+                        app.localApp = localApp;
+                        console.log("App #" + app.id + " has been linked to store");
+                    }
                     callback();
-                }
-            })
-        } else {
-            callback();
-        }
+                })
+            } else {
+                callback();
+            }
+        })
     } catch (err) {
         self.airbrake.error.notify(err);
         callback();
@@ -1166,7 +1167,7 @@ AdmobV2.prototype.searchAppInStores = function (app, callback) {
                 storeApps = data.result[2];
                 if (storeApps) {
                     storeApp = storeApps.findByProperty(function (a) {
-                        return (a[4] === app.package_name)
+                        return (a[4] === app.package_name && a[3] === app.os)
                     }).element;
                 }
                 callback(storeApp);
@@ -1207,7 +1208,6 @@ AdmobV2.prototype.updateAppStoreHash = function (app, storeApp, callback) {
             try {
                 var localApp = data.result[1][1][0];
                 if (localApp) {
-                    self.addStoreId(app.package_name);
                     callback(localApp);
                 }
             } catch (e) {
@@ -1223,19 +1223,6 @@ AdmobV2.prototype.updateAppStoreHash = function (app, storeApp, callback) {
     }
 };
 
-// add new store id to store ids array
-AdmobV2.prototype.addStoreId = function (storeId) {
-    var self = this;
-    try {
-        if (self.storeIds) {
-            self.storeIds.push(storeId);
-        } else {
-            self.storeIds = [storeId];
-        }
-    } catch (err) {
-        self.airbrake.error.notify(err);
-    }
-};
 
 // helper to find element with in array by the conditions
 AdmobV2.prototype.findByProperty = function (condition) {
