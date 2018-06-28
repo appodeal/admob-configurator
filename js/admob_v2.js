@@ -172,6 +172,21 @@ var AdmobV2 = function (publisherId, accounts) {
     return (admobAppName === appodealApp.app_name && admobApp[3] === appodealApp.os || admobApp[4] === appodealApp.package_name && admobApp[3] === appodealApp.os)
   };
 
+  AdmobV2.prototype.hideApp = function(app_id, callback) {
+    var self = this;
+    try {
+      self.inventoryPost({
+        method: "updateMobileApplicationVisibility",
+        params: {"2":[app_id], "3":false},
+        xsrf: self.token
+      }, function (data) {
+        callback();
+      });
+    } catch (err) {
+      self.airbrake.error.notify(err);
+    }
+  }
+
   AdmobV2.prototype.filterApps = function(callback) {
     var self = this;
     chrome.storage.local.get({
@@ -185,6 +200,15 @@ var AdmobV2 = function (publisherId, accounts) {
             mappedApp = self.activeAdmobApps.findByProperty(function(admobApp) {
               return self.compareApps(appodealApp, admobApp);
             }).element;
+            wrongPlatformApp = self.activeAdmobApps.findByProperty(function(admobApp) {
+              return (admobApp[1] === appodealApp.admob_app_id && admobApp[3] !== appodealApp.os)
+            })
+            if (wrongPlatformApp) {
+              console.log('Hiding wrong platform app: ' + wrongPlatformApp[1])
+              self.hideApp(wrongPlatformApp[1], function() {
+                console.log('App hidden: ' + wrongPlatformApp[1])
+              })
+            }
             if (mappedApp) {
               appodealApp.localApp = mappedApp;
               mappedApps.push(appodealApp);
@@ -276,27 +300,6 @@ var AdmobV2 = function (publisherId, accounts) {
     callback();
   };
 
-  AdmobV2.prototype.addStoreId = function (storeId) {
-    var self = this;
-    if (self.storeIds) {
-      self.storeIds.push(storeId);
-    } else {
-      self.storeIds = [storeId];
-    }
-  };
-
-  AdmobV2.prototype.selectStoreIds = function (callback) {
-    var self = this;
-    console.log("Select store ids");
-    if (self.activeAdmobApps) {
-      self.storeIds = $.map(self.activeAdmobApps, function (localApp, i) {
-        return (localApp[4]);
-      });
-      callback();
-    }
-    callback();
-  };
-
   AdmobV2.prototype.updateAppStoreHash = function (app, storeApp, callback) {
     var self = this, params;
     console.log("Update app #" + app.id + " store hash");
@@ -339,7 +342,7 @@ var AdmobV2 = function (publisherId, accounts) {
       storeApps = data.result[2];
       if (storeApps) {
         storeApp = storeApps.findByProperty(function (a) {
-          return (a[4] === app.package_name)
+          return (a[4] === app.package_name && a[3] === app.os)
         }).element;
       }
       callback(storeApp)
@@ -350,18 +353,16 @@ var AdmobV2 = function (publisherId, accounts) {
 
   AdmobV2.prototype.linkLocalApp = function (app) {
     var self = this;
-    if (!self.storeIds.includes(app.package_name)) {
-      self.searchAppInStores(app, function (storeApp) {
-        if (storeApp) {
-          self.updateAppStoreHash(app, storeApp, function (localApp) {
-            if (localApp) {
-              app.localApp = localApp;
-              console.log("App #" + app.id + " has been linked to store");
-            }
-          })
-        }
-      })
-    }
+    self.searchAppInStores(app, function (storeApp) {
+      if (storeApp) {
+        self.updateAppStoreHash(app, storeApp, function (localApp) {
+          if (localApp) {
+            app.localApp = localApp;
+            console.log("App #" + app.id + " has been linked to store");
+          }
+        })
+      }
+    })
   };
 
   AdmobV2.prototype.getAdunitsScheme = function(callback) {
