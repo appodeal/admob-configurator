@@ -1,4 +1,4 @@
-var AdmobV2 = function (publisherId, accounts) {
+var AdmobV2 = function (accounts) {
   this.accounts = accounts;
   this.modal = new Modal();
   AdmobV2.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
