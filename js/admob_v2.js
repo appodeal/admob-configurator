@@ -245,24 +245,24 @@ var AdmobV2 = function (publisherId, accounts) {
       console.log('Start creating apps');
       if (items['appodeal_apps']) {
         if (items['created_admob_app']) {
-        self.createdApps = items['created_admob_apps']
-        self.createdApps.forEach(function(created_app){
-          self.appodealApps = self.appodealApps.filter(app => app[1] !== created_app[1] && app[2] !== created_app[2])
-        })
-        self.appodealApps.forEach(function(appodealApp, index, app) {
-          self.createAdmobApp(appodealApp, function(){
-            callback();
+          self.createdApps = items['created_admob_apps']
+          self.createdApps.forEach(function(created_app){
+            self.appodealApps = self.appodealApps.filter(app => app[1] !== created_app[1] && app[2] !== created_app[2])
+          })
+          self.appodealApps.forEach(function(appodealApp, index, app) {
+            self.createAdmobApp(appodealApp, function(){
+              callback();
+            });
           });
-        });
-        callback();
+          callback();
         } else {
-        self.createdApps = [];
-        self.appodealApps.forEach(function(appodealApp, index, app) {
-          self.createAdmobApp(appodealApp, function(){
-            callback();
+          self.createdApps = [];
+          self.appodealApps.forEach(function(appodealApp, index, app) {
+            self.createAdmobApp(appodealApp, function(){
+              callback();
+            });
           });
-        });
-        callback();
+          callback();
         }
       } else {
         console.log('No apps to create');
@@ -295,7 +295,6 @@ var AdmobV2 = function (publisherId, accounts) {
       self.storeIds = $.map(self.activeAdmobApps, function (localApp, i) {
         return (localApp[4]);
       });
-      callback();
     }
     callback();
   };
@@ -502,7 +501,6 @@ var AdmobV2 = function (publisherId, accounts) {
             self.deleteOldAdunits(self.adunitsToDelete);
             }
           }
-          callback();
         }
         callback();
       })     
@@ -955,7 +953,7 @@ var AdmobV2 = function (publisherId, accounts) {
         }
         self.getAppodealApps(function() {
           self.getAdmobApps(function() {
-            self.removeOldAdunits(function(){
+            self.removeOldAdunits(function() {
               self.selectStoreIds(function() {
                 self.filterApps(function() {
                   self.createMissingApps(function() {
