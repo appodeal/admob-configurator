@@ -1,5 +1,4 @@
-var AdmobV2 = function (publisherId, accounts) {
-  this.publisherId = publisherId;
+var AdmobV2 = function (accounts) {
   this.accounts = accounts;
   this.modal = new Modal();
   AdmobV2.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
@@ -48,7 +47,7 @@ var AdmobV2 = function (publisherId, accounts) {
     $.ajax({
       method: "GET",
       url: AdmobV2.appodealAppsUrl,
-      data: { account: self.publisherId },
+      data: { account: self.accountId },
       async: false
     })
       .done(function (data) {
@@ -428,7 +427,7 @@ var AdmobV2 = function (publisherId, accounts) {
     $.ajax({
       method: "GET",
       url: AdmobV2.deletedAppsUrl,
-      data: { account: self.publisherId },
+      data: { account: self.accountId },
       async: false
     })
       .done(function (data) {
