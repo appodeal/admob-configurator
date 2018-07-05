@@ -174,12 +174,13 @@ var AdmobV2 = function (accounts) {
     return (admobAppName === appodealApp.app_name && admobApp[3] === appodealApp.os || admobApp[4] === appodealApp.package_name && admobApp[3] === appodealApp.os)
   };
 
-  AdmobV2.prototype.hideApp = function(app_id, callback) {
+  AdmobV2.prototype.changeAppVisibility = function(app_id, visibility, callback) {
+    // visibility false to hide app, visibility true to remove app from hidden
     var self = this;
     try {
-      self.inventoryPost({
+      self.admobPost({
         method: "updateMobileApplicationVisibility",
-        params: {"2":[app_id], "3":false},
+        params: {"2":[app_id], "3":visibility},
         xsrf: self.token
       }, function (data) {
         callback();
@@ -205,12 +206,21 @@ var AdmobV2 = function (accounts) {
             }).element;
             wrongPlatformApp = self.activeAdmobApps.findByProperty(function(admobApp) {
               return (admobApp[1] === appodealApp.admob_app_id && admobApp[3] !== appodealApp.os)
-            })
+            }).element
             if (wrongPlatformApp) {
               console.log('Hiding wrong platform app: ' + wrongPlatformApp[1])
-              self.hideApp(wrongPlatformApp[1], function() {
+              self.changeAppVisibility(wrongPlatformApp[1], false, function() {
                 console.log('App hidden: ' + wrongPlatformApp[1])
               })
+              hiddenRightPlatformApp = self.hiddenAdmobApps.findByProperty(function(admob_app) {
+                return (appodealApp.os === admob_app[3] && (appodealApp.package_name === admob_app[4]) || self.admobAppName(admob_app) === appodealApp.app_name )
+              }).element
+              if (hiddenRightPlatformApp) {
+                self.changeAppVisibility(hiddenRightPlatformApp[1], true, function() {
+                  mappedApp = hiddenRightPlatformApp;
+                  console.log("App #" + appodealApp.id + " was restored")
+                })
+              }
             }
             if (mappedApp) {
               appodealApp.localApp = mappedApp;
