@@ -30,7 +30,10 @@ ReportingStepTwoController = (function () {
                 })
             } else if ((disableApiBtn.length || disableApiBtnOld.length)) {
                 airbrake.error.call(projectToLocation)
+            } else {
+                airbrake.error.call(projectToLocation)
             }
+
         } catch (err) {
             airbrake.error.notify(err);
         }
