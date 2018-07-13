@@ -571,12 +571,12 @@ var AdmobV2 = function (accounts) {
             }
           });
         });
-        self.progressBar = new ProgressBar(self.needCreatedAdunits.length);
         if (items['created_adunits']) {
           items['created_adunits'].forEach(function(created_adunit) {
             self.needCreatedAdunits = self.needCreatedAdunits.filter(adunit => adunit[1] !== created_adunit[1])
           })
         }
+        self.progressBar = new ProgressBar(self.needCreatedAdunits.length);
         self.needCreatedAdunits.forEach(function(adunit) {
           self.createAdunit(adunit);
         });
