@@ -261,7 +261,7 @@ ReportingStepFourController = (function () {
                     run_script(name_code + origins_code + redirect_uris_code + submit_form_code);
                     waitUntilClientInfoPresent();
                 }), 3000);
-            }), 1000);
+            }), 3000);
         } catch (err) {
             airbrake.error.notify(err);
         }
