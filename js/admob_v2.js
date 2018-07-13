@@ -858,6 +858,7 @@ var AdmobV2 = function (accounts) {
       }
       if (self.appsToSync) {
         self.appsToSync.forEach(function(syncing_app) {
+          self.modal.show("Appodeal Chrome Extension", "Syncing with appodeal...");
           self.syncWithServer(syncing_app, function (params) {
             if (params.apps.length) {
               self.syncPost(params, function (data) {
