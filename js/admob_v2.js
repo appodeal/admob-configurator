@@ -571,12 +571,12 @@ var AdmobV2 = function (accounts) {
             }
           });
         });
-        self.progressBar = new ProgressBar(self.needCreatedAdunits.length);
         if (items['created_adunits']) {
           items['created_adunits'].forEach(function(created_adunit) {
             self.needCreatedAdunits = self.needCreatedAdunits.filter(adunit => adunit[1] !== created_adunit[1])
           })
         }
+        self.progressBar = new ProgressBar(self.needCreatedAdunits.length);
         self.needCreatedAdunits.forEach(function(adunit) {
           self.createAdunit(adunit);
         });
@@ -858,6 +858,7 @@ var AdmobV2 = function (accounts) {
       }
       if (self.appsToSync) {
         self.appsToSync.forEach(function(syncing_app) {
+          self.modal.show("Appodeal Chrome Extension", "Syncing with appodeal...");
           self.syncWithServer(syncing_app, function (params) {
             if (params.apps.length) {
               self.syncPost(params, function (data) {
