@@ -562,7 +562,9 @@ var AdmobV2 = function (accounts) {
           self.adunitsScheme[key].forEach(function(adunit) {
             appodealAdunit = adunit;
             adunit = items['admob_adunits'].findByProperty(function(localAdunit) {
-              return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && localAdunit[9] === 0);
+              appodeal_unit_formats = JSON.stringify(appodealAdunit.formats);
+              admob_unit_formats = JSON.stringify(localAdunit[16]);
+              return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && localAdunit[9] === 0 && appodeal_unit_formats === admob_unit_formats);
             }).element
             if (adunit) {
               self.existAdunits.push(adunit);
