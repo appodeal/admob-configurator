@@ -562,7 +562,7 @@ var AdmobV2 = function (accounts) {
           self.adunitsScheme[key].forEach(function(adunit) {
             appodealAdunit = adunit;
             adunit = items['admob_adunits'].findByProperty(function(localAdunit) {
-              return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && localAdunit[9] === 0);
+              return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && localAdunit[9] === 0)
             }).element
             if (adunit) {
               self.existAdunits.push(adunit);
@@ -606,6 +606,82 @@ var AdmobV2 = function (accounts) {
     appodeal_formats = JSON.stringify(appodeal_adunit.formats);
     return (admob_adunit[3] === appodeal_adunit.name && admob_adunit[9] === 0 && admob_formats === appodeal_formats);
   }
+
+  AdmobV2.prototype.updateAdunit = function(adunit) {
+    var self = this;
+    console.log('Update adunit ' + adunit[3]);
+    params = {
+      "method": "updateAdUnit",
+      "params": {
+        "2": {
+          "1": adunit[1],
+          "2": adunit[2],
+          "3": adunit[3],
+          "9": adunit[9],
+          "11": adunit[11],
+          "14": adunit[14],
+          "15": adunit[15],
+          "16": adunit[16],
+          "17": adunit[17],
+          "21": adunit[21],
+          "23": adunit[23]
+        }
+      },
+      "xsrf": self.token
+    };
+    self.admobPost(params, function (data) {
+      console.log('Adunit was updated: ' + data.result[1][2][0][3]);
+      self.updatedAdunits.push(data.result[1][2][0]);
+    })
+  };
+
+  AdmobV2.prototype.updateExistingAdunits = function(callback) {
+    var self = this;
+    console.log('Begin search of adunits with wrong formats')
+    chrome.storage.local.get({
+      'admob_adunits': null
+    }, function(items) {
+      if (items['admob_adunits']) {
+        self.needUpdatedAdunits = [];
+        self.updatedAdunits = [];
+        admob_adunits = items['admob_adunits']
+        keys = Object.keys(self.adunitsScheme)
+        keys.forEach(function(key) {
+          self.adunitsScheme[key].forEach(function(appodealAdunit) {
+            adunit = admob_adunits.findByProperty(function(localAdunit) {
+              appodeal_unit_formats = JSON.stringify(appodealAdunit.formats);
+              admob_unit_formats = JSON.stringify(localAdunit[16]);
+              return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && localAdunit[9] === 0 && appodeal_unit_formats !== admob_unit_formats);
+            }).element
+            if (adunit) {
+              adunit[16] = appodealAdunit.formats;
+              self.needUpdatedAdunits.push(adunit);
+            } else {
+              return;
+            }
+          });
+        });
+        if (self.needUpdatedAdunits) {
+          console.log('Found adunits which need to be updated: ' + self.needUpdatedAdunits)
+          self.needUpdatedAdunits.forEach(function(adunit) {
+            self.updateAdunit(adunit);
+            admob_adunits.filter(local_adunit => local_adunit[1] === adunit[1]);
+            admob_adunits.push(adunit);
+          });
+        } else {
+          console.log('No adunits to update!');
+          callback();
+        }
+        chrome.storage.local.set({
+          'admob_adunits': admob_adunits,
+          'created_adunits': self.updatedAdunits
+        });
+        callback();  
+      } else {
+        callback();
+      }
+    });
+  };
 
   AdmobV2.prototype.removeBadAdunits = function(callback) {
     var self = this;
@@ -979,18 +1055,20 @@ var AdmobV2 = function (accounts) {
                   self.linkApps(function() {
                     self.storeApps(function() {
                       self.getAdunitsScheme(function() {
-                        self.createLocalAdunits(function() {
-                          self.getAdmobApps(function() {
-                            self.syncApps(function() {
-                              self.finishDialog();
-                              self.sendReports({
-                                mode: 0,
-                                note: "json"
-                              }, [JSON.stringify({message: "Finish", admob: self})], function () {
-                                console.log("Sent finish inventory report");
-                              });
-                            });   
-                          })
+                        self.updateExistingAdunits(function() {
+                          self.createLocalAdunits(function() {
+                            self.getAdmobApps(function() {
+                              self.syncApps(function() {
+                                self.finishDialog();
+                                self.sendReports({
+                                  mode: 0,
+                                  note: "json"
+                                }, [JSON.stringify({message: "Finish", admob: self})], function () {
+                                  console.log("Sent finish inventory report");
+                                });
+                              });   
+                            });
+                          });
                         });
                       });
                     });
