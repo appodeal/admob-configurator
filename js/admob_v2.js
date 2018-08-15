@@ -58,7 +58,9 @@ var AdmobV2 = function (accounts) {
           });
           callback();
         } else {
-          console.log("Appodeal applications not found. Please add applications to Appodeal.");
+          message = "Appodeal applications not found. Please add applications to Appodeal. Check what admob account is selected for apps"
+          self.modal.show("Appodeal Chrome Extension", message);
+          console.log(message);
         }
       })
       .fail(function (data) {
