@@ -58,7 +58,7 @@ var AdmobV2 = function (accounts) {
           });
           callback();
         } else {
-          message = "Appodeal applications not found. Please add applications to Appodeal. Check what admob account is selected for apps"
+          message = "Appodeal applications not found. Please add applications to Appodeal. Check what admob account is selected for apps";
           self.modal.show("Appodeal Chrome Extension", message);
           console.log(message);
         }
@@ -74,10 +74,10 @@ var AdmobV2 = function (accounts) {
       method: 'initialize',
       params: {},
       xsrf: self.token
-    }
+    };
     options = {
       url: AdmobV2.admobAppsUrl
-    }
+    };
     params = JSON.stringify(json);
 
     $.ajax({
@@ -190,7 +190,7 @@ var AdmobV2 = function (accounts) {
     } catch (err) {
       console.log(err);
     }
-  }
+  };
 
 
   AdmobV2.prototype.filterApps = function(callback) {
@@ -208,15 +208,15 @@ var AdmobV2 = function (accounts) {
             }).element;
             wrongPlatformApp = self.activeAdmobApps.findByProperty(function(admobApp) {
               return (admobApp[1] === appodealApp.admob_app_id && admobApp[3] !== appodealApp.os)
-            }).element
+            }).element;
             if (wrongPlatformApp) {
               console.log('Hiding wrong platform app: ' + wrongPlatformApp[1])
               self.changeAppVisibility(wrongPlatformApp[1], false, function() {
                 console.log('App hidden: ' + wrongPlatformApp[1])
-              })
+              });
               hiddenRightPlatformApp = self.hiddenAdmobApps.findByProperty(function(admob_app) {
                 return (appodealApp.os === admob_app[3] && (appodealApp.package_name === admob_app[4]) || self.admobAppName(admob_app) === appodealApp.app_name )
-              }).element
+              }).element;
               if (hiddenRightPlatformApp) {
                 self.changeAppVisibility(hiddenRightPlatformApp[1], true, function() {
                   mappedApp = hiddenRightPlatformApp;
@@ -234,14 +234,14 @@ var AdmobV2 = function (accounts) {
             appodealApps = items['appodeal_apps'];
           }
         });
-        self.mappedApps = mappedApps
-        self.appodealApps = appodealApps
+        self.mappedApps = mappedApps;
+        self.appodealApps = appodealApps;
         chrome.storage.local.set({
           'mapped_apps': mappedApps,
           'appodeal_apps': appodealApps
         });
         callback();
-      };
+      }
     });
   };
 
@@ -260,7 +260,7 @@ var AdmobV2 = function (accounts) {
       method: "insertInventory",
       params: {2: {2: name, 3: app.os}},
       xsrf: self.token
-    }
+    };
     self.admobPost(json, function(data) {
       app.localApp = data.result[1][1][0]
       self.createdApps.push(app);
@@ -284,7 +284,7 @@ var AdmobV2 = function (accounts) {
           self.createdApps = items['created_admob_apps']
           self.createdApps.forEach(function(created_app){
             self.appodealApps = self.appodealApps.filter(app => app[1] !== created_app[1] && app[2] !== created_app[2])
-          })
+          });
           self.appodealApps.forEach(function(appodealApp, index, app) {
             self.createAdmobApp(appodealApp, function(){
               callback();
@@ -429,7 +429,7 @@ var AdmobV2 = function (accounts) {
       var localAdunit = data.result[1][2][0];
       self.createdAdunits.push(data.result[1][2][0]);
       self.progressBar.increase();
-    })
+    });
     chrome.storage.local.set({
       'created_adunits': self.createdAdunits
     });
@@ -469,7 +469,7 @@ var AdmobV2 = function (accounts) {
       tempArray.push(myChunk);
     }
     return tempArray;
-  }
+  };
 
   AdmobV2.prototype.removeOldAdunits = function(callback) {
     var self = this;
@@ -484,7 +484,7 @@ var AdmobV2 = function (accounts) {
           self.deletedAppIds.forEach(function (deleted_id) {
             deletedApp = items['admob_apps'].findByProperty(function(admob_app) {
               return (deleted_id === admob_app[1])
-            }).element
+            }).element;
             if (deletedApp) {
               self.deletedApps.push(deleted_id);
             } else {
@@ -494,14 +494,14 @@ var AdmobV2 = function (accounts) {
           self.deletedApps.forEach(function (deleted_app) {
             deleted_app_adunits = items['admob_adunits'].filter(function (adunit) {
               return (adunit[2] === deleted_app && adunit[9] === 0 && adunit[3].indexOf('Appodeal') !== -1)
-            })
+            });
             if (deleted_app_adunits) {
               deleted_app_adunits = $.map(deleted_app_adunits, function(adunit) { return adunit[1]; })
               self.adunitsToDelete = self.adunitsToDelete.concat(deleted_app_adunits)  
             } else {
               return;
             }
-          })
+          });
           if (self.adunitsToDelete.length > 0) {
             if (self.adunitsToDelete.length > 50) {
               console.log('Start removing adunits');
@@ -565,7 +565,7 @@ var AdmobV2 = function (accounts) {
             appodealAdunit = adunit;
             adunit = items['admob_adunits'].findByProperty(function(localAdunit) {
               return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && localAdunit[9] === 0)
-            }).element
+            }).element;
             if (adunit) {
               self.existAdunits.push(adunit);
             } else {
@@ -588,7 +588,7 @@ var AdmobV2 = function (accounts) {
           callback();
         });
         keys = Object.keys(self.adunitsScheme);
-        adunits_length = 0
+        adunits_length = 0;
         keys.forEach(function(key) {
           adunits_length += self.adunitsScheme[key].length
         });
