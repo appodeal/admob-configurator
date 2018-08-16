@@ -76,9 +76,5 @@ AdUnitController = (function () {
 })();
 
 $(document).ready(function () {
-    if (confirm('Start Syncing Process?')) {
-      AdUnitController.init();
-    } else {
-        return;
-    }
+    AdUnitController.init();
 });
