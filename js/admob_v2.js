@@ -561,6 +561,9 @@ var AdmobV2 = function (accounts) {
         });
         keys = Object.keys(self.adunitsScheme);
         keys.forEach(function(key) {
+          if (self.adunitsScheme[key]['account_with_restrictions']) {
+            self.modal.show("Appodeal Chrome Extension", 'This account restricted to create certain ad types, use another account to create other ad types');
+          }
           self.adunitsScheme[key].forEach(function(adunit) {
             appodealAdunit = adunit;
             adunit = items['admob_adunits'].findByProperty(function(localAdunit) {
