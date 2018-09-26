@@ -1,11 +1,13 @@
 var ReportingStepThreeController, modal, consents_interval, email_credentials;
+var angular = require('angular');
 
 ReportingStepThreeController = (function() {
     var initOtherLibrary, wait_for_consents, setEmailCredential, getEmail;
     wait_for_consents = function () {
-        var save_button, script, console_log_code, select_save_code, name_code, set_val_code, code;
+        var save_button, new_save_button, script, console_log_code, select_save_code, name_code, domain_code, set_domain_code, set_val_code, code;
         try {
             save_button = jQuery("jfk-button[jfk-on-action='ctrl.submit()']");
+            new_save_button = jQuery("jfk-button[jfk-on-action='ctrl.saveBrandAndRedirect()']");
             if (save_button.length) {
                 clearInterval(consents_interval);
                 appendJQuery(function () {
@@ -15,6 +17,27 @@ ReportingStepThreeController = (function() {
                     name_code = "jQuery(\"[ng-model='ctrl.data.displayName']\")";
                     set_val_code = name_code + ".val('Appodeal Revenue');" + "angular.element(" + name_code + ").triggerHandler('input');";
                     code = console_log_code + set_val_code + "setTimeout(function() {angular.element(" + select_save_code + ").controller().submit();}, 1000);";
+                    script.appendChild(document.createTextNode(code));
+                    document.getElementsByTagName('head')[0].appendChild(script);
+                    console.log("Save button clicked");
+                    getEmail();
+                    setEmailCredential(locationProjectName());
+                });
+            } else if (new_save_button.length) {
+                clearInterval(consents_interval);
+                appendJQuery(function () {
+                    script = document.createElement('script');
+                    console_log_code = "console.log('Set project name and save'); ";
+                    element = "[ng-model='ctrl.domainInput']";
+                    element2 = "[ng-model='ctrl.oauthBrand.displayName']";
+                    select_save_code = "jQuery(\"jfk-button[jfk-on-action='ctrl.saveBrandAndRedirect()']\")";
+                    name_code = "jQuery(\"[ng-model='ctrl.oauthBrand.displayName']\")";
+                    set_val_code = name_code + ".val('Appodeal Revenue');" + "angular.element(" + name_code + ").triggerHandler('input');";
+                    angular.element(element).focus();
+                    angular.element(element).val("appodeal.com");
+                    angular.element(element)[0].dispatchEvent(new Event('input'));
+                    angular.element(element2).focus();
+                    code = console_log_code + set_val_code + "setTimeout(function() {angular.element(" + select_save_code + ").controller().saveBrandAndRedirect();}, 1000);";
                     script.appendChild(document.createTextNode(code));
                     document.getElementsByTagName('head')[0].appendChild(script);
                     console.log("Save button clicked");
