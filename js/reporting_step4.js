@@ -1,4 +1,5 @@
 var ReportingStepFourController, modal, credentials_interval, redirect_uri = REDIRECT_URI;
+var angular = require('angular');
 
 ReportingStepFourController = (function () {
 
@@ -254,12 +255,83 @@ ReportingStepFourController = (function () {
                 setTimeout((function () {
                     var name_code, origins_code, redirect_uris_code, submit_form_code;
                     console.log('Insert display name, redirect and origins urls');
-                    name_code = 'angular.element(jQuery("' + ':input[ng-model=\'oAuthEditorCtrl.client.displayName\']")).controller().client.displayName = \'Appodeal client\';';
-                    origins_code = 'angular.element(jQuery("ng-form[ng-model=\'oAuthEditorCtrl.client.postMessageOrigins\']")).controller().client.postMessageOrigins = ' + origins + ';';
-                    redirect_uris_code = 'angular.element(jQuery("ng-form[ng-model=\'oAuthEditorCtrl.client.redirectUris\']")).controller().client.redirectUris = ' + redirectUris + ';';
-                    submit_form_code = 'angular.element(jQuery("form[name=\'clientForm\']")).controller().submitForm();';
-                    run_script(name_code + origins_code + redirect_uris_code + submit_form_code);
-                    waitUntilClientInfoPresent();
+                    old_name_element = "[ng-model='oAuthEditorCtrl.client.displayName']";
+                    if (angular.element(old_name_element)[0] == null) {
+                        origins = [APPODEAL_URL, APPODEAL_URL_NOT_WWW, APPODEAL_URL_SSL, APPODEAL_URL_SSL_NOT_WWW];
+                        name_code = "[ng-model='oAuthEditorCtrl.oauthClient.displayName']";
+                        origins_code = "[ng-model='ctrl.originInput']";
+                        redirect_uris_code = "[ng-model='ctrl.uriInput']";
+
+                      var wait = function (time) {
+                        return new Promise((resolve) => {
+                          setTimeout(() => {
+                            resolve();
+                          }, time);
+                        });
+                      };
+
+                      var updateInput = (input, value, otherInput) => {
+                        return new Promise(resolve => {
+                          setTimeout(() => {
+                            angular.element(input).focus();
+                            angular.element(input).val(value);
+                            angular.element(input)[0].dispatchEvent(new Event('input'));
+                            if (otherInput) {
+                              setTimeout(() => {
+                                angular.element(otherInput).focus();
+                              }, 100);
+                              setTimeout(() => {
+                                resolve();
+                              }, 500)
+                            } else {
+                              resolve();
+                            }
+                          })
+                        }, 1000);
+                      };
+
+                      var actions = [];
+                      var addActions = (newActions) => {
+                         if (Array.isArray(newActions)) {
+                           actions = [...actions, ...newActions];
+                         } else {
+                           actions.push(newActions)
+                         }
+                      };
+                      console.log('Fill account data');
+
+                      addActions(() => updateInput(name_code, 'Appodeal client'));
+
+                      addActions(origins.map(function (origin) {
+                        return () => updateInput(origins_code, origin, name_code)
+                      }));
+
+                      addActions(origins.map(function (uri) {
+                        uri = uri + '/admin/oauth2callback';
+                        return () => updateInput(redirect_uris_code, uri, name_code);
+                      }));
+
+                      addActions(() => {
+                        angular.element("button[type='submit']").click();
+                        return wait(3000);
+                      });
+                      addActions(() => {
+                        waitUntilClientInfoPresent();
+                      });
+
+
+                      actions.reduce((currentPromise, action) => {
+                          return currentPromise.then(action);
+                      }, Promise.resolve());
+
+                    } else {
+                        name_code = 'angular.element(jQuery("' + ':input[ng-model=\'oAuthEditorCtrl.client.displayName\']")).controller().client.displayName = \'Appodeal client\';';
+                        origins_code = 'angular.element(jQuery("ng-form[ng-model=\'oAuthEditorCtrl.client.postMessageOrigins\']")).controller().client.postMessageOrigins = ' + origins + ';';
+                        redirect_uris_code = 'angular.element(jQuery("ng-form[ng-model=\'oAuthEditorCtrl.client.redirectUris\']")).controller().client.redirectUris = ' + redirectUris + ';';
+                        submit_form_code = 'angular.element(jQuery("form[name=\'clientForm\']")).controller().submitForm();';
+                        run_script(name_code + origins_code + redirect_uris_code + submit_form_code);
+                        waitUntilClientInfoPresent();
+                    }
                 }), 3000);
             }), 3000);
         } catch (err) {
