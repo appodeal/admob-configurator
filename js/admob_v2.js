@@ -932,6 +932,18 @@ var AdmobV2 = function (accounts) {
           })
         }
       }
+      if (self.mappedApps.length > 0) {
+        self.reportApps = []
+        self.mappedApps.forEach(function (app) {
+          if (app.ad_units.length === 0) {
+            app.localAdunits = self.admobAdunits.filter(adunit => adunit[2] === app.localApp[1]);
+            if (app.localAdunits.length > 0) {
+              self.appsToSync.push(app)
+              self.reportApps.push(app)
+            }
+          }
+        });
+      }
       if (self.appsToSync) {
         self.appsToSync.forEach(function(syncing_app) {
           self.modal.show("Appodeal Chrome Extension", "Syncing with appodeal...");
@@ -974,22 +986,37 @@ var AdmobV2 = function (accounts) {
       try {
         report_human = [];
         if (items['created_admob_apps'] === null) {
-          if (items['created_adunits'] === null) {
+          if (items['created_adunits'].length === 0 && self.reportApps.length === 0) {
             noAppsMsg = "New apps not found.";
             report_human.push("<h4>" + noAppsMsg + "</h4>");
           } else {
-            apps = [];
-            app_ids = new Set($.map(items['created_adunits'], function(adunit) { return (adunit[2]) }))
-            app_ids.forEach(function(app_id) {
-              app = self.mappedApps.findByProperty(function(app) {
+            if (items['created_adunits'].length > 0) {
+              apps = [];
+              app_ids = new Set($.map(items['created_adunits'], function (adunit) {
+                return (adunit[2])
+              }))
+              app_ids.forEach(function (app_id) {
+                app = self.mappedApps.findByProperty(function (app) {
                   return (app.localApp[1] === app_id)
-              }).element
-              report_human.push("<h4>" + app.localApp[2] + "</h4>");
-              app_adunits = items['created_adunits'].filter(adunit => adunit[2] === app.localApp[1])
-              app_adunits.forEach(function(adunit) {
-                report_human.push("<p style='margin-left: 10px'>" + adunit[3] + "</p>");
+                }).element
+                report_human.push("<h4>" + app.localApp[2] + "</h4>");
+                app_adunits = items['created_adunits'].filter(adunit => adunit[2] === app.localApp[1])
+                app_adunits.forEach(function (adunit) {
+                  report_human.push("<p style='margin-left: 10px'>" + adunit[3] + "</p>");
+                })
               })
-            })
+            }
+            if (self.reportApps.length > 0) {
+              self.reportApps.forEach(function (element) {
+                report_human.push("<h4>" + element.localApp[2] + "</h4>");
+                app_adunits = self.admobAdunits.filter(adunit => adunit[2] === element.localApp[1])
+                if (app_adunits.length > 0) {
+                  app_adunits.forEach(function(adunit) {
+                    report_human.push("<p style='margin-left: 10px'>" + adunit[3] + "</p>");
+                  })
+                }
+              });
+            }
           }
         } else {
           items['created_admob_apps'].forEach(function (element) {
