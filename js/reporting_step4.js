@@ -134,7 +134,7 @@ ReportingStepFourController = (function () {
         }, function (items) {
             var email, json, message, url;
             try {
-                url = APPODEAL_URL_SSL + '/admob_plugin/api/v1/add_admob_account.json';
+                url = APPODEAL_API_URL + '/admob_plugin/api/v1/add_admob_account.json';
                 email = items.email_credentials;
                 if (email === '' || email === null) {
                     message = 'Error creating admob account. Not find user email from console';
