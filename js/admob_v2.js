@@ -171,7 +171,7 @@ var AdmobV2 = function (accounts) {
   AdmobV2.prototype.compareApps = function(appodealApp, admobApp) {
     var self = this;
     admobAppName = self.admobAppName(admobApp);
-    return (admobAppName === appodealApp.app_name && admobApp[3] === appodealApp.os || admobApp[4] === appodealApp.package_name && admobApp[3] === appodealApp.os)
+    return (admobApp[4] === appodealApp.package_name && admobApp[3] === appodealApp.os && appodealApp.search_in_store || admobAppName === appodealApp.app_name && admobApp[3] === appodealApp.os)
   };
 
   AdmobV2.prototype.changeAppVisibility = function(app_id, visibility, callback) {
