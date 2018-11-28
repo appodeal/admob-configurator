@@ -895,7 +895,7 @@ var AdmobV2 = function (accounts) {
   };
 
   AdmobV2.prototype.syncWithServer = function (app, callback) {
-    var self = this, params = {account: this.accountId, apps: []};
+    var self = this, params = { account: this.accountId, app: {} };
     self.report = [];
     if (app) {
       var id, name, admob_app_id, adunits, h;
@@ -905,7 +905,7 @@ var AdmobV2 = function (accounts) {
       self.newAdunitsForServer(app, function(adunits) {
         h = {id: id, name: name, admob_app_id: admob_app_id, adunits: adunits};
         if (h.admob_app_id !== app.admob_app_id || h.adunits.length) {
-          params.apps.push(h);
+          params.app = h;
         }
       });
     }
@@ -948,12 +948,12 @@ var AdmobV2 = function (accounts) {
         self.appsToSync.forEach(function(syncing_app) {
           self.modal.show("Appodeal Chrome Extension", "Syncing with appodeal...");
           self.syncWithServer(syncing_app, function (params) {
-            if (params.apps.length) {
+            if (params.app != null) {
               self.syncPost(params, function (data) {
                 var items = [];
-                items.push("<h4>" + params.apps[0].name + "</h4>");
-                if (params.apps[0].adunits) {
-                  params.apps[0].adunits.forEach(function (adunit) {
+                items.push("<h4>" + params.app.name + "</h4>");
+                if (params.app.adunits) {
+                  params.app.adunits.forEach(function (adunit) {
                     items.push(adunit.name);
                   });
                 }
