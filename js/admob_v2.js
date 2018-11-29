@@ -1,6 +1,7 @@
 var AdmobV2 = function (accounts) {
   this.accounts = accounts;
   this.modal = new Modal();
+  AdmobV2.version = extensionVersion();
   AdmobV2.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
   AdmobV2.admobAppsUrl = "https://apps.admob.com/tlcgwt/inventory";
   AdmobV2.syncUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/sync_inventory";
@@ -72,10 +73,10 @@ var AdmobV2 = function (accounts) {
       method: 'initialize',
       params: {},
       xsrf: self.token
-    }
+    };
     options = {
       url: AdmobV2.admobAppsUrl
-    }
+    };
     params = JSON.stringify(json);
 
     $.ajax({
@@ -933,12 +934,12 @@ var AdmobV2 = function (accounts) {
         }
       }
       if (self.mappedApps.length > 0) {
-        self.reportApps = []
+        self.reportApps = [];
         self.mappedApps.forEach(function (app) {
           if (app.ad_units.length === 0) {
             app.localAdunits = self.admobAdunits.filter(adunit => adunit[2] === app.localApp[1]);
             if (app.localAdunits.length > 0) {
-              self.appsToSync.push(app)
+              self.appsToSync.push(app);
               self.reportApps.push(app)
             }
           }
