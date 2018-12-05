@@ -920,7 +920,7 @@ var AdmobV2 = function (accounts) {
       'created_adunits': null,
       'created_admob_apps': null
     }, function(items) {
-      if (items['sync_apps']) {
+      if (items['sync_apps'] && items['sync_apps'].length > 0) {
         items['sync_apps'].forEach(function(synced_app) {
           self.appsToSync = items['created_admob_apps'].filter(app => app.localApp[1] === synced_app.localApp[1])
         })
