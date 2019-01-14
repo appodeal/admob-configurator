@@ -111,7 +111,7 @@ function waitForElement(selector, numberRequests, callback) {
 }
 
 // base send logs
-function sendLogs(mode, part, version, items, callback) {
+function sendLogs(mode, part, version, items) {
     var json = {"part": part, "mode": mode, "version": version, "items": items};
     var params = JSON.stringify(json);
     $.ajax({

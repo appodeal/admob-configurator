@@ -1,3 +1,4 @@
+// TODO: remove legacy code
 var Admob = function (publisherId, accountEmail, accounts, interstitialBids, bannerBids, mrecBids, rewarded_videoBids) {
     this.airbrake = airbrake;
     this.publisherId = publisherId;
