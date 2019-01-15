@@ -4,6 +4,7 @@ var AdmobV2 = function (accounts) {
   AdmobV2.version = extensionVersion();
   AdmobV2.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
   AdmobV2.admobAppsUrl = "https://apps.admob.com/tlcgwt/inventory";
+  AdmobV2.admobPostUrl = "https://apps.admob.com/inventory/_/rpc";
   AdmobV2.syncUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/sync_inventory";
   AdmobV2.appodealAppsUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/apps_with_ad_units";
   AdmobV2.adunitsSchemeUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/adunits_for_admob";
@@ -29,7 +30,7 @@ var AdmobV2 = function (accounts) {
     }
   };
 
-  
+
   AdmobV2.prototype.findByProperty = function (condition) {
     var self = this;
     for (var i = 0, len = self.length; i < len; i++) {
@@ -109,25 +110,38 @@ var AdmobV2 = function (accounts) {
       });
   };
 
-  AdmobV2.prototype.admobPost = function(json, callback) {
-    var self = this;
-    params = JSON.stringify(json);
-    $.ajax({
-      method: 'POST',
-      url: AdmobV2.admobAppsUrl,
-      contentType: 'application/javascript; charset=UTF-8',
-      dataType: 'json',
-      data: params,
-      async: false
-    })
-      .done(function(data) {
-        if (data.result) {
-          callback(data);
-        }
-      })
-      .fail(function (data) {
-        console.log('Failed to make admob post request');
-      });
+  AdmobV2.prototype.admobApiRaw = function (serviceName, method, payload) {
+        let self = this;
+        return new Promise((resolve, reject) => {
+
+            $.ajax({
+                method: 'POST',
+                beforeSend: function (request) {
+                    request.setRequestHeader('accept', '*/*');
+                    request.setRequestHeader('x-framework-xsrf-token', self.token);
+                },
+                url: [AdmobV2.admobPostUrl, serviceName, method].join('/'),
+                contentType: 'application/x-www-form-urlencoded',
+                dataType: 'json',
+                data: `__ar=${encodeURIComponent(JSON.stringify(payload))}`,
+                async: false
+            })
+                .done(function (data) {
+                    if (data.error) {
+                        throw data;
+                    }
+                    resolve(data);
+                })
+                .fail(function (data) {
+                    console.log('Failed to make admob post request');
+                    reject(data);
+                });
+        });
+    };
+
+  AdmobV2.prototype.admobApi = function (serviceName, method, payload) {
+
+    return this.admobApiRaw(serviceName, method, {'1': payload}).then((data) => data[1]);
   };
 
   AdmobV2.prototype.getHiddenAdmobApps = function (apps) {
@@ -165,7 +179,7 @@ var AdmobV2 = function (accounts) {
     if (appName) {
       return appName[2];
     } else {
-      return app[2];  
+      return app[2];
     }
   };
 
@@ -178,17 +192,9 @@ var AdmobV2 = function (accounts) {
   AdmobV2.prototype.changeAppVisibility = function(app_id, visibility, callback) {
     // visibility false to hide app, visibility true to remove app from hidden
     var self = this;
-    try {
-      self.admobPost({
-        method: "updateMobileApplicationVisibility",
-        params: {"2":[app_id], "3":visibility},
-        xsrf: self.token
-      }, function (data) {
-        callback();
-      });
-    } catch (err) {
-      console.log(err);
-    }
+    self.admobApiRaw('AppService', 'BulkUpdateVisibility', {"2":[app_id], "3":visibility})
+        .then(() => callback())
+        .catch(e => console.log(e))
   }
 
 
@@ -252,23 +258,23 @@ var AdmobV2 = function (accounts) {
   };
 
   AdmobV2.prototype.createAdmobApp = function (app) {
-    var self = this, name, params;
-    name = self.defaultAppName(app);
-    console.log("Create app " + name);
-    json = {
-      method: "insertInventory",
-      params: {2: {2: name, 3: app.os}},
-      xsrf: self.token
-    }
-    self.admobPost(json, function(data) {
-      app.localApp = data.result[1][1][0]
-      self.createdApps.push(app);
-      self.mappedApps.push(app);
-    });
-    chrome.storage.local.set({
-      'created_admob_apps': self.createdApps,
-      'mapped_apps': self.mappedApps
-    });
+      let self = this, name;
+      name = self.defaultAppName(app);
+      console.log('Create app ' + name);
+
+      return self.admobApi('AppService', 'Create', {2: name, 3: app.os})
+          .then(data => {
+              app.localApp = data;
+              self.createdApps.push(app);
+              self.mappedApps.push(app);
+              return app;
+          }).then(r => {
+              chrome.storage.local.set({
+                  'created_admob_apps': self.createdApps,
+                  'mapped_apps': self.mappedApps
+              });
+              return r;
+          });
   };
 
   AdmobV2.prototype.createMissingApps = function (callback) {
@@ -277,32 +283,24 @@ var AdmobV2 = function (accounts) {
       'created_admob_apps': null,
       'appodeal_apps': null
     }, function(items) {
-      console.log('Start creating apps');
-      if (items['appodeal_apps']) {
-        if (items['created_admob_app']) {
-          self.createdApps = items['created_admob_apps']
-          self.createdApps.forEach(function(created_app){
-            self.appodealApps = self.appodealApps.filter(app => app[1] !== created_app[1] && app[2] !== created_app[2])
-          })
-          self.appodealApps.forEach(function(appodealApp, index, app) {
-            self.createAdmobApp(appodealApp, function(){
-              callback();
-            });
-          });
-          callback();
+        console.log('Start creating apps');
+        if (items['appodeal_apps']) {
+            if (items['created_admob_app']) {
+                self.createdApps = items['created_admob_apps'];
+                self.createdApps.forEach(function (created_app) {
+                    self.appodealApps = self.appodealApps.filter(app => app[1] !== created_app[1] && app[2] !== created_app[2]);
+                });
+                Promise.all(self.appodealApps.map(appodealApp => self.createAdmobApp(appodealApp)))
+                    .then(() => callback());
+            } else {
+                self.createdApps = [];
+                Promise.all(self.appodealApps.map(appodealApp => self.createAdmobApp(appodealApp)))
+                    .then(() => callback());
+            }
         } else {
-          self.createdApps = [];
-          self.appodealApps.forEach(function(appodealApp, index, app) {
-            self.createAdmobApp(appodealApp, function(){
-              callback();
-            });
-          });
-          callback();
+            console.log('No apps to create');
+            callback();
         }
-      } else {
-        console.log('No apps to create');
-        callback();
-      }
     });
   };
 
@@ -315,12 +313,10 @@ var AdmobV2 = function (accounts) {
   };
 
   AdmobV2.prototype.updateAppStoreHash = function (app, storeApp, callback) {
-    var self = this, params;
-    console.log("Update app #" + app.id + " store hash");
-    params = {
-      method: "updateMobileApplication",
-      params: {
-        2: {
+
+      console.log('Update app #' + app.id + ' store hash');
+
+      this.admobApi('AppService', 'Update', {
           1: app.localApp[1],
           2: storeApp[2],
           3: storeApp[3],
@@ -328,40 +324,28 @@ var AdmobV2 = function (accounts) {
           6: storeApp[6],
           19: 0,
           21: {1: 0, 5: 0}
-        }
-      },
-        xsrf: self.token
-    };
-    self.admobPost(params, function (data) {
-      var localApp = data.result[1][1][0];
-      if (localApp) {
-        callback(localApp);
-      }
-    }, {
-      skip: true
-    })
+      }).then(function (data) {
+          var localApp = data.result[1][1][0];
+          if (localApp) {
+              callback(localApp);
+          }
+      });
   };
 
   AdmobV2.prototype.searchAppInStores = function (app, callback) {
     var self = this, searchString = app.package_name, params;
     console.log("Search app #" + app.id + " in stores");
-    params = {
-      "method": "searchMobileApplication",
-      "params": {"2": searchString, "3": 0, "4": 10},
-      "xsrf": self.token
-    };
-    self.admobPost(params, function (data) {
-      var storeApps, storeApp;
-      storeApps = data.result[2];
-      if (storeApps) {
-        storeApp = storeApps.findByProperty(function (a) {
-          return (a[4] === app.package_name && a[3] === app.os)
-        }).element;
-      }
-      callback(storeApp)
-    }, {
-      skip: true
-    })
+    self.admobApiRaw('AppService', 'Search',  {"1": searchString, "2": 0, "3": 10, "4": app.os})
+        .then((data) => {
+            var storeApps, storeApp;
+            storeApps = data[2];
+            if (storeApps) {
+                storeApp = storeApps.findByProperty(function (a) {
+                    return (a[4] === app.package_name && a[3] === app.os)
+                }).element;
+            }
+            callback(storeApp)
+        })
   };
 
   AdmobV2.prototype.linkLocalApp = function (app) {
@@ -396,41 +380,34 @@ var AdmobV2 = function (accounts) {
   AdmobV2.prototype.createAdunit = function(adunit) {
     var self = this;
     console.log('Create adunit ' + adunit.name);
-    params = {
-      "method": "insertInventory",
-      "params": {
-        "3": {
+    let payload = {
           "2": adunit.app,
           "3": adunit.name,
           "14": adunit.ad_type,
           "16": adunit.formats,
           "21": true,
           "23": {"1":1}
-        }
-      },
-      "xsrf": self.token
-    };
+        };
     if (adunit.bid) {
-      params.params[3][23] =  {"1":3, "3":{"1":{"1":adunit.bid, "2":"USD"}}};
+      payload[23] =  {"1":3, "3":{"1":{"1":adunit.bid, "2":"USD"}}};
     }
 
     if (adunit.reward_settings) {
-      params.params[3][21] = null;
-      params.params[3][17] = true;
-      params.params[3][18] = adunit.reward_settings;
+      payload[21] = null;
+      payload[17] = true;
+      payload[18] = adunit.reward_settings;
     }
 
     if (adunit.google_optimized) {
-      params.params[3][21] = adunit.google_optimized;
+      payload[21] = adunit.google_optimized;
     }
 
-    self.admobPost(params, function (data) {
-      var localAdunit = data.result[1][2][0];
-      self.createdAdunits.push(data.result[1][2][0]);
-      self.progressBar.increase();
-    })
-    chrome.storage.local.set({
-      'created_adunits': self.createdAdunits
+    return self.admobApi('AdUnitService', 'Create', payload).then(adUnit => {
+        self.createdAdunits.push(adUnit);
+        self.progressBar.increase();
+        chrome.storage.local.set({
+            'created_adunits': self.createdAdunits
+        });
     });
   };
 
@@ -461,7 +438,7 @@ var AdmobV2 = function (accounts) {
     var index = 0;
     var arrayLength = myArray.length;
     var tempArray = [];
-      
+
     for (index = 0; index < arrayLength; index += chunk_size) {
       myChunk = myArray.slice(index, index+chunk_size);
       // Do something if you want with the group
@@ -496,7 +473,7 @@ var AdmobV2 = function (accounts) {
             })
             if (deleted_app_adunits) {
               deleted_app_adunits = $.map(deleted_app_adunits, function(adunit) { return adunit[1]; })
-              self.adunitsToDelete = self.adunitsToDelete.concat(deleted_app_adunits)  
+              self.adunitsToDelete = self.adunitsToDelete.concat(deleted_app_adunits)
             } else {
               return;
             }
@@ -515,30 +492,18 @@ var AdmobV2 = function (accounts) {
           }
         }
         callback();
-      })     
+      })
     })
   };
 
   AdmobV2.prototype.deleteOldAdunits = function (adunits_ids) {
+    // AdUnitService/BulkRemove
     var self = this;
-    json = {
-      method: "archiveInventory",
-      params: { 3: adunits_ids },
-      xsrf: self.token
-    };
-    params = JSON.stringify(json);
-    $.ajax({
-      method: "POST",
-      url: AdmobV2.admobAppsUrl,
-      data: params,
-      contentType: "application/javascript; charset=UTF-8",
-      dataType: "json",
-      async: false
-    })
-      .done(function (data) {
+    self.admobApi('AdUnitService','BulkRemove', adunits_ids)
+      .then(function (data) {
         console.log('Finish removing old adunits:' + adunits_ids);
       })
-      .fail(function (data) {
+      .catch(function (data) {
         console.log('Failed to remove old adunits');
       });
   };
@@ -609,31 +574,26 @@ var AdmobV2 = function (accounts) {
   }
 
   AdmobV2.prototype.updateAdunit = function(adunit) {
-    var self = this;
-    console.log('Update adunit ' + adunit[3]);
-    params = {
-      "method": "updateAdUnit",
-      "params": {
-        "2": {
-          "1": adunit[1],
-          "2": adunit[2],
-          "3": adunit[3],
-          "9": adunit[9],
-          "11": adunit[11],
-          "14": adunit[14],
-          "15": adunit[15],
-          "16": adunit[16],
-          "17": adunit[17],
-          "21": adunit[21],
-          "23": adunit[23]
-        }
-      },
-      "xsrf": self.token
-    };
-    self.admobPost(params, function (data) {
-      console.log('Adunit was updated: ' + data.result[1][2][0][3]);
-      self.updatedAdunits.push(data.result[1][2][0]);
-    })
+      var self = this;
+      console.log('Update adunit ' + adunit[3]);
+      const payload = {
+          '1': adunit[1],
+          '2': adunit[2],
+          '3': adunit[3],
+          '9': adunit[9],
+          '11': adunit[11],
+          '14': adunit[14],
+          '15': adunit[15],
+          '16': adunit[16],
+          '17': adunit[17],
+          '21': adunit[21],
+          '23': adunit[23]
+      };
+
+      self.admobApi('AdUnitService', 'Update', payload).then((data) => {
+          console.log('Adunit was updated: ' + data);
+          self.updatedAdunits.push(data);
+      });
   };
 
   AdmobV2.prototype.updateExistingAdunits = function(callback) {
@@ -677,7 +637,7 @@ var AdmobV2 = function (accounts) {
           'admob_adunits': admob_adunits,
           'created_adunits': self.updatedAdunits
         });
-        callback();  
+        callback();
       } else {
         callback();
       }
@@ -769,9 +729,7 @@ var AdmobV2 = function (accounts) {
       }
       return h;
     });
-    sendLogs(params.mode, 3, self.version, reportItems, function () {
-      callback();
-    })
+    sendLogs(params.mode, 3, self.version, reportItems);
   };
 
   AdmobV2.prototype.syncPost = function (json, callback) {
@@ -968,13 +926,13 @@ var AdmobV2 = function (accounts) {
                 })
               });
             }
-          });  
+          });
         });
         chrome.storage.local.remove('sync_apps')
-        callback(); 
+        callback();
       } else {
         callback();
-      }   
+      }
     })
   };
 
@@ -1088,13 +1046,14 @@ var AdmobV2 = function (accounts) {
                             self.getAdmobApps(function() {
                               self.syncApps(function() {
                                 self.finishDialog();
+                                  chrome.storage.local.remove("admob_processing");
                                 self.sendReports({
                                   mode: 0,
                                   note: "json"
                                 }, [JSON.stringify({message: "Finish", admob: self})], function () {
                                   console.log("Sent finish inventory report");
                                 });
-                              });   
+                              });
                             });
                           });
                         });

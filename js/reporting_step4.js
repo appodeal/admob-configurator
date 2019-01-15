@@ -276,9 +276,11 @@ ReportingStepFourController = (function () {
                             angular.element(input).focus();
                             angular.element(input).val(value);
                             angular.element(input)[0].dispatchEvent(new Event('input'));
+                            document.querySelector(input).dispatchEvent(new Event('input'));
                             if (otherInput) {
                               setTimeout(() => {
                                 angular.element(otherInput).focus();
+                                  document.querySelector(otherInput).focus();
                               }, 100);
                               setTimeout(() => {
                                 resolve();
