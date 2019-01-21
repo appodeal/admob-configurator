@@ -27,16 +27,16 @@ ReportingStepTwoController = (function () {
                     run_script(code);
                 }
                 waitForElement(disableApiBtnSelector, null, function (element) {
-                    airbrake.error.call(projectToLocation)
+                    projectToLocation()
                 })
             } else if ((disableApiBtn.length || disableApiBtnOld.length || disableApiBtnNew.length)) {
-                airbrake.error.call(projectToLocation)
+                projectToLocation()
             } else {
-                airbrake.error.call(projectToLocation)
+                projectToLocation()
             }
 
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     projectToLocation = function () {
@@ -58,5 +58,7 @@ ReportingStepTwoController = (function () {
 })();
 
 $(document).ready(function () {
-    ReportingStepTwoController.init();
+    Raven.context(function () {
+        ReportingStepTwoController.init();
+    });
 });

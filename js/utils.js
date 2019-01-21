@@ -18,14 +18,7 @@ var compareVersions = require('compare-versions');
 chrome.storage.local.get({
     'airbrake_js': null
 }, function (items) {
-    if (items.airbrake_js){
-        projectId = items.airbrake_js.projectId;
-        projectKey = items.airbrake_js.projectKey;
-
-        airbrake = new AirbrakeController(projectId, projectKey);
-    }
-
-    airbrake = new AirbrakeController(projectId, projectKey);
+    // just to wait :)
 });
 
 // get project name in google console from current url

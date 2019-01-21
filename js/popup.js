@@ -139,6 +139,7 @@ LoadController = (function() {
   };
   updateAppodealCredentials = function(result, callback) {
     localCredentials = {};
+    Raven.setUserContext(result);
     if (result['plugin_status']['account']) {
       localCredentials['appodeal_admob_account_id'] = result['plugin_status']['account'];
     } else {
