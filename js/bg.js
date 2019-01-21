@@ -1,9 +1,21 @@
 var BackgroundController;
 
 BackgroundController = (function () {
-    var initOtherLibrary, airbrake, onMessage, onMessageExternal, webNavigation, notificationsParams, need_resync_report;
+
+    function getFromLocalStorage (keys, callback) {
+
+        Raven.context(function () {
+            chrome.storage.local.get(keys, function (...args) {
+                Raven.context(function () {
+                    callback(...args);
+                });
+            });
+        });
+    }
+
+    var initOtherLibrary, onMessage, onMessageExternal, webNavigation, notificationsParams, need_resync_report;
     initOtherLibrary = function (callback) {
-        chrome.storage.local.get({
+        getFromLocalStorage({
             'airbrake_js': null
         }, function (items) {
             // just to wait :(
@@ -71,8 +83,8 @@ BackgroundController = (function () {
     };
     webNavigation = function () {
         chrome.webNavigation.onCompleted.addListener(function (details) {
-            chrome.storage.local.get('reporting_tab_id', function (result) {
-                if (result['reporting_tab_id'] && details.tabId.toString() === result['reporting_tab_id'].toString()) {
+            getFromLocalStorage('reporting_tab_id', function (result) {
+                if (result && result['reporting_tab_id'] && details.tabId.toString() === result['reporting_tab_id'].toString()) {
                     var details_url = details.url.toString();
                     if (details_url.match(/\/apiui\/credential/) || details_url.match(/credentials\?project=/) || details_url.match(
                         /credentials\/oauthclient\?project=/) || details_url.match(/credentials\?highlightClient=/) || details_url.match(
@@ -104,11 +116,11 @@ BackgroundController = (function () {
         });
     };
     need_resync_report = function () {
-        chrome.storage.local.get({
+        getFromLocalStorage({
             'credential_error': null
         }, function (items) {
             // credential_error
-            if (items.credential_error) {
+            if (items && items.credential_error) {
                 $.each(items.credential_error, function (key, val) {
                     var title = 'Appodeal Chrome Extension';
                     var message = 'Sorry, the action of your Token expired \n' + val.email + '( ' + val.publisher_id + '). Please re-sync account!';
