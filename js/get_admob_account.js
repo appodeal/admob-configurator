@@ -42,7 +42,7 @@ AdmobAccountController = (function () {
                             throw new Error(message);
                         }
                     }catch (err) {
-                        airbrake.error.notify(err);
+                        Raven.captureException(err);
                     }
                 }, 1000);
             }, 5000);
@@ -53,7 +53,7 @@ AdmobAccountController = (function () {
             Url = window.location.href;
             if (!Url.match(/apps\.admob\.com\/signup\/create-account/)){
                 initOtherLibrary('Start configure admob reporting api');
-                airbrake.error.call(latestCriticalReportingApi);
+                latestCriticalReportingApi();
             }
         }
     };
@@ -61,5 +61,7 @@ AdmobAccountController = (function () {
 
 $(document).ready(function () {
     console.log('get_admob_account');
-    AdmobAccountController.init();
+    Raven.context(function () {
+        AdmobAccountController.init();
+    });
 });

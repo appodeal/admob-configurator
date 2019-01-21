@@ -24,7 +24,7 @@ LibraryController = function () {
             }
             return data;
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
 
@@ -48,7 +48,7 @@ LibraryController = function () {
             }
             return str;
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
 
@@ -72,7 +72,7 @@ LibraryController = function () {
                         }
                     }
                 } catch (err) {
-                    airbrake.error.notify(err);
+                    Raven.captureException(err);
                 }
             }
         });
@@ -102,7 +102,7 @@ LibraryController = function () {
                             }
                         }
                     } catch (err) {
-                        airbrake.error.notify(err);
+                        Raven.captureException(err);
                     }
                 }
             });
@@ -200,7 +200,7 @@ LibraryController = function () {
                 find_from_create(id_project);
             });
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     find_from_create = function (id_project) {
@@ -229,7 +229,7 @@ LibraryController = function () {
                                             modal.show("Appodeal Chrome Extension", message);
                                             sendOut(0, message + '\n ' +JSON.stringify(value));
                                             clearInterval(refreshIntervalId);
-                                            airbrake.error.notify(message);
+                                            Raven.captureException(message);
                                             break;
                                         default:
                                             sendOut(0, JSON.stringify(value));
@@ -240,7 +240,7 @@ LibraryController = function () {
                         }
                     }
                 } catch (err) {
-                    airbrake.error.notify(err);
+                    Raven.captureException(err);
                 }
             };
             req.send(null);
@@ -254,19 +254,21 @@ LibraryController = function () {
             console.log("Redirect to the new project", page_url);
             return page_url;
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     return {
         init: function () {
             initOtherLibrary('Creating new project from the library page (new accounts)');
-            airbrake.error.call(find);
+            find();
         }
     }
 }();
 
 $(document).ready(function () {
     setTimeout(function () {
-        LibraryController.init();
+        Raven.context(function () {
+            LibraryController.init();
+        });
     }, 500);
 });

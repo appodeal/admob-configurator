@@ -58,7 +58,7 @@ AdUnitController = (function () {
                 }
             })
         } catch (err) {
-            airbrake.error.notify(err)
+            Raven.captureException(err)
         }
     };
     return {
@@ -76,5 +76,7 @@ AdUnitController = (function () {
 })();
 
 $(document).ready(function () {
-    AdUnitController.init();
+    Raven.context(function () {
+        AdUnitController.init();
+    });
 });

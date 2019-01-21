@@ -32,14 +32,14 @@ ReportingStepFourController = (function () {
                 startCredentialsCreating();
             }
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     outhclientPageLink = function () {
         try {
             return oauthPageUrl(locationProjectName());
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     startCredentialsCreating = function () {
@@ -47,7 +47,7 @@ ReportingStepFourController = (function () {
             console.log('Start credentials creating');
             document.location = outhclientPageLink();
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     getClientIdAndSecretIdFromDetailsAndRun = function () {
@@ -58,7 +58,7 @@ ReportingStepFourController = (function () {
             clientSecret = secretSpan.text().trim();
             checkAndSaveClientCredentials(clientId, clientSecret);
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     resetCredentialSecret = function () {
@@ -87,7 +87,7 @@ ReportingStepFourController = (function () {
                     }
                 }
             } catch (err) {
-                airbrake.error.notify(err);
+                Raven.captureException(err);
             }
         }), 1000);
     };
@@ -151,7 +151,7 @@ ReportingStepFourController = (function () {
                 };
                 modal.show('Appodeal Chrome Extension', 'Please grant permission to Appodeal to read your Admob reports.<br>You will be automatically redirected in 5 seconds.');
             } catch (err) {
-                airbrake.error.notify(err);
+                Raven.captureException(err);
             }
             setTimeout((function () {
                 var http;
@@ -192,7 +192,7 @@ ReportingStepFourController = (function () {
                                 throw new Error(message);
                             }
                         } catch (err) {
-                            airbrake.error.notify(err);
+                            Raven.captureException(err);
                         }
                     }), 5000);
                 };
@@ -223,14 +223,14 @@ ReportingStepFourController = (function () {
             });
             callback(result)
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     findAppodealClient = function () {
         try {
             return jQuery('tr[pan-table-row] td a[content*=\'appodeal.com/admin/oauth2callback\']').parents('tr[pan-table-row]');
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     waitUntilClientInfoPresent = function () {
@@ -239,7 +239,7 @@ ReportingStepFourController = (function () {
                 console.log('Redirect to credentials page');
                 document.location = credentialPageUrl(locationProjectName());
             } catch (err) {
-                airbrake.error.notify(err);
+                Raven.captureException(err);
             }
         }), 5000);
     };
@@ -337,7 +337,7 @@ ReportingStepFourController = (function () {
                 }), 3000);
             }), 3000);
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     return {
@@ -358,5 +358,7 @@ ReportingStepFourController = (function () {
 })();
 
 $(document).ready(function () {
-    ReportingStepFourController.init();
+    Raven.context(function () {
+        ReportingStepFourController.init();
+    });
 });

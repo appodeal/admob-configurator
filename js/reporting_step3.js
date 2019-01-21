@@ -46,7 +46,7 @@ ReportingStepThreeController = (function() {
                 });
             }
         } catch (err) {
-            airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     };
     initOtherLibrary = function (message) {
@@ -63,7 +63,7 @@ ReportingStepThreeController = (function() {
                     email_credentials = request.data.pantheon_account_chooser_data[1][4];
                 } catch (err) {
                     email_credentials = null;
-                    airbrake.error.notify(err);
+                    Raven.captureException(err);
                 }
                 chrome.storage.local.set({
                     "email_credentials": email_credentials

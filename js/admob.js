@@ -84,7 +84,7 @@ Admob.prototype.humanReport = function () {
                 report_human.push("<p style='margin-left: 10px'>" + element + "</p>");
             }
         } catch (err) {
-            self.airbrake.error.notify(err);
+            Raven.captureException(err);
         }
     });
     return report_human;
@@ -111,7 +111,7 @@ Admob.prototype.finishDialog = function () {
             console.log("Sent finish reports");
         });
     } catch (err) {
-        self.airbrake.error.notify(err);
+        Raven.captureException(err);
     }
 };
 

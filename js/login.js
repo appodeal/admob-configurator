@@ -24,7 +24,7 @@ LoginController = (function () {
                 chrome.storage.local.remove('appodeal_email')
             }
         } catch (err) {
-            airbrake.error.notify(err)
+            Raven.captureException(err)
         }
     };
     return {
@@ -35,5 +35,7 @@ LoginController = (function () {
     };
 })();
 $(document).ready(function () {
-    LoginController.init();
+    Raven.context(function () {
+        LoginController.init();
+    });
 });
