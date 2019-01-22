@@ -134,6 +134,8 @@ var AdmobV2 = function (accounts) {
                 })
                 .fail(function (data) {
                     console.log('Failed to make admob post request');
+                    console.log('Payload', JSON.stringify(payload));
+                    console.log('Error', JSON.stringify(data));
                     reject(data);
                 });
         });
