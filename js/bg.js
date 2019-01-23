@@ -34,51 +34,54 @@ BackgroundController = (function () {
     };
     onMessage = function () {
         chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-            switch (request.type) {
-            case 'shownotification':
-                chrome.notifications.create('notify', request.opt, function () {});
-                break;
-            case 'wrong_account':
-                chrome.tabs.update(
-                    {url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'},
-                    function (tab) {
-                        chrome.notifications.create(notificationsParams('basic', request), function () {});
-                    }
-                );
-                break;
-            case 'update_plugin':
-                chrome.tabs.update(
-                    {url: 'https://chrome.google.com/webstore/detail/appodeal/cnlfcihkilpkgdlnhjonhkfjjmbpbpbj'},
-                    function (tab) {
-                        chrome.notifications.create(notificationsParams('basic', request), function () {});
-                    }
-                );
-                break;
-            default:
-                break;
-            }
+            Raven.context(function () {
+                switch (request.type) {
+                case 'shownotification':
+                    chrome.notifications.create('notify', request.opt, function () {});
+                    break;
+                case 'wrong_account':
+                    chrome.tabs.update(
+                        {url: 'https://apps.admob.com/logout?continue=https://apps.admob.com/#monetize/reporting:admob/d=1&cc=USD'},
+                        function (tab) {
+                            chrome.notifications.create(notificationsParams('basic', request), function () {});
+                        }
+                    );
+                    break;
+                case 'update_plugin':
+                    chrome.tabs.update(
+                        {url: 'https://chrome.google.com/webstore/detail/appodeal/cnlfcihkilpkgdlnhjonhkfjjmbpbpbj'},
+                        function (tab) {
+                            chrome.notifications.create(notificationsParams('basic', request), function () {});
+                        }
+                    );
+                    break;
+                default:
+                    break;
+                }
+            });
         });
     };
     onMessageExternal = function () {
         chrome.runtime.onMessageExternal.addListener(function (request, sender, sendResponse) {
-            switch (request.type) {
-            case 'admob_notification':
-                chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-                    chrome.tabs.sendMessage(tabs[0].id, {type: 'to_admob', data: request}, function (response) {
+            Raven.context(function () {
+                switch (request.type) {
+                case 'admob_notification':
+                    chrome.tabs.sendMessage(sender.tab.id, {type: 'to_admob', data: request}, function (response) {
                         console.log(response);
                     });
-                });
-                break;
-            case 'console_email_notification':
-                chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-                    chrome.tabs.sendMessage(tabs[0].id, {type: 'to_console', data: request}, function (response) {
-                        console.log(response);
+
+                    break;
+                case 'console_email_notification':
+                    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+                        chrome.tabs.sendMessage(tabs[0].id, {type: 'to_console', data: request}, function (response) {
+                            console.log(response);
+                        });
                     });
-                });
-                break;
-            default:
-                break;
-            }
+                    break;
+                default:
+                    break;
+                }
+            });
         });
     };
     webNavigation = function () {

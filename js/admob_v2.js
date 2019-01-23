@@ -318,16 +318,17 @@ var AdmobV2 = function (accounts) {
 
       console.log('Update app #' + app.id + ' store hash');
 
-      this.admobApi('AppService', 'Update', {
-          1: app.localApp[1],
-          2: storeApp[2],
-          3: storeApp[3],
-          4: storeApp[4],
-          6: storeApp[6],
-          19: 0,
-          21: {1: 0, 5: 0}
+      this.admobApiRaw('AppService', 'Update', {
+          1: {
+              ...app.localApp,
+              2: storeApp[2],
+              3: storeApp[3],
+              4: storeApp[4],
+              6: storeApp[6],
+          },
+          2: {1: ['application_store_id', 'vendor']}
       }).then(function (data) {
-          var localApp = data.result[1][1][0];
+          var localApp = data[1];
           if (localApp) {
               callback(localApp);
           }
