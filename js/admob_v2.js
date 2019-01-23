@@ -366,6 +366,7 @@ var AdmobV2 = function (accounts) {
   };
 
   AdmobV2.prototype.getAdunitsScheme = function(callback) {
+    console.log('getAdunitsScheme');
     var self = this;
     params = { 'apps': self.mappedApps }
     $.ajax({
@@ -576,24 +577,13 @@ var AdmobV2 = function (accounts) {
     return (admob_adunit[3] === appodeal_adunit.name && admob_adunit[9] === 0 && admob_formats === appodeal_formats);
   }
 
-  AdmobV2.prototype.updateAdunit = function(adunit) {
+  AdmobV2.prototype.updateAdunitsAdType = function(adunit) {
       var self = this;
       console.log('Update adunit ' + adunit[3]);
-      const payload = {
-          '1': adunit[1],
-          '2': adunit[2],
-          '3': adunit[3],
-          '9': adunit[9],
-          '11': adunit[11],
-          '14': adunit[14],
-          '15': adunit[15],
-          '16': adunit[16],
-          '17': adunit[17],
-          '21': adunit[21],
-          '23': adunit[23]
-      };
-
-      self.admobApi('AdUnitService', 'Update', payload).then((data) => {
+      self.admobApiRaw('AdUnitService', 'Update', {
+          1: {...adunit},
+          2: {1: ['ad_type']}
+      }).then((data) => {
           console.log('Adunit was updated: ' + data);
           self.updatedAdunits.push(data);
       });
@@ -628,7 +618,7 @@ var AdmobV2 = function (accounts) {
         if (self.needUpdatedAdunits) {
           console.log('Found adunits which need to be updated: ' + self.needUpdatedAdunits)
           self.needUpdatedAdunits.forEach(function(adunit) {
-            self.updateAdunit(adunit);
+            self.updateAdunitsAdType(adunit);
             admob_adunits.filter(local_adunit => local_adunit[1] === adunit[1]);
             admob_adunits.push(adunit);
           });
@@ -1049,7 +1039,7 @@ var AdmobV2 = function (accounts) {
                             self.getAdmobApps(function() {
                               self.syncApps(function() {
                                 self.finishDialog();
-                                  chrome.storage.local.remove("admob_processing");
+                                  // chrome.storage.local.remove("admob_processing");
                                 self.sendReports({
                                   mode: 0,
                                   note: "json"
