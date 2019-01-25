@@ -335,21 +335,25 @@ var AdmobV2 = function (accounts) {
       });
   };
 
-  AdmobV2.prototype.searchAppInStores = function (app, callback) {
-    var self = this, searchString = app.package_name, params;
-    console.log("Search app #" + app.id + " in stores");
-    self.admobApiRaw('AppService', 'Search',  {"1": searchString, "2": 0, "3": 10, "4": app.os})
-        .then((data) => {
-            var storeApps, storeApp;
-            storeApps = data[2];
-            if (storeApps) {
-                storeApp = storeApps.findByProperty(function (a) {
-                    return (a[4] === app.package_name && a[3] === app.os)
-                }).element;
-            }
-            callback(storeApp)
-        })
-  };
+    AdmobV2.prototype.searchAppInStores = function (app, callback) {
+        var self = this, searchString = app.package_name;
+        console.log(`Search app #${app.id} in stores`);
+        self.admobApiRaw('AppService', 'Search', {'1': searchString, '2': 0, '3': 10, '4': app.os})
+            .then((data) => {
+                var storeApps, storeApp;
+                storeApps = data[2];
+                if (storeApps) {
+                    storeApp = storeApps.findByProperty(function (a) {
+                        return (a[4] === app.package_name && a[3] === app.os);
+                    }).element;
+                }
+                callback(storeApp);
+            })
+            .catch(error => {
+                console.log(`Failed to find app in store #${app.id}`);
+                console.log(error);
+            });
+    };
 
   AdmobV2.prototype.linkLocalApp = function (app) {
     var self = this;
