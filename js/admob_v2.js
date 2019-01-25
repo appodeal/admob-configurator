@@ -314,31 +314,28 @@ var AdmobV2 = function (accounts) {
     callback();
   };
 
-  AdmobV2.prototype.updateAppStoreHash = function (app, storeApp, callback) {
+  AdmobV2.prototype.updateAppStoreHash = function (app, storeApp) {
 
       console.log('Update app #' + app.id + ' store hash');
 
-      this.admobApiRaw('AppService', 'Update', {
+      return this.admobApiRaw('AppService', 'Update', {
           1: {
               ...app.localApp,
               2: storeApp[2],
               3: storeApp[3],
               4: storeApp[4],
-              6: storeApp[6],
+              6: storeApp[6]
           },
           2: {1: ['application_store_id', 'vendor']}
-      }).then(function (data) {
-          var localApp = data[1];
-          if (localApp) {
-              callback(localApp);
-          }
-      });
+      })
+          // return localApp
+          .then( (data) => data[1]);
   };
 
-    AdmobV2.prototype.searchAppInStores = function (app, callback) {
-        var self = this, searchString = app.package_name;
+    AdmobV2.prototype.searchAppInStores = function (app) {
+        var searchString = app.package_name;
         console.log(`Search app #${app.id} in stores`);
-        self.admobApiRaw('AppService', 'Search', {'1': searchString, '2': 0, '3': 10, '4': app.os})
+        return this.admobApiRaw('AppService', 'Search', {'1': searchString, '2': 0, '3': 10, '4': app.os})
             .then((data) => {
                 var storeApps, storeApp;
                 storeApps = data[2];
@@ -347,27 +344,33 @@ var AdmobV2 = function (accounts) {
                         return (a[4] === app.package_name && a[3] === app.os);
                     }).element;
                 }
-                callback(storeApp);
+                return storeApp;
             })
             .catch(error => {
                 console.log(`Failed to find app in store #${app.id}`);
-                console.log(error);
+                throw error;
             });
     };
 
-  AdmobV2.prototype.linkLocalApp = function (app) {
-    var self = this;
-    self.searchAppInStores(app, function (storeApp) {
-      if (storeApp) {
-        self.updateAppStoreHash(app, storeApp, function (localApp) {
-          if (localApp) {
-            app.localApp = localApp;
-            console.log("App #" + app.id + " has been linked to store");
-          }
-        })
-      }
-    })
-  };
+    AdmobV2.prototype.linkLocalApp = function (app) {
+        return this.searchAppInStores(app)
+            .then(storeApp => {
+                if (!storeApp) {
+                    throw new Error(`App #{app.id} not found`);
+                }
+                return this.updateAppStoreHash(app, storeApp);
+            })
+            .then(localApp => {
+                if (localApp) {
+                    app.localApp = localApp;
+                    console.log('App #' + app.id + ' has been linked to store');
+                }
+            })
+            .catch(error => {
+                console.log(`Failed to link app in store #${app.id}`);
+                console.log(error);
+            });
+    };
 
   AdmobV2.prototype.getAdunitsScheme = function(callback) {
     console.log('getAdunitsScheme');
