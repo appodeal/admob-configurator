@@ -136,7 +136,7 @@ var AdmobV2 = function (accounts) {
                     console.log('Failed to make admob post request');
                     console.log('Payload', JSON.stringify(payload));
                     console.log('Error', JSON.stringify(data));
-                    reject(data);
+                    reject(new Error(`Failed to Post to AdMob '${serviceName}' '${method}'`));
                 });
         });
     };
