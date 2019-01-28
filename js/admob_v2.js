@@ -133,10 +133,12 @@ var AdmobV2 = function (accounts) {
                     resolve(data);
                 })
                 .fail(function (data) {
-                    console.log('Failed to make admob post request');
-                    console.log('Payload', JSON.stringify(payload));
-                    console.log('Error', JSON.stringify(data));
-                    reject(new Error(`Failed to Post to AdMob '${serviceName}' '${method}'`));
+                    const error = new Error(`Failed to Post to AdMob '${serviceName}' '${method}'`);
+                    error.requestPayload = JSON.stringify(payload);
+                    error.responseData = JSON.stringify(data);
+                    Raven.captureException(error, {extra: {requestPayload: error.requestPayload, responseData: error.responseData}});
+                    console.log(error);
+                    reject(error);
                 });
         });
     };
@@ -591,7 +593,7 @@ var AdmobV2 = function (accounts) {
           1: {...adunit},
           2: {1: ['ad_type']}
       }).then((data) => {
-          console.log('Adunit was updated: ' + data);
+          console.log('Adunit was updated: ' + data[3]);
           self.updatedAdunits.push(data);
       });
   };
