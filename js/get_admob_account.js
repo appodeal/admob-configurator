@@ -21,7 +21,7 @@ AdmobAccountController = (function () {
             currentVersion = extensionVersion();
             console.log('The latest critical reporting api sync update is ' + criticalVersion);
             setTimeout(function () {
-                setInterval(function () {
+                const interval = setInterval(function () {
                     modal.show('Appodeal Chrome Extension', "Checking Admob account.");
                     try {
                         if (!criticalVersion || compareVersions(currentVersion, criticalVersion) >= 0) {
@@ -33,6 +33,7 @@ AdmobAccountController = (function () {
                                 });
                                 console.log('Done! redirecting back.');
                                 document.location.href = GOOGLE_CLOUD_CONSOLE_CREDENTIAL;
+                                clearInterval(interval)
                             } else {
                                 notLogged();
                             }
@@ -50,11 +51,18 @@ AdmobAccountController = (function () {
     };
     return {
         init: function () {
-            Url = window.location.href;
-            if (!Url.match(/apps\.admob\.com\/signup\/create-account/)){
-                initOtherLibrary('Start configure admob reporting api');
-                latestCriticalReportingApi();
+            let path = window.location.pathname;
+
+            if ([
+                `/signup/email-preferences`,
+                `/signup/create-account`
+            ].includes(path)) {
+                // ignore sign up urls
+                // UI is not ready yet
+                return;
             }
+            initOtherLibrary('Start configure admob reporting api');
+            latestCriticalReportingApi();
         }
     };
 })();

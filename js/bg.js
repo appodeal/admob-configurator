@@ -109,7 +109,13 @@ BackgroundController = (function () {
                         chrome.tabs.executeScript(details.tabId, {
                             file: 'js/reporting_step2.js'
                         });
-                    } else if (details_url.match(/projectselector\/apis\/credentials/)) {
+                    } else if (
+                        [
+                            `/projectselector2/apis/credentials`,
+                            `/projectselector/apis/credentials`
+                        ]
+                            .some(path => details_url.match(path))
+                    ) {
                         chrome.tabs.executeScript(details.tabId, {
                             file: 'js/library.js'
                         });

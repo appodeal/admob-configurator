@@ -92,11 +92,15 @@ LibraryController = function () {
                             var data = JSON.parse(readBody(response).replace(")]}'", ""));
                             if (data) {
                                 sendOut(0, readBody(response).replace(")]}'", ""));
-                                data.default.resource.forEach(function (value, index, arr) {
+                                let project = data.default.resource.find(function (value) {
                                     if (value.display_name === projectName) {
-                                        document.location.href = url_project(value.id);
+                                        return value;
                                     }
-                                }, create());
+                                });
+                                if (project) {
+                                    return document.location.href = url_project(project.id);
+                                }
+                                create();
                             } else {
                                 find();
                             }
