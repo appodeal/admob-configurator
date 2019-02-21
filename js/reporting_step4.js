@@ -275,7 +275,9 @@ ReportingStepFourController = (function () {
                           setTimeout(() => {
                             angular.element(input).focus();
                             angular.element(input).val(value);
-                            angular.element(input)[0].dispatchEvent(new Event('input'));
+                            if (angular.element(input)[0]) {
+                                angular.element(input)[0].dispatchEvent(new Event('input'));
+                            }
                             document.querySelector(input).dispatchEvent(new Event('input'));
                             if (otherInput) {
                               setTimeout(() => {
@@ -284,7 +286,7 @@ ReportingStepFourController = (function () {
                               }, 100);
                               setTimeout(() => {
                                 resolve();
-                              }, 500)
+                              }, 1500)
                             } else {
                               resolve();
                             }
