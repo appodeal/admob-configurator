@@ -90,12 +90,17 @@ var AdmobV2 = function (accounts) {
     })
       .done(function (data) {
         if (data.result) {
-          self.filterAdmobApps(data.result[1][1]);
-          self.admobApps = self.activeAdmobApps;
-          self.admobAdunits = data.result[1][2];
-          if (self.admobAdunits) {
-            self.admobAdunits = self.admobAdunits.filter(adunit => adunit[9] === 0 && adunit[3].indexOf('Appodeal') !== -1);
-          }
+            try {
+                self.filterAdmobApps(data.result[1][1]);
+                self.admobApps = self.activeAdmobApps;
+                self.admobAdunits = data.result[1][2];
+                if (self.admobAdunits) {
+                    self.admobAdunits = self.admobAdunits.filter(adunit => adunit[9] === 0 && adunit[3].indexOf('Appodeal') !== -1);
+                }
+            } catch (e) {
+                self.activeAdmobApps = [];
+                self.admobAdunits = [];
+            }
           chrome.storage.local.set({
             "admob_apps": self.activeAdmobApps,
             "admob_adunits": self.admobAdunits
@@ -607,7 +612,7 @@ var AdmobV2 = function (accounts) {
       if (items['admob_adunits']) {
         self.needUpdatedAdunits = [];
         self.updatedAdunits = [];
-        admob_adunits = items['admob_adunits']
+        admob_adunits = items['admob_adunits'].filter(v => v)
         keys = Object.keys(self.adunitsScheme)
         keys.forEach(function(key) {
           self.adunitsScheme[key].forEach(function(appodealAdunit) {
@@ -888,7 +893,7 @@ var AdmobV2 = function (accounts) {
         self.appsToSync = [];
         if (items['created_admob_apps'] || items['created_adunits']) {
           self.mappedApps.forEach(function(app) {
-            app.localAdunits = items['created_adunits'].filter(adunit => adunit[2] === app.localApp[1])
+            app.localAdunits = items['created_adunits'].filter(adunit => adunit && adunit[2] === app.localApp[1])
             if (app.localAdunits.length > 0) { self.appsToSync.push(app); }
           })
         }
@@ -961,7 +966,7 @@ var AdmobV2 = function (accounts) {
                   return (app.localApp[1] === app_id)
                 }).element
                 report_human.push("<h4>" + app.localApp[2] + "</h4>");
-                app_adunits = items['created_adunits'].filter(adunit => adunit[2] === app.localApp[1])
+                app_adunits = items['created_adunits'].filter(adunit =>adunit && adunit[2] === app.localApp[1])
                 app_adunits.forEach(function (adunit) {
                   report_human.push("<p style='margin-left: 10px'>" + adunit[3] + "</p>");
                 })
@@ -982,7 +987,7 @@ var AdmobV2 = function (accounts) {
         } else {
           items['created_admob_apps'].forEach(function (element) {
             report_human.push("<h4>" + element.localApp[2] + "</h4>");
-            app_adunits = items['created_adunits'].filter(adunit => adunit[2] === element.localApp[1])
+            app_adunits = items['created_adunits'].filter(adunit => adunit && adunit[2] === element.localApp[1])
             if (app_adunits.length > 0) {
               app_adunits.forEach(function(adunit) {
                 report_human.push("<p style='margin-left: 10px'>" + adunit[3] + "</p>");

@@ -134,7 +134,6 @@ ReportingStepFourController = (function () {
         }, function (items) {
             var email, json, message, url;
             try {
-                url = APPODEAL_API_URL + '/admob_plugin/api/v1/add_admob_account.json';
                 email = items.email_credentials;
                 if (email === '' || email === null) {
                     message = 'Error creating admob account. Not find user email from console';
@@ -154,48 +153,46 @@ ReportingStepFourController = (function () {
                 Raven.captureException(err);
             }
             setTimeout((function () {
-                var http;
-                http = new XMLHttpRequest;
-                http.open('POST', url, true);
-                http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-                http.send(JSON.stringify(json));
-                http.onreadystatechange = function () {
-                    console.log('State changed');
-                    setInterval((function () {
-                        var message, local_settings, response;
+                (new Promise(resolve => {
+                    chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+                        if (request.type === 'admob_account_added') {
+                            resolve(request.data);
+                        }
+                    });
+                    chrome.runtime.sendMessage({type: 'add_admob_account', body: JSON.stringify(json)});
+                }))
+
+                    .then(response => {
+                        var message, local_settings;
                         try {
-                            if (http.readyState === 4 && http.status === 200) {
-                                message = 'Admob account created on Appodeal.';
-                                console.log(message);
-                                response = JSON.parse(http.responseText);
-                                if (response['id'] === null) {
-                                    console.log('Error creating admob account on appodeal. Field id not null');
-                                    return;
-                                }
-                                local_settings = {
-                                    reporting_client_creating: true,
-                                    appodeal_admob_account_id: response['id']
-                                };
-                                chrome.storage.local.set(local_settings, function () {
-                                    var final_href;
-                                    console.log('redirecting to oauth...');
-                                    final_href = 'https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=' + redirect_uri + '&response_type=code&approval_prompt=force&state=' + response['id'] + ':' + clientId + '&client_id=' + clientId + '&access_type=offline';
-                                    chrome.storage.local.remove('reporting_tab_id');
-                                    document.location.href = final_href;
-                                });
-                            } else {
-                                console.log(url, JSON.stringify(json));
-                                message = 'Error creating admob account on Appodeal';
-                                sendOut(1, message);
-                                modal.show('Appodeal Chrome Extension', message);
-                                chrome.storage.local.remove('reporting_tab_id');
-                                throw new Error(message);
+
+                            message = 'Admob account created on Appodeal.';
+                            console.log(message);
+
+                            if (response['id'] === null) {
+                                console.log('Error creating admob account on appodeal. Field id not null');
+                                return;
                             }
+                            local_settings = {
+                                reporting_client_creating: true,
+                                appodeal_admob_account_id: response['id']
+                            };
+                            chrome.storage.local.set(local_settings, function () {
+                                var final_href;
+                                console.log('redirecting to oauth...');
+                                final_href = 'https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/adsense.readonly&redirect_uri=' + redirect_uri + '&response_type=code&approval_prompt=force&state=' + response['id'] + ':' + clientId + '&client_id=' + clientId + '&access_type=offline';
+                                chrome.storage.local.remove('reporting_tab_id');
+                                document.location.href = final_href;
+                            });
                         } catch (err) {
                             Raven.captureException(err);
                         }
-                    }), 5000);
-                };
+                    })
+                    .catch(e => {
+                        console.error('FALIED to save creds');
+                        console.error(e);
+                        Raven.captureException(e);
+                    });
             }), 5000);
         });
     };
@@ -246,7 +243,6 @@ ReportingStepFourController = (function () {
     addCredentials = function () {
         var origins, redirectUris;
         try {
-            origins = '[\'' + APPODEAL_URL + '/\', \'' + APPODEAL_URL_NOT_WWW + '/\', \'' + APPODEAL_URL_SSL + '/\', \'' + APPODEAL_URL_SSL_NOT_WWW + '/\']';
             redirectUris = '[\'' + APPODEAL_URL + '/admin/oauth2callback\', \'' + APPODEAL_URL_NOT_WWW + '/admin/oauth2callback\', \'' + APPODEAL_URL_SSL + '/admin/oauth2callback\', \'' + APPODEAL_URL_SSL_NOT_WWW + '/admin/oauth2callback\']';
             console.log('Redirected to oauthclient creating page.');
             setTimeout((function () {
@@ -257,7 +253,7 @@ ReportingStepFourController = (function () {
                     console.log('Insert display name, redirect and origins urls');
                     old_name_element = "[ng-model='oAuthEditorCtrl.client.displayName']";
                     if (angular.element(old_name_element)[0] == null) {
-                        origins = [APPODEAL_URL, APPODEAL_URL_NOT_WWW, APPODEAL_URL_SSL, APPODEAL_URL_SSL_NOT_WWW];
+                        origins = [APPODEAL_URL, APPODEAL_URL_NOT_WWW, APPODEAL_URL_SSL, APPODEAL_URL_SSL_NOT_WWW, APPODEAL_API_URL];
                         name_code = "[ng-model='oAuthEditorCtrl.oauthClient.displayName']";
                         origins_code = "[ng-model='ctrl.originInput']";
                         redirect_uris_code = "[ng-model='ctrl.uriInput']";

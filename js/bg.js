@@ -55,6 +55,21 @@ BackgroundController = (function () {
                         }
                     );
                     break;
+                case 'add_admob_account':
+                    const resp = sendResponse;
+                    fetch(APPODEAL_API_URL + '/admob_plugin/api/v1/add_admob_account.json', {
+                        method: 'POST',
+                        credentials: 'include',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json;charset=UTF-8'
+                        },
+                        body: request.body
+                    })
+                        .then(res => res.json())
+                        .then(json => {
+                            chrome.tabs.sendMessage(sender.tab.id, {type: 'admob_account_added', data: json})
+                        });
                 default:
                     break;
                 }
