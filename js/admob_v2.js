@@ -1,4 +1,39 @@
 var AdmobV2 = function (accounts) {
+
+    var appodealApi = {
+
+        post (url, data) {
+            var options = {
+                'method': 'POST',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'x-requested-with': `XMLHttpRequest`
+                },
+                body: $.param(data)
+            };
+            return fetchBackground(url, options,).then(r => JSON.parse(r)).catch(failedRequestLog(url, options));
+        },
+
+        postJson (url, body) {
+            var options = {
+                'method': 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                    'x-requested-with': `XMLHttpRequest`
+                },
+                body: JSON.stringify(body)
+            };
+            return fetchBackground(url, options).then(r => JSON.parse(r)).catch(failedRequestLog(url, options));
+        },
+        get (url, queryParams) {
+            if (queryParams) {
+                url += '?' + Object.entries(queryParams).map((entry) => entry.map(encodeURIComponent).join('=')).join('&');
+            }
+            var options = {'method': 'GET'};
+            return fetchBackground(url, options).then(r => JSON.parse(r)).catch(failedRequestLog(url, options));
+        }
+    };
+
   this.accounts = accounts;
   this.modal = new Modal();
   AdmobV2.version = extensionVersion();
@@ -46,13 +81,8 @@ var AdmobV2 = function (accounts) {
 
   AdmobV2.prototype.getAppodealApps = function (callback) {
     var self = this;
-    $.ajax({
-      method: "GET",
-      url: AdmobV2.appodealAppsUrl,
-      data: { account: self.accountId },
-      async: false
-    })
-      .done(function (data) {
+      appodealApi.get(AdmobV2.appodealAppsUrl, {account: self.accountId})
+      .then(function (data) {
         if (data.applications && data.applications.length) {
           console.log('Syncing Appodeal inventory')
           chrome.storage.local.set({
@@ -63,7 +93,7 @@ var AdmobV2 = function (accounts) {
           console.log("Appodeal applications not found. Please add applications to Appodeal.");
         }
       })
-      .fail(function (data) {
+      .catch(function (data) {
         console.log("Failed to get remote inventory")
       });
   };
@@ -314,11 +344,12 @@ var AdmobV2 = function (accounts) {
   };
 
   AdmobV2.prototype.storeApps = function (callback) {
-    chrome.storage.local.set({
-      'mapped_apps': self.mappedApps,
-      'appodeal_apps': self.appodealApps
-    });
-    callback();
+      var self = this;
+      chrome.storage.local.set({
+          'mapped_apps': self.mappedApps,
+          'appodeal_apps': self.appodealApps
+      });
+      callback();
   };
 
   AdmobV2.prototype.updateAppStoreHash = function (app, storeApp) {
@@ -380,19 +411,12 @@ var AdmobV2 = function (accounts) {
     };
 
   AdmobV2.prototype.getAdunitsScheme = function(callback) {
-    console.log('getAdunitsScheme');
-    var self = this;
-    params = { 'apps': self.mappedApps }
-    $.ajax({
-      method: "POST",
-      url: AdmobV2.adunitsSchemeUrl,
-      data: params,
-      async: false
-    })
-      .done(function (data) {
-        self.adunitsScheme = data;
-        callback();
-      })
+      console.log('getAdunitsScheme');
+
+      appodealApi.post(AdmobV2.adunitsSchemeUrl, {'apps': this.mappedApps}).then(data => {
+          this.adunitsScheme = data;
+          callback();
+      });
   };
 
   AdmobV2.prototype.createAdunit = function(adunit) {
@@ -429,26 +453,25 @@ var AdmobV2 = function (accounts) {
     });
   };
 
-  AdmobV2.prototype.getDeletedAppIds = function(callback) {
-    var self = this;
-    console.log('Getting removed apps')
-    $.ajax({
-      method: "GET",
-      url: AdmobV2.deletedAppsUrl,
-      data: { account: self.accountId },
-      async: false
-    })
-      .done(function (data) {
-        if (data.app_ids) {
-          self.deletedAppIds = data.app_ids.filter(app_id => app_id !== null)
-          callback();
-        } else {
-          console.log("Removed apps not found");
-          callback();
-        }
-      })
-      .fail(function (data) {
-        console.log("Failed to get removed apps")
+  AdmobV2.prototype.getDeletedAppIds = function() {
+      var self = this;
+      console.log('Getting removed apps');
+
+      return appodealApi.get(AdmobV2.deletedAppsUrl, {account: self.accountId})
+          .then(function (data) {
+              if (data.app_ids) {
+                  return data.app_ids.filter(app_id => app_id !== null);
+              } else {
+                  console.log('Removed apps not found');
+                  return [];
+              }
+          })
+          .catch(function (data) {
+              console.error(data);
+              console.log('Failed to get removed apps');
+              return [];
+          }).then(list => {
+          return  list;
       });
   };
 
@@ -471,11 +494,11 @@ var AdmobV2 = function (accounts) {
       'admob_adunits': null,
       'admob_apps': null
     }, function(items) {
-      self.getDeletedAppIds(function() {
+      self.getDeletedAppIds().then(function(deletedAppIds) {
         if (items['admob_apps']) {
           self.deletedApps = [];
           self.adunitsToDelete = [];
-          self.deletedAppIds.forEach(function (deleted_id) {
+          deletedAppIds.forEach(function (deleted_id) {
             deletedApp = items['admob_apps'].findByProperty(function(admob_app) {
               return (deleted_id === admob_app[1])
             }).element
@@ -675,8 +698,8 @@ var AdmobV2 = function (accounts) {
           })
         })
         if (badUnits) {
-          if (badUnits.length > 50) {
-            chunked_array = self.chunkArray(badUnits, 45)
+          if (badUnits.length > 10) {
+            chunked_array = self.chunkArray(badUnits, 10)
             chunked_array.forEach(function (array) {
               self.deleteOldAdunits(array);
               console.log('Bad ad units was removed: ' + array);
@@ -739,30 +762,21 @@ var AdmobV2 = function (accounts) {
     sendLogs(params.mode, 3, self.version, reportItems);
   };
 
-  AdmobV2.prototype.syncPost = function (json, callback) {
-    var self = this, params;
-    params = JSON.stringify(json);
-    $.ajax({
-      method: "POST",
-      url: AdmobV2.syncUrl,
-      contentType: "application/json",
-      dataType: "json",
-      data: params,
-      async: false
-    })
-    .done(function (data) {
-      if (data.code === 0 && data.result) {
-        callback(data);
-      } else {
-        self.jsonReport(1, "Wrong answer for a server sync request.", json, data);
-        self.showErrorDialog("Wrong answer for a server sync request.");
-      }
-    })
-    .fail(function (data) {
-      self.jsonReport(1, "Failed to make a server sync request.", json, data);
-      self.showErrorDialog("Failed to make a server sync request.");
-    });
-  };
+    AdmobV2.prototype.syncPost = function (json, callback) {
+        appodealApi.postJson(AdmobV2.syncUrl, json)
+            .then((data) => {
+                if (data.code === 0 && data.result) {
+                    callback(data);
+                } else {
+                    self.jsonReport(1, 'Wrong answer for a server sync request.', json, data);
+                    self.showErrorDialog('Wrong answer for a server sync request.');
+                }
+            })
+            .catch((data) => {
+                self.jsonReport(1, 'Failed to make a server sync request.', json, data);
+                self.showErrorDialog('Failed to make a server sync request.');
+            });
+    };
 
 
   AdmobV2.prototype.adUnitRegex = function (name) {

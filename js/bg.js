@@ -2,6 +2,13 @@ var BackgroundController;
 
 BackgroundController = (function () {
 
+
+    function errorToJson (e) {
+        const clone = {...e};
+        ['name', 'message', 'stack', 'userMessage'].forEach(name => clone[name] = e[name]);
+        return JSON.parse(JSON.stringify(clone));
+    }
+
     function getFromLocalStorage (keys, callback) {
 
         Raven.context(function () {
@@ -55,6 +62,24 @@ BackgroundController = (function () {
                         }
                     );
                     break;
+                case 'fetch': {
+                    fetch(request.url, Object.assign({}, {
+                            credentials: 'include',
+                            mode: 'cors'
+                        }, request.options)
+                    )
+                        .then(res => res.text())
+                        .then(text => {
+                            chrome.tabs.sendMessage(sender.tab.id, {type: 'fetchResult', id: request.id, ok: true, result: text});
+                        })
+                        .catch(e => {
+                            chrome.tabs.sendMessage(
+                                sender.tab.id,
+                                {type: 'fetchResult', id: request.id, ok: false, result: errorToJson(e)}
+                            );
+                        });
+                    break;
+                }
                 case 'add_admob_account':
                     const resp = sendResponse;
                     fetch(APPODEAL_API_URL + '/admob_plugin/api/v1/add_admob_account.json', {
@@ -68,7 +93,7 @@ BackgroundController = (function () {
                     })
                         .then(res => res.json())
                         .then(json => {
-                            chrome.tabs.sendMessage(sender.tab.id, {type: 'admob_account_added', data: json})
+                            chrome.tabs.sendMessage(sender.tab.id, {type: 'admob_account_added', data: json});
                         });
                 default:
                     break;

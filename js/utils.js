@@ -46,6 +46,34 @@ function iamAdminPageUrl(projectName) {
     return 'https://console.developers.google.com/iam-admin/projects?filter=name:' + projectName + '*';
 }
 
+
+function failedRequestLog (url, options) {
+    return (e) => {
+        console.error(e);
+        console.error(`Failed to ${options.method}. ${url}, ${JSON.stringify(options)}`);
+        throw e;
+    }
+}
+function fetchBackground (url, options) {
+    return new Promise((resolve, reject) => {
+        var id = Date.now() + ':' + Math.random();
+
+        function listener (request) {
+            chrome.runtime.onMessage.removeListener(listener);
+            if (request.type === 'fetchResult' && request.id === id) {
+                if (request.ok) {
+                    resolve(request.result);
+                }
+                else  {
+                    reject(request.result)
+                }
+            }
+        }
+        chrome.runtime.onMessage.addListener(listener);
+        chrome.runtime.sendMessage({type: 'fetch', id: id, url, options});
+    });
+};
+
 // page with title Create client ID
 function isOauthClientPage() {
     var page_link = document.location.toString();
@@ -105,21 +133,26 @@ function waitForElement(selector, numberRequests, callback) {
 
 // base send logs
 function sendLogs(mode, part, version, items) {
-    var json = {"part": part, "mode": mode, "version": version, "items": items};
-    var params = JSON.stringify(json);
-    $.ajax({
-        method: "POST",
-        url: APPODEAL_API_URL + "/admob_plugin/api/v1/save_extension_logs",
-        contentType: "application/json",
-        dataType: "json",
-        data: params
-    }).done(function (data) {
+
+    var url = APPODEAL_API_URL + "/admob_plugin/api/v1/save_extension_logs";
+    var options = {
+        'method': 'POST',
+        headers: {
+            'content-type': 'application/json',
+            'x-requested-with': `XMLHttpRequest`
+        },
+        body:JSON.stringify( {"part": part, "mode": mode, "version": version, "items": items})
+    };
+    return fetchBackground(url, options)
+        .then(r => JSON.parse(r))
+        .catch(failedRequestLog(url, options))
+        .then(function (data) {
             if (data.code !== 0) {
                 console.log("Wrong report answer " + JSON.stringify(json) + " -> " + JSON.stringify(data))
             }
-    }).fail(function (data) {
+    }).catch(function (data) {
             console.log("Failed to send reports " + JSON.stringify(json) + " -> " + JSON.stringify(data))
-    }).always(function (data) {
+    }).finally(function (data) {
             console.log(data);
     });
 }
