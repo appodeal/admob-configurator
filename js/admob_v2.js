@@ -27,7 +27,7 @@ var AdmobV2 = function (accounts) {
         },
         get (url, queryParams) {
             if (queryParams) {
-                url += '?' + Object.entries(queryParams).map((entry) => entry.map(encodeURIComponent).join('=')).join('&');
+                url += '?' + queryParamsToString(queryParams);
             }
             var options = {'method': 'GET'};
             return fetchBackground(url, options).then(r => JSON.parse(r)).catch(failedRequestLog(url, options));

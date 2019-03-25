@@ -17,5 +17,26 @@ Raven.context(function () {
         });
         Raven.setUserContext(result);
     });
+    setTimeout(() => {
+        // background script must send error to sentry directly
+        // content script via special transport
+        if (!window.BackgroundController) {
+            Raven.setTransport(options => {
+                var fetchOptions = {
+                    'method': 'POST',
+                    headers: {
+                        'content-type': 'application/json'
+                    },
+                    body: JSON.stringify(options.data)
+                };
+                var url = options.url + '?' + queryParamsToString(options.auth)
+                return fetchBackground(url + '?' + queryParamsToString(options.auth) , fetchOptions)
+                    .catch(failedRequestLog(url, options))
+                    .then(options.onSuccess)
+                    .catch(options.onError);
+            })
+        }
+
+    },1000)
 });
 

@@ -46,6 +46,10 @@ function iamAdminPageUrl(projectName) {
     return 'https://console.developers.google.com/iam-admin/projects?filter=name:' + projectName + '*';
 }
 
+function queryParamsToString (queryParams) {
+    return Object.entries(queryParams).map((entry) => entry.map(encodeURIComponent).join('=')).join('&')
+}
+
 
 function failedRequestLog (url, options) {
     return (e) => {
