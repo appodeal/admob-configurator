@@ -138,6 +138,7 @@ function waitForElement(selector, numberRequests, callback) {
 // base send logs
 function sendLogs(mode, part, version, items) {
 
+    var json = {"part": part, "mode": mode, "version": version, "items": items}
     var url = APPODEAL_API_URL + "/admob_plugin/api/v1/save_extension_logs";
     var options = {
         'method': 'POST',
@@ -145,7 +146,7 @@ function sendLogs(mode, part, version, items) {
             'content-type': 'application/json',
             'x-requested-with': `XMLHttpRequest`
         },
-        body:JSON.stringify( {"part": part, "mode": mode, "version": version, "items": items})
+        body:JSON.stringify(json)
     };
     return fetchBackground(url, options)
         .then(r => JSON.parse(r))
