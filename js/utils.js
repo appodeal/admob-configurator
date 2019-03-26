@@ -155,9 +155,9 @@ function sendLogs(mode, part, version, items) {
             if (data.code !== 0) {
                 console.log("Wrong report answer " + JSON.stringify(json) + " -> " + JSON.stringify(data))
             }
+            console.log(data);
     }).catch(function (data) {
             console.log("Failed to send reports " + JSON.stringify(json) + " -> " + JSON.stringify(data))
-    }).finally(function (data) {
             console.log(data);
     });
 }

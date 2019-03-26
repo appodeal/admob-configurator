@@ -4,7 +4,7 @@ BackgroundController = (function () {
 
 
     function errorToJson (e) {
-        const clone = {...e};
+        const clone = Object.assign({}, e);
         ['name', 'message', 'stack', 'userMessage'].forEach(name => clone[name] = e[name]);
         return JSON.parse(JSON.stringify(clone));
     }
