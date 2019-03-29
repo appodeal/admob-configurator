@@ -924,36 +924,40 @@ var AdmobV2 = function (accounts) {
           }
         });
       }
-      if (self.appsToSync) {
-        self.appsToSync.forEach(function(syncing_app) {
-          self.modal.show("Appodeal Chrome Extension", "Syncing with appodeal...");
-          self.syncWithServer(syncing_app, function (params) {
-            if (params.app != null) {
-              self.syncPost(params, function (data) {
-                var items = [];
-                items.push("<h4>" + params.app.name + "</h4>");
-                if (params.app.adunits) {
-                  params.app.adunits.forEach(function (adunit) {
-                    items.push(adunit.name);
-                  });
-                }
-                self.report.push.apply(self.report, items);
-                self.sendReports({mode: 0}, [items.join("\n ")], function () {
-                  console.log("Sent reports from -> " + params.apps[0].name);
+        if (self.appsToSync) {
+            let appsMap = new Map();
+            self.appsToSync.forEach(app => {
+                appsMap.set(app.id, app);
+            });
+            appsToSync.forEach(function (syncing_app) {
+                self.modal.show('Appodeal Chrome Extension', 'Syncing with appodeal...');
+                self.syncWithServer(syncing_app, function (params) {
+                    if (params.app != null) {
+                        self.syncPost(params, function (data) {
+                            var items = [];
+                            items.push('<h4>' + params.app.name + '</h4>');
+                            if (params.app.adunits) {
+                                params.app.adunits.forEach(function (adunit) {
+                                    items.push(adunit.name);
+                                });
+                            }
+                            self.report.push.apply(self.report, items);
+                            self.sendReports({mode: 0}, [items.join('\n ')], function () {
+                                console.log('Sent reports from -> ' + params.apps[0].name);
+                            });
+                            self.appsToSync = self.appsToSync.filter(app => app.localApp[1] === syncing_app.localApp[1]);
+                            chrome.storage.local.set({
+                                'sync_apps': self.appsToSync
+                            });
+                        });
+                    }
                 });
-                self.appsToSync = self.appsToSync.filter(app => app.localApp[1] === syncing_app.localApp[1] )
-                chrome.storage.local.set({
-                  'sync_apps': self.appsToSync
-                })
-              });
-            }
-          });
-        });
-        chrome.storage.local.remove('sync_apps')
-        callback();
-      } else {
-        callback();
-      }
+            });
+            chrome.storage.local.remove('sync_apps');
+            callback();
+        } else {
+            callback();
+        }
     })
   };
 
