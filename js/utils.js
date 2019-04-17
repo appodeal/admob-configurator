@@ -60,21 +60,27 @@ function failedRequestLog (url, options) {
 }
 function fetchBackground (url, options) {
     return new Promise((resolve, reject) => {
-        var id = Date.now() + ':' + Math.random();
+        try {
+            options = JSON.stringify(options);
+            var id = Date.now() + ':' + Math.random();
 
-        function listener (request) {
-            chrome.runtime.onMessage.removeListener(listener);
-            if (request.type === 'fetchResult' && request.id === id) {
-                if (request.ok) {
-                    resolve(request.result);
-                }
-                else  {
-                    reject(request.result)
+            function listener (request) {
+                chrome.runtime.onMessage.removeListener(listener);
+                if (request.type === 'fetchResult' && request.id === id) {
+                    if (request.ok) {
+                        resolve(request.result);
+                    } else {
+                        reject(request.result);
+                    }
                 }
             }
+
+            chrome.runtime.onMessage.addListener(listener);
+            chrome.runtime.sendMessage({type: 'fetch', id: id, url, options});
+        } catch (e) {
+            chrome.runtime.onMessage.removeListener(listener);
+            reject(e);
         }
-        chrome.runtime.onMessage.addListener(listener);
-        chrome.runtime.sendMessage({type: 'fetch', id: id, url, options});
     });
 };
 

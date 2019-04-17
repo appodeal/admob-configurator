@@ -66,7 +66,7 @@ BackgroundController = (function () {
                     fetch(request.url, Object.assign({}, {
                             credentials: 'include',
                             mode: 'cors'
-                        }, request.options)
+                        }, JSON.parse(request.options))
                     )
                         .then(res => res.text())
                         .then(text => {
