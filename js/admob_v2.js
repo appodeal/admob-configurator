@@ -34,6 +34,22 @@ var AdmobV2 = function (accounts) {
         }
     };
 
+    function getFromLocalStorage (keys) {
+        return new Promise((resolve, reject) => {
+            try {
+                chrome.storage.local.get(keys, function (values) {
+                    try {
+                        resolve(values);
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
   this.accounts = accounts;
   this.modal = new Modal();
   AdmobV2.version = extensionVersion();
@@ -762,14 +778,15 @@ var AdmobV2 = function (accounts) {
     sendLogs(params.mode, 3, self.version, reportItems);
   };
 
-    AdmobV2.prototype.syncPost = function (json, callback) {
+    AdmobV2.prototype.syncPost = function (json) {
         appodealApi.postJson(AdmobV2.syncUrl, json)
             .then((data) => {
                 if (data.code === 0 && data.result) {
-                    callback(data);
+                    return data;
                 } else {
                     self.jsonReport(1, 'Wrong answer for a server sync request.', json, data);
                     self.showErrorDialog('Wrong answer for a server sync request.');
+                    throw data
                 }
             })
             .catch((data) => {
@@ -834,7 +851,7 @@ var AdmobV2 = function (accounts) {
     }
   };
 
-  AdmobV2.prototype.newAdunitsForServer = function (app, callback) {
+  AdmobV2.prototype.adunitsForServer = function (app) {
     var self = this, adunits;
     local_adunits = self.admobAdunits;
     adunits = [];
@@ -846,8 +863,8 @@ var AdmobV2 = function (accounts) {
         var name, adAppId, serverAdunitFormat;
         name = l[3];
         adAppId = self.adUnitRegex(name).appId;
-        if (!adAppId || adAppId === app.id) {
-          var code, bid, adType, adTypeInt, f;
+        if (adAppId === app.id) {
+          var code, bid, adType, adTypeInt;
           try {
             code = self.adunitServerId(l[5][0][7][0][1]);
           } catch (e) {
@@ -856,109 +873,74 @@ var AdmobV2 = function (accounts) {
           bid = self.adunitBid(l);
           adType = self.adUnitRegex(name).adType;
           adTypeInt = AdmobV2.adTypes[adType];
-          f = app.ad_units.findByProperty(function (r) {
-            return (r.code === code && r.ad_type === adType && r.bid_floor === bid && r.account_key === self.accountId);
-          }).element;
-          if (!f) {
-            serverAdunitFormat = {
-              code: code,
-              ad_type: adTypeInt,
-              bid_floor: bid,
-              name: name
-            };
-            adunits.push(serverAdunitFormat);
-          }
+          serverAdunitFormat = {
+                code: code,
+                ad_type: adTypeInt,
+                bid_floor: bid,
+                name: name
+          };
+          adunits.push(serverAdunitFormat);
         }
       });
     }
-    callback(adunits);
+    return adunits;
   };
 
-  AdmobV2.prototype.syncWithServer = function (app, callback) {
-    var self = this, params = { account: this.accountId, app: {} };
-    self.report = [];
-    if (app) {
-      var id, name, admob_app_id, adunits, h;
-      id = app.id;
-      name = app.localApp[2];
-      admob_app_id = app.localApp[1];
-      self.newAdunitsForServer(app, function(adunits) {
-        h = {id: id, name: name, admob_app_id: admob_app_id, adunits: adunits};
-        if (h.admob_app_id !== app.admob_app_id || h.adunits.length) {
-          params.app = h;
-        }
-      });
-    }
-    callback(params);
-  };
-
-  AdmobV2.prototype.syncApps = function (callback) {
-    var self = this;
-    chrome.storage.local.get({
-      'sync_apps': null,
-      'created_adunits': null,
-      'created_admob_apps': null
-    }, function(items) {
-      if (items['sync_apps'] && items['sync_apps'].length > 0) {
-        items['sync_apps'].forEach(function(synced_app) {
-          self.appsToSync = items['created_admob_apps'].filter(app => app.localApp[1] === synced_app.localApp[1])
-        })
-      } else {
-        self.appsToSync = [];
-        if (items['created_admob_apps'] || items['created_adunits']) {
-          self.mappedApps.forEach(function(app) {
-            app.localAdunits = items['created_adunits'].filter(adunit => adunit && adunit[2] === app.localApp[1])
-            if (app.localAdunits.length > 0) { self.appsToSync.push(app); }
-          })
-        }
-      }
-      if (self.mappedApps.length > 0) {
-        self.reportApps = [];
-        self.mappedApps.forEach(function (app) {
-          if (app.ad_units.length === 0) {
-            app.localAdunits = self.admobAdunits.filter(adunit => adunit[2] === app.localApp[1]);
-            if (app.localAdunits.length > 0) {
-              self.appsToSync.push(app);
-              self.reportApps.push(app)
+    AdmobV2.prototype.syncWithServerPayload = function (app) {
+        return {
+            account: this.accountId,
+            app: {
+                id: app.id,
+                // app name from Admob app
+                name: app.localApp[2],
+                // App Id from Admob app
+                admob_app_id: app.localApp[1],
+                // filtered AdUnits
+                // only Adunits created By Plugin
+                // also converted to server format
+                adunits: this.adunitsForServer(app)
             }
+        };
+    };
+
+  AdmobV2.prototype.syncApps = function () {
+
+      // update adunits after reloading
+      this.mappedApps.filter(Boolean).forEach( (app) => {
+          app.localAdunits = this.admobAdunits.filter(adunit => adunit[2] === app.localApp[1]);
+      });
+
+      // sync all apps with adUnits
+      this.mappedApps
+          .filter(Boolean)
+          .filter(app => app.localAdunits.length)
+          .forEach((app) => {
+              this.syncPost(this.syncWithServerPayload(app));
+          });
+
+      return Promise.resolve();
+  };
+
+  AdmobV2.prototype.addAppsToReport = async function () {
+      const self = this;
+      await getFromLocalStorage({
+          'created_adunits': null,
+          'created_admob_apps': null
+      }).then(function (items) {
+          self.reportApps = [];
+          if (items['created_admob_apps'] || items['created_adunits']) {
+              if (self.mappedApps.length > 0) {
+                  self.mappedApps.forEach(function (app) {
+                      if (app.ad_units.length === 0) {
+                          app.localAdunits = self.admobAdunits.filter(adunit => adunit[2] === app.localApp[1]);
+                          if (app.localAdunits.length > 0) {
+                              self.reportApps.push(app);
+                          }
+                      }
+                  });
+              }
           }
-        });
-      }
-        if (self.appsToSync) {
-            let appsMap = new Map();
-            self.appsToSync.forEach(app => {
-                appsMap.set(app.id, app);
-            });
-            appsMap.forEach(function (syncing_app) {
-                self.modal.show('Appodeal Chrome Extension', 'Syncing with appodeal...');
-                self.syncWithServer(syncing_app, function (params) {
-                    if (params.app != null) {
-                        self.syncPost(params, function (data) {
-                            var items = [];
-                            items.push('<h4>' + params.app.name + '</h4>');
-                            if (params.app.adunits) {
-                                params.app.adunits.forEach(function (adunit) {
-                                    items.push(adunit.name);
-                                });
-                            }
-                            self.report.push.apply(self.report, items);
-                            self.sendReports({mode: 0}, [items.join('\n ')], function () {
-                                console.log('Sent reports from -> ' + params.apps[0].name);
-                            });
-                            self.appsToSync = self.appsToSync.filter(app => app.localApp[1] === syncing_app.localApp[1]);
-                            chrome.storage.local.set({
-                                'sync_apps': self.appsToSync
-                            });
-                        });
-                    }
-                });
-            });
-            chrome.storage.local.remove('sync_apps');
-            callback();
-        } else {
-            callback();
-        }
-    })
+      });
   };
 
   AdmobV2.prototype.humanReport = function (callback) {
@@ -1068,8 +1050,9 @@ var AdmobV2 = function (accounts) {
                       self.getAdunitsScheme(function() {
                         self.updateExistingAdunits(function() {
                           self.createLocalAdunits(function() {
-                            self.getAdmobApps(function() {
-                              self.syncApps(function() {
+                            self.getAdmobApps(async function() {
+                                await self.syncApps();
+                                await self.addAppsToReport();
                                 self.finishDialog();
                                   // chrome.storage.local.remove("admob_processing");
                                 self.sendReports({
@@ -1078,7 +1061,6 @@ var AdmobV2 = function (accounts) {
                                 }, [JSON.stringify({message: "Finish", admob: self})], function () {
                                   console.log("Sent finish inventory report");
                                 });
-                              });
                             });
                           });
                         });
