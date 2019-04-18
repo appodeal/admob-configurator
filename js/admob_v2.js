@@ -229,31 +229,43 @@ var AdmobV2 = function (accounts) {
     }
   };
 
-  AdmobV2.prototype.admobAppName = function(app) {
-    appName = app[2].match(/(\d+)\/(.*)/);
-    if (appName) {
-      return appName[2];
-    } else {
-      return app[2];
-    }
-  };
+  AdmobV2.prototype.findAdMobApp = function (appodealApp, admobApps) {
+      admobApps = admobApps || [];
+      console.log(`[FindAdMobApp] Try to map app [${appodealApp.id}] ${appodealApp.os == 1 ? 'iOS' : 'Android'} - ${appodealApp.app_name}`);
+      console.log(`[FindAdMobApp] current AdmobAppId [${appodealApp.admob_app_id ? appodealApp.admob_app_id : '-'}]`);
 
-  AdmobV2.prototype.compareApps = function(appodealApp, admobApp) {
-    var self = this;
-    admobAppName = self.admobAppName(admobApp);
-    return (admobApp[4] === appodealApp.package_name && admobApp[3] === appodealApp.os && appodealApp.search_in_store || admobAppName === appodealApp.app_name && admobApp[3] === appodealApp.os)
-  };
+      let adMobApp = appodealApp.search_in_store && appodealApp.bundle_id
+          ? admobApps.find(adMobApp => adMobApp[22] === appodealApp.bundle_id && adMobApp[3] === appodealApp.os)
+          : null;
 
-  AdmobV2.prototype.changeAppVisibility = function(app_id, visibility, callback) {
-    // visibility false to hide app, visibility true to remove app from hidden
-    var self = this;
-    self.admobApiRaw('AppService', 'BulkUpdateVisibility', {"2":[app_id], "3":visibility})
-        .then(() => callback())
-        .catch(e => console.log(e))
-  }
+      if (adMobApp) {
+          console.log('[FindAdMobApp] Found by bundle ID');
+          return adMobApp;
+      }
+
+      if (appodealApp.admob_app_id) {
+          adMobApp = admobApps.find(adMobApp => adMobApp[1] === appodealApp.admob_app_id && adMobApp[3] === appodealApp.os);
+          if (adMobApp) {
+              console.log('[FindAdMobApp] Found by adMobAppId');
+              return adMobApp;
+          } else {
+              console.log('[FindAdMobApp] has INVALID adMobAppId');
+          }
+      }
+
+      const namePattern = new RegExp(`^Appodeal/${appodealApp.id}/.*$`);
+      adMobApp = admobApps.find(adMobApp => namePattern.test(adMobApp.name) && adMobApp[3] === appodealApp.os);
+      if (adMobApp) {
+          console.log('[FindAdMobApp] Found by NAME pattern');
+          return adMobApp;
+      }
+
+      console.log('[FindAdMobApp] Failed to find App');
+      return null;
+    };
 
 
-  AdmobV2.prototype.filterApps = function(callback) {
+    AdmobV2.prototype.filterApps = function(callback) {
     var self = this;
     chrome.storage.local.get({
       'appodeal_apps': null
@@ -261,29 +273,9 @@ var AdmobV2 = function (accounts) {
       if (items['appodeal_apps']) {
         mappedApps = [];
         appodealApps = [];
-        items['appodeal_apps'].forEach(function(appodealApp, index, apps) {
+        items['appodeal_apps'].forEach(function(appodealApp) {
           if (self.activeAdmobApps) {
-            mappedApp = self.activeAdmobApps.findByProperty(function(admobApp) {
-              return self.compareApps(appodealApp, admobApp);
-            }).element;
-            wrongPlatformApp = self.activeAdmobApps.findByProperty(function(admobApp) {
-              return (admobApp[1] === appodealApp.admob_app_id && admobApp[3] !== appodealApp.os)
-            }).element
-            if (wrongPlatformApp) {
-              console.log('Hiding wrong platform app: ' + wrongPlatformApp[1])
-              self.changeAppVisibility(wrongPlatformApp[1], false, function() {
-                console.log('App hidden: ' + wrongPlatformApp[1])
-              })
-              hiddenRightPlatformApp = self.hiddenAdmobApps.findByProperty(function(admob_app) {
-                return (appodealApp.os === admob_app[3] && (appodealApp.package_name === admob_app[4]) || self.admobAppName(admob_app) === appodealApp.app_name )
-              }).element
-              if (hiddenRightPlatformApp) {
-                self.changeAppVisibility(hiddenRightPlatformApp[1], true, function() {
-                  mappedApp = hiddenRightPlatformApp;
-                  console.log("App #" + appodealApp.id + " was restored")
-                })
-              }
-            }
+            mappedApp = self.findAdMobApp(appodealApp, self.activeAdmobApps);
             if (mappedApp) {
               appodealApp.localApp = mappedApp;
               mappedApps.push(appodealApp);
