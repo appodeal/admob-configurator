@@ -1,5 +1,21 @@
 var AdmobV2 = function (accounts) {
 
+    var originalConsoleLog = console.log;
+    var originalConsoleError = console.error;
+
+    const log = [];
+    // to get log on report
+    this.log = log;
+    console.log = function () {
+        log.push(['LOG', ...arguments]);
+        originalConsoleLog.apply(console, arguments);
+    };
+
+    console.error = function () {
+        log.push(['ERROR', ...arguments]);
+        originalConsoleError.apply(console, arguments);
+    };
+
     var appodealApi = {
 
         post (url, data) {
