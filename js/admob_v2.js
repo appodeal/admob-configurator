@@ -59,7 +59,6 @@ var AdmobV2 = function (accounts) {
   AdmobV2.syncUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/sync_inventory";
   AdmobV2.appodealAppsUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/apps_with_ad_units";
   AdmobV2.adunitsSchemeUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/adunits_for_admob";
-  AdmobV2.deletedAppsUrl = APPODEAL_API_URL + '/admob_plugin/api/v1/deleted_admob_apps_ids';
 
   AdmobV2.prototype.getXsrf = function () {
     var self = this;
@@ -461,28 +460,6 @@ var AdmobV2 = function (accounts) {
     });
   };
 
-  AdmobV2.prototype.getDeletedAppIds = function() {
-      var self = this;
-      console.log('Getting removed apps');
-
-      return appodealApi.get(AdmobV2.deletedAppsUrl, {account: self.accountId})
-          .then(function (data) {
-              if (data.app_ids) {
-                  return data.app_ids.filter(app_id => app_id !== null);
-              } else {
-                  console.log('Removed apps not found');
-                  return [];
-              }
-          })
-          .catch(function (data) {
-              console.error(data);
-              console.log('Failed to get removed apps');
-              return [];
-          }).then(list => {
-          return  list;
-      });
-  };
-
   AdmobV2.prototype.chunkArray = function(myArray, chunk_size){
     var index = 0;
     var arrayLength = myArray.length;
@@ -495,55 +472,6 @@ var AdmobV2 = function (accounts) {
     }
     return tempArray;
   }
-
-  AdmobV2.prototype.removeOldAdunits = function(callback) {
-    var self = this;
-    chrome.storage.local.get({
-      'admob_adunits': null,
-      'admob_apps': null
-    }, function(items) {
-      self.getDeletedAppIds().then(function(deletedAppIds) {
-        if (items['admob_apps']) {
-          self.deletedApps = [];
-          self.adunitsToDelete = [];
-          deletedAppIds.forEach(function (deleted_id) {
-            deletedApp = items['admob_apps'].findByProperty(function(admob_app) {
-              return (deleted_id === admob_app[1])
-            }).element
-            if (deletedApp) {
-              self.deletedApps.push(deleted_id);
-            } else {
-              return;
-            }
-          });
-          self.deletedApps.forEach(function (deleted_app) {
-            deleted_app_adunits = items['admob_adunits'].filter(function (adunit) {
-              return (adunit[2] === deleted_app && adunit[9] === 0 && adunit[3].indexOf('Appodeal') !== -1)
-            })
-            if (deleted_app_adunits) {
-              deleted_app_adunits = $.map(deleted_app_adunits, function(adunit) { return adunit[1]; })
-              self.adunitsToDelete = self.adunitsToDelete.concat(deleted_app_adunits)
-            } else {
-              return;
-            }
-          })
-          if (self.adunitsToDelete.length > 0) {
-            if (self.adunitsToDelete.length > 50) {
-              console.log('Start removing adunits');
-              splitted_array = self.chunkArray(self.adunitsToDelete, 45);
-              splitted_array.forEach(function(array) {
-                self.deleteOldAdunits(array)
-              });
-            } else {
-            console.log('Start removing adunits');
-            self.deleteOldAdunits(self.adunitsToDelete);
-            }
-          }
-        }
-        callback();
-      })
-    })
-  };
 
   AdmobV2.prototype.deleteOldAdunits = function (adunits_ids) {
     // AdUnitService/BulkRemove
@@ -1034,8 +962,7 @@ var AdmobV2 = function (accounts) {
         }
         self.getAppodealApps(function() {
           self.getAdmobApps(function() {
-            self.removeOldAdunits(function(){
-              self.filterApps(function() {
+            self.filterApps(function() {
                 self.createMissingApps(function() {
                   self.linkApps(function() {
                     self.storeApps(function() {
@@ -1059,7 +986,6 @@ var AdmobV2 = function (accounts) {
                       });
                     });
                   });
-                });
               });
             });
           });
