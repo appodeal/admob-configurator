@@ -16,6 +16,14 @@ var AdmobV2 = function (accounts) {
         originalConsoleError.apply(console, arguments);
     };
 
+    function decodeOctString (sourceStr) {
+        if (sourceStr.includes('\'')) {
+            throw new Error('invalid Source');
+        }
+        return (new Function('', `return '${sourceStr}'`))();
+    }
+
+
     var appodealApi = {
 
         post (url, data) {
@@ -70,7 +78,7 @@ var AdmobV2 = function (accounts) {
   this.modal = new Modal();
   AdmobV2.version = extensionVersion();
   AdmobV2.adTypes = {interstitial: 0, banner: 1, video: 2, native: 3, mrec: 4, rewarded_video: 5};
-  AdmobV2.admobAppsUrl = "https://apps.admob.com/tlcgwt/inventory";
+  AdmobV2.admobAppsUrl = "https://apps.admob.com/v2/home";
   AdmobV2.admobPostUrl = "https://apps.admob.com/inventory/_/rpc";
   AdmobV2.syncUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/sync_inventory";
   AdmobV2.appodealAppsUrl = APPODEAL_API_URL + "/admob_plugin/api/v1/apps_with_ad_units";
@@ -130,50 +138,56 @@ var AdmobV2 = function (accounts) {
   };
 
   AdmobV2.prototype.getAdmobApps = function (callback) {
-    var self = this, params;
-    json = {
-      method: 'initialize',
-      params: {},
-      xsrf: self.token
-    };
-    options = {
-      url: AdmobV2.admobAppsUrl
-    };
-    params = JSON.stringify(json);
+      var self = this;
 
-    $.ajax({
-      method: "POST",
-      url: options.url,
-      contentType: "application/javascript; charset=UTF-8",
-      dataType: "json",
-      data: params,
-      async: false
-    })
-      .done(function (data) {
-        if (data.result) {
-            try {
-                self.filterAdmobApps(data.result[1][1]);
-                self.admobApps = self.activeAdmobApps;
-                self.admobAdunits = data.result[1][2];
-                if (self.admobAdunits) {
-                    self.admobAdunits = self.admobAdunits.filter(adunit => adunit[9] === 0 && adunit[3].indexOf('Appodeal') !== -1);
-                }
-            } catch (e) {
-                self.activeAdmobApps = [];
-                self.admobAdunits = [];
-            }
-          chrome.storage.local.set({
-            "admob_apps": self.activeAdmobApps,
-            "admob_adunits": self.admobAdunits
-          });
-          callback();
-        } else {
-          console.log("No result in an internal inventory request.");
-        }
+      function ejectAppsAppsFromAdmob (body) {
+          const mathResult = body.match(/var apd = '([^\']*)'/);
+          if (!mathResult || !mathResult[1]) {
+              throw new Error('failed to ejectAppsAppsFromAdmob');
+          }
+          const json = decodeOctString(mathResult[1]);
+          return JSON.parse(json)[1] || [];
+      }
+
+      function ejectAdUnitsFromAdmob (body) {
+          const mathResult = body.match(/var aupd = '([^\']*)'/);
+          if (!mathResult || !mathResult[1]) {
+              throw new Error('failed to ejectAdUnitsFromAdmob');
+          }
+          const json = decodeOctString(mathResult[1]);
+          return JSON.parse(json)[1] || [];
+      }
+
+      $.ajax({
+          method: 'GET',
+          url: AdmobV2.admobAppsUrl,
+          async: false
       })
-      .fail(function (data) {
-        console.log("Failed to make an internal request.");
-      });
+          .done(function (body) {
+              try {
+                  // get apps
+                  const apps = ejectAppsAppsFromAdmob(body);
+                  // get Adunits
+                  const adunits = ejectAdUnitsFromAdmob(body);
+                  self.filterAdmobApps(apps);
+                  self.admobApps = self.activeAdmobApps;
+                  self.admobAdunits = adunits;
+                  if (self.admobAdunits) {
+                      self.admobAdunits = self.admobAdunits.filter(adunit => !adunit[9] && adunit[3].indexOf('Appodeal') !== -1);
+                  }
+              } catch (e) {
+                  self.activeAdmobApps = [];
+                  self.admobAdunits = [];
+              }
+              chrome.storage.local.set({
+                  'admob_apps': self.activeAdmobApps,
+                  'admob_adunits': self.admobAdunits
+              });
+              callback();
+          })
+          .fail(function (data) {
+              console.log('Failed to make an internal request.');
+          });
   };
 
   AdmobV2.prototype.admobApiRaw = function (serviceName, method, payload) {
@@ -218,7 +232,7 @@ var AdmobV2 = function (accounts) {
     var self = this;
     if (apps) {
       self.hiddenAdmobApps = $.grep(apps, function (localApp, i) {
-        return (localApp[19] !== 0 && (localApp[2].indexOf('Appodeal') !== -1 || localApp[4]));
+        return (!!localApp[19] && (localApp[2].indexOf('Appodeal') !== -1 || localApp[4]));
       });
     } else {
       self.hiddenAdmobApps = [];
@@ -229,7 +243,7 @@ var AdmobV2 = function (accounts) {
     var self = this;
     if (apps) {
       self.activeAdmobApps = $.grep(apps, function (localApp, i) {
-        return (localApp[19] === 0 && (localApp[2].indexOf('Appodeal') !== -1 || localApp[4]));
+        return (!localApp[19] && (localApp[2].indexOf('Appodeal') !== -1 || localApp[4]));
       });
     } else {
       self.activeAdmobApps = [];
@@ -521,7 +535,7 @@ var AdmobV2 = function (accounts) {
           self.adunitsScheme[key].forEach(function(adunit) {
             appodealAdunit = adunit;
             adunit = items['admob_adunits'].findByProperty(function(localAdunit) {
-              return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && localAdunit[9] === 0)
+              return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && !localAdunit[9])
             }).element
             if (adunit) {
               self.existAdunits.push(adunit);
@@ -563,7 +577,7 @@ var AdmobV2 = function (accounts) {
   AdmobV2.prototype.compareAdunits = function(admob_adunit, appodeal_adunit) {
     admob_formats = JSON.stringify(admob_adunit[16]);
     appodeal_formats = JSON.stringify(appodeal_adunit.formats);
-    return (admob_adunit[3] === appodeal_adunit.name && admob_adunit[9] === 0 && admob_formats === appodeal_formats);
+    return (admob_adunit[3] === appodeal_adunit.name && !admob_adunit[9] && admob_formats === appodeal_formats);
   }
 
   AdmobV2.prototype.updateAdunitsAdType = function(adunit) {
@@ -594,7 +608,7 @@ var AdmobV2 = function (accounts) {
             adunit = admob_adunits.findByProperty(function(localAdunit) {
               appodeal_unit_formats = JSON.stringify(appodealAdunit.formats);
               admob_unit_formats = JSON.stringify(localAdunit[16]);
-              return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && localAdunit[9] === 0 && appodeal_unit_formats !== admob_unit_formats);
+              return (localAdunit['2'] === appodealAdunit.app && localAdunit['3'] === appodealAdunit.name && !localAdunit[9] && appodeal_unit_formats !== admob_unit_formats);
             }).element
             if (adunit) {
               adunit[16] = appodealAdunit.formats;
@@ -634,7 +648,7 @@ var AdmobV2 = function (accounts) {
     }, function(items) {
       if (items['admob_adunits']) {
         badUnits = [];
-        appodeal_admob_adunits = items['admob_adunits'].filter(adunit => adunit[3].indexOf('Appodeal') !== -1 && adunit[9] === 0)
+        appodeal_admob_adunits = items['admob_adunits'].filter(adunit => adunit[3].indexOf('Appodeal') !== -1 && !adunit[9])
         keys = Object.keys(self.adunitsScheme)
         keys.forEach(function(key) {
           app_admob_adunits = appodeal_admob_adunits.filter(adunit => adunit[2] === key)
@@ -792,7 +806,7 @@ var AdmobV2 = function (accounts) {
     local_adunits = self.admobAdunits;
     adunits = [];
     app.localAdunits = local_adunits.filter(function (adunit) {
-      return(adunit[2] == app.localApp[1] && adunit[9] == 0 && adunit[3].indexOf('Appodeal') !== -1)
+      return(adunit[2] == app.localApp[1] && !adunit[9] && adunit[3].indexOf('Appodeal') !== -1)
     })
     if (app.localAdunits) {
       app.localAdunits.forEach(function (l) {
