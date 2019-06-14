@@ -122,6 +122,11 @@ var AdmobV2 = function (accounts) {
     var self = this;
       appodealApi.get(AdmobV2.appodealAppsUrl, {account: self.accountId})
       .then(function (data) {
+          //
+          if (!data.is_using_allowed) {
+              self.modal.show("Appodeal Chrome Extension", "Syncing via Extension is disabled for your account.<br> Please use <a target='_blank' href='https://wiki.appodeal.com/en/admob-sync/'>AdMob Sync App</a>, you can download it <a target='_blank' href='https://amsa-updates.appodeal.com'>here</a>");
+              return;
+          }
         if (data.applications && data.applications.length) {
           console.log('Syncing Appodeal inventory')
           chrome.storage.local.set({

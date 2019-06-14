@@ -49,10 +49,13 @@ ul.menu {
     padding-top: 13px;
   }
 
-  div {
+  div:not(.text) {
     a {
       margin-left: 40px;
     }
+  }
+  div.text {
+    padding: 0 19px;
   }
 }
 
@@ -109,12 +112,12 @@ hr.line {
 
 .gray {
   color: #c0c5c9;
-  pointer-events: none!important;
-  text-decoration: none!important;
+  pointer-events: none !important;
+  text-decoration: none !important;
 }
 
 .ion {
-  color: @color0!important;
+  color: @color0 !important;
   display: block;
   font-size: 28px;
   margin-top: -5px;

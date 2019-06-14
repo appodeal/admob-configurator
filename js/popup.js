@@ -212,6 +212,17 @@ LoadController = (function() {
           updateAppodealCredentials(result, function() {
             var data, leftNum, acc_name;
             data = result['plugin_status'];
+            if (!result.is_using_allowed) {
+              $("#reporting").html('')
+              $("#admob").html('')
+              $(".caption").html('')
+              $('#admob').before("<div class='text'>" +
+                  "<p>Syncing via Extension is disabled for your account.</p>" +
+                  "<p>Please use <a target='_blank' href='https://wiki.appodeal.com/en/admob-sync/'>AdMob Sync App</a></p>" +
+                  "<p> you can download it <a target='_blank' href='https://amsa-updates.appodeal.com'>here</a></p>" +
+                  "</div>");
+              return ;
+            }
             data['many_user_admob_accounts'] = result['plugin_status_ids'];
             console.log(data);
             leftNum = data['total'] - data['synced'];
