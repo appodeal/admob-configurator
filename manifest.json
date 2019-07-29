@@ -25,27 +25,13 @@
         "*://www.appodeal.com/internal_dashboard*",
         "*://www.appodeal.com/apps*"
       ],
-      "js": [
-        "js/vendor/raven.min.js",
-        "js/init-bug-tracker.js",
-        "js/vendor/jquery.min.js",
-        "js/bundle.js",
-        "js/utils.js",
-        "js/login.js"
-      ]
+      "js": []
     },
     {
       "matches": [
         "https://console.developers.google.com/*"
       ],
-      "js": [
-        "js/vendor/raven.min.js",
-        "js/init-bug-tracker.js",
-        "js/vendor/jquery.min.js",
-        "js/bundle.js",
-        "js/utils.js",
-        "js/modal.js"
-      ],
+      "js": [],
       "css": [
         "css/modal.console.css"
       ]
@@ -54,38 +40,19 @@
       "matches": [
         "https://apps.admob.com/*"
       ],
-      "js": [
-        "js/vendor/raven.min.js",
-        "js/init-bug-tracker.js",
-        "js/vendor/jquery.min.js",
-        "js/bundle.js",
-        "js/utils.js",
-        "js/adunits.js",
-        "js/admob.js",
-        "js/admob_v2.js",
-        "js/modal.js",
-        "js/progressBar.js"
-      ],
+      "js": [],
       "css": [
         "css/modal.css"
       ]
     }
   ],
   "background": {
-    "scripts": [
-      "js/vendor/raven.min.js",
-      "js/init-bug-tracker.js",
-      "js/vendor/jquery.min.js",
-      "js/bundle.js",
-      "js/utils.js",
-      "js/bg.js"
-    ],
+    "scripts": [],
     "persistent": false
   },
   "web_accessible_resources": [
     "img/*",
-    "js/vendor/*",
-    "js/helpers/*"
+    "js/vendor/*"
   ],
   "permissions": [
     "tabs",
