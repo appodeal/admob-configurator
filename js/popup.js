@@ -216,12 +216,12 @@ LoadController = (function() {
               $("#reporting").html('')
               $("#admob").html('')
               $(".caption").html('')
-              $('#admob').before("<div class='text'>" +
-                  "<p>Syncing via Extension is disabled for your account.</p>" +
-                  "<p>Please use <a target='_blank' href='https://wiki.appodeal.com/en/admob-sync/'>AdMob Sync App</a></p>" +
-                  "<p> you can download it <a target='_blank' href='https://amsa-updates.appodeal.com'>here</a></p>" +
-                  "</div>");
-              return ;
+              $('#admob').before('<div class="text">' +
+                  '<p>Syncing via Extension is not supported any longer.</p>' +
+                  '<p>Please use <a target="_blank" href="https://wiki.appodeal.com/en/admob-sync/">AdMob Sync App</a></p>' +
+                  '<p> you can download it from <a target="_blank" href="https://amsa-updates.appodeal.com">here</a></p>' +
+                  '</div>');
+              return;
             }
             data['many_user_admob_accounts'] = result['plugin_status_ids'];
             console.log(data);

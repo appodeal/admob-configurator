@@ -124,7 +124,10 @@ var AdmobV2 = function (accounts) {
       .then(function (data) {
           //
           if (!data.is_using_allowed) {
-              self.modal.show("Appodeal Chrome Extension", "Syncing via Extension is disabled for your account.<br> Please use <a target='_blank' href='https://wiki.appodeal.com/en/admob-sync/'>AdMob Sync App</a>, you can download it <a target='_blank' href='https://amsa-updates.appodeal.com'>here</a>");
+              self.modal.show('Appodeal Chrome Extension', '<p>Syncing via Extension is not supported any longer.</p>' +
+                  '<p>Please use <a target="_blank" href="https://wiki.appodeal.com/en/admob-sync/">AdMob Sync App</a></p>' +
+                  '<p> you can download it from <a target="_blank" href="https://amsa-updates.appodeal.com">here</a></p>'
+              );
               return;
           }
         if (data.applications && data.applications.length) {
